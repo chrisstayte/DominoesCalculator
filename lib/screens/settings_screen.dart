@@ -9,7 +9,9 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({Key? key, this.controller}) : super(key: key);
+
+  final ScrollController? controller;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -46,12 +48,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             fontSize: 16,
           ),
         ),
-        leading: TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text('Done'),
+        leading: Visibility(
+          visible: widget.controller == null,
+          child: TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Done'),
+          ),
         ),
       ),
       body: ListView(
+        controller: widget.controller,
         children: [
           ListTile(
             title: Text(
@@ -105,6 +111,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 1: Text('Pips'),
               },
             ),
+          ),
+          ListTile(
+            title: Text('Double Zero Value'),
+            trailing: Text(
+                context.watch<SettingsProvider>().doubleZeroValue.toString()),
+          ),
+          Slider(
+            onChanged: (value) => context
+                .read<SettingsProvider>()
+                .setDoubleZeroValue(value.toInt()),
+            value: context.watch<SettingsProvider>().doubleZeroValue.toDouble(),
+            divisions: 20,
+            min: 1,
+            max: 200,
           ),
           ListTile(
             title: Text(

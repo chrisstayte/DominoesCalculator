@@ -1,4 +1,4 @@
-enum Tile {
+enum DominoType {
   blank,
   one,
   two,
@@ -14,5 +14,6 @@ enum Tile {
   twelve,
   thirteen,
   fourteen,
-  fifteen
+  fifteen,
+  custom,
 }

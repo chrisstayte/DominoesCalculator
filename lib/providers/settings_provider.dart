@@ -15,8 +15,11 @@ class SettingsProvider extends ChangeNotifier {
     _isDarkMode = prefs?.getBool('isDarkMode') ?? false;
     _isDarkDominoes = prefs?.getBool('isDarkDominoes') ?? false;
     _isPips = prefs?.getBool('isPips') ?? true;
-    _appAccentColor = Color(prefs?.getInt('appAccentColor') ??
-        Global.colors.accentColors.first.value);
+    _doubleZeroValue = prefs?.getInt('doubleZeroValue') ?? 50;
+    _appAccentColor = Color(
+      prefs?.getInt('appAccentColor') ??
+          Global.colors.accentColors.elementAt(4).value,
+    );
 
     notifyListeners();
   }
@@ -54,6 +57,15 @@ class SettingsProvider extends ChangeNotifier {
   void setIsPips(bool value) async {
     _isPips = value;
     await prefs?.setBool('isPips', value);
+    notifyListeners();
+  }
+
+  int _doubleZeroValue = 50;
+  int get doubleZeroValue => _doubleZeroValue;
+
+  void setDoubleZeroValue(int value) async {
+    _doubleZeroValue = value;
+    await prefs?.setInt('doubleZeroValue', value);
     notifyListeners();
   }
 }
