@@ -76,7 +76,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       .fold<int>(
                                           0,
                                           (previousValue, element) =>
-                                              previousValue + 1)
+                                              previousValue +
+                                              (Global.values
+                                                      .dominoValues[element] ??
+                                                  context
+                                                      .watch<SettingsProvider>()
+                                                      .doubleZeroValue))
                                       .toString(),
                                   style: TextStyle(
                                     color: Colors.white,
@@ -199,41 +204,62 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Container(
                       width: 60,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius:
-                              BorderRadius.circular(Global.ui.cornerRadius),
-                          color: Colors.grey.shade300,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ListView.separated(
-                            reverse: true,
-                            itemBuilder: (context, index) {
-                              return GestureDetector(
-                                onTap: () => setState(
-                                  () => _calcHistory.removeAt(index),
-                                ),
-                                child: Container(
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                    color: Colors.white,
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            BorderRadius.circular(Global.ui.cornerRadius),
+                        color: Colors.grey.shade300,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: ListView.separated(
+                          reverse: true,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () => setState(
+                                () => _calcHistory.removeAt(index),
+                              ),
+                              child: Container(
+                                margin: EdgeInsets.symmetric(vertical: 4),
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(
+                                    Global.ui.cornerRadius,
                                   ),
-                                  child: Center(
-                                    child: Text('test'),
+                                  color: Colors.white,
+                                ),
+                                child: Center(
+                                  child: AutoSizeText(
+                                    Global.values.dominoValues[
+                                                _calcHistory[index]] !=
+                                            null
+                                        ? Global.values
+                                            .dominoValues[_calcHistory[index]]
+                                            .toString()
+                                        : context
+                                            .watch<SettingsProvider>()
+                                            .doubleZeroValue
+                                            .toString(),
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Global.colors.dominoColors[
+                                              _calcHistory[index]] ??
+                                          context
+                                              .watch<SettingsProvider>()
+                                              .appAccentColor,
+                                    ),
                                   ),
                                 ),
-                              );
-                            },
-                            separatorBuilder: (context, index) {
-                              return Icon(
-                                Icons.add,
-                                size: 18,
-                              );
-                            },
-                            itemCount: _calcHistory.length,
-                          ),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (context, index) {
+                            return Icon(
+                              Icons.add,
+                              size: 18,
+                            );
+                          },
+                          itemCount: _calcHistory.length,
                         ),
                       ),
                     ),
