@@ -7,6 +7,7 @@ import 'package:dominoes/global/global.dart';
 import 'package:dominoes/providers/settings_provider.dart';
 import 'package:dominoes/screens/settings_screen.dart';
 import 'package:dominoes/screens/widgets/keypad_key.dart';
+import 'package:dominoes/screens/widgets/tile_history.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,9 +27,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<DominoType> _calcHistory = [];
 
-  void addCalculation(DominoType dominoType) {
+  void _addCalculation(DominoType dominoType) {
     setState(() {
       _calcHistory.insert(0, dominoType);
+    });
+  }
+
+  void _removeTileHistory(int index) {
+    setState(() {
+      _calcHistory.removeAt(index);
     });
   }
 
@@ -110,19 +117,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                         children: [
                                           KeypadKey(
                                             dominoType: DominoType.one,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                           KeypadKey(
                                             dominoType: DominoType.two,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                           KeypadKey(
                                             dominoType: DominoType.three,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                           KeypadKey(
                                             dominoType: DominoType.four,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                         ],
                                       ),
@@ -132,19 +139,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                         children: [
                                           KeypadKey(
                                             dominoType: DominoType.five,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                           KeypadKey(
                                             dominoType: DominoType.six,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                           KeypadKey(
                                             dominoType: DominoType.seven,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                           KeypadKey(
                                             dominoType: DominoType.eight,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                         ],
                                       ),
@@ -154,19 +161,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                         children: [
                                           KeypadKey(
                                             dominoType: DominoType.nine,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                           KeypadKey(
                                             dominoType: DominoType.ten,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                           KeypadKey(
                                             dominoType: DominoType.eleven,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                           KeypadKey(
                                             dominoType: DominoType.twelve,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                         ],
                                       ),
@@ -176,19 +183,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                         children: [
                                           KeypadKey(
                                             dominoType: DominoType.thirteen,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                           KeypadKey(
                                             dominoType: DominoType.fourteen,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                           KeypadKey(
                                             dominoType: DominoType.fifteen,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                           KeypadKey(
                                             dominoType: DominoType.custom,
-                                            onTap: addCalculation,
+                                            onTap: _addCalculation,
                                           ),
                                         ],
                                       ),
@@ -214,43 +221,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: ListView.separated(
                           reverse: true,
                           itemBuilder: (context, index) {
-                            return GestureDetector(
-                              onTap: () => setState(
-                                () => _calcHistory.removeAt(index),
-                              ),
-                              child: Container(
-                                margin: EdgeInsets.symmetric(vertical: 4),
-                                height: 42,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(
-                                    Global.ui.cornerRadius,
-                                  ),
-                                  color: Colors.white,
-                                ),
-                                child: Center(
-                                  child: AutoSizeText(
-                                    Global.values.dominoValues[
-                                                _calcHistory[index]] !=
-                                            null
-                                        ? Global.values
-                                            .dominoValues[_calcHistory[index]]
-                                            .toString()
-                                        : context
-                                            .watch<SettingsProvider>()
-                                            .doubleZeroValue
-                                            .toString(),
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: Global.colors.dominoColors[
-                                              _calcHistory[index]] ??
-                                          context
-                                              .watch<SettingsProvider>()
-                                              .appAccentColor,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                            return TileHistory(
+                              index: index,
+                              dominoType: _calcHistory[index],
+                              onTap: _removeTileHistory,
                             );
                           },
                           separatorBuilder: (context, index) {
