@@ -199,6 +199,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           ListTile(
+            leading: Icon(FontAwesomeIcons.solidFileLines),
+            title: Text('Terms And Conditions'),
+            onTap: () async {
+              final Uri uri = Uri(
+                scheme: 'https',
+                path: 'www.chrisstayte.app/dominoes/terms',
+              );
+
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri).catchError(
+                  (error) {
+                    print(error);
+                    return false;
+                  },
+                );
+              }
+            },
+          ),
+          ListTile(
             leading: FaIcon(FontAwesomeIcons.github),
             title: Text('Repo'),
             onTap: () async {
