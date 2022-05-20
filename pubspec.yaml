@@ -23,6 +23,9 @@ dependencies:
   package_info_plus: ^1.4.2
   page_transition: ^2.0.5
   flutter_svg: ^1.0.3
+  permission_handler: ^9.2.0
+  camera: ^0.9.5+1
+  google_fonts: ^2.3.2
 
 dev_dependencies:
   flutter_test:

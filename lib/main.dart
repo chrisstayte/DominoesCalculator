@@ -4,6 +4,7 @@ import 'package:dominoes/screens/home_screen.dart';
 import 'package:dominoes/screens/settings_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
@@ -31,16 +32,17 @@ class MyApp extends StatelessWidget {
           ? ThemeMode.dark
           : ThemeMode.light,
       theme: ThemeData.light().copyWith(
+        // textTheme: GoogleFonts.quicksandTextTheme(),
         appBarTheme: AppBarTheme(
-          centerTitle: false,
+          centerTitle: true,
           color: Color(0XFFF3F4F8),
           elevation: 0,
           iconTheme: IconThemeData(
             color: Colors.black,
           ),
-          titleTextStyle: Theme.of(context).textTheme.headline5?.copyWith(
-                color: Colors.black,
-              ),
+          titleTextStyle: TextStyle(
+            color: Colors.black,
+          ),
           toolbarTextStyle: TextStyle(
             color: context.watch<SettingsProvider>().appAccentColor,
           ),

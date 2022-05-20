@@ -22,21 +22,13 @@ class TileHistory extends StatelessWidget {
   final int index;
   final DominoType dominoType;
   final TileHistoryCallback onTap;
-
-  Future<bool> _fileExists() async {
-    try {
-      ByteData data = await rootBundle
-          .load('assets/pips/${this.dominoType.name}_colored.svg');
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => onTap(index),
+      onTap: () {
+        onTap(index);
+        HapticFeedback.mediumImpact();
+      },
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 4),
         height: 42,
@@ -44,26 +36,21 @@ class TileHistory extends StatelessWidget {
           borderRadius: BorderRadius.circular(
             Global.ui.cornerRadius,
           ),
-          color: Colors.white,
+          color: context.watch<SettingsProvider>().isDarkDominoes
+              ? Colors.grey.shade900
+              : Colors.white,
         ),
         child: Center(
-          child: FutureBuilder(
-              future: _fileExists(),
-              builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                if (context.watch<SettingsProvider>().isPips) {
-                  if (snapshot.hasData) {
-                    if (snapshot.data) {
-                      return FractionallySizedBox(
-                        heightFactor: 0.75,
-                        widthFactor: 0.85,
-                        child: SvgPicture.asset(
-                          'assets/pips/${this.dominoType.name}_colored.svg',
-                        ),
-                      );
-                    }
-                  }
-                }
-                return AutoSizeText(
+          child: context.watch<SettingsProvider>().isPips &&
+                  dominoType != DominoType.blank
+              ? FractionallySizedBox(
+                  heightFactor: 0.75,
+                  widthFactor: 0.85,
+                  child: SvgPicture.asset(
+                    'assets/pips/${this.dominoType.name}_colored.svg',
+                  ),
+                )
+              : AutoSizeText(
                   Global.values.dominoValues[dominoType] != null
                       ? Global.values.dominoValues[dominoType].toString()
                       : context
@@ -76,8 +63,7 @@ class TileHistory extends StatelessWidget {
                     color: Global.colors.dominoColors[dominoType] ??
                         context.watch<SettingsProvider>().appAccentColor,
                   ),
-                );
-              }),
+                ),
         ),
       ),
     );

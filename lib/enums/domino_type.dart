@@ -15,5 +15,4 @@ enum DominoType {
   thirteen,
   fourteen,
   fifteen,
-  custom,
 }

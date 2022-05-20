@@ -19,58 +19,41 @@ class KeypadKey extends StatelessWidget {
   final DominoType dominoType;
   final KeypadKeyCallback onTap;
 
-  Future<bool> _fileExists() async {
-    try {
-      ByteData data = await rootBundle
-          .load('assets/pips/${this.dominoType.name}_colored.svg');
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: GestureDetector(
-        onTap: () => onTap(dominoType),
+        onTap: () {
+          onTap(dominoType);
+          HapticFeedback.mediumImpact();
+        },
         child: Container(
           margin: EdgeInsets.all(1),
           color: context.watch<SettingsProvider>().isDarkDominoes
-              ? Colors.grey
+              ? Colors.grey.shade900
               : Colors.white,
           child: Center(
-            child: FutureBuilder(
-              future: _fileExists(),
-              builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                if (context.watch<SettingsProvider>().isPips) {
-                  if (snapshot.hasData) {
-                    if (snapshot.data) {
-                      return FractionallySizedBox(
-                        widthFactor: 0.85,
-                        child: SvgPicture.asset(
-                          'assets/pips/${this.dominoType.name}_colored.svg',
-                        ),
-                      );
-                    }
-                  }
-                }
-                return Text(
-                  Global.values.dominoValues[dominoType]?.toString() ??
-                      context
-                          .watch<SettingsProvider>()
-                          .doubleZeroValue
-                          .toString(),
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Global.colors.dominoColors[dominoType] ??
-                        context.watch<SettingsProvider>().appAccentColor,
-                  ),
-                );
-              },
-            ),
-          ),
+              child: context.watch<SettingsProvider>().isPips &&
+                      dominoType != DominoType.blank
+                  ? FractionallySizedBox(
+                      widthFactor: 0.85,
+                      child: SvgPicture.asset(
+                        'assets/pips/${this.dominoType.name}_colored.svg',
+                      ),
+                    )
+                  : Text(
+                      Global.values.dominoValues[dominoType]?.toString() ??
+                          context
+                              .watch<SettingsProvider>()
+                              .doubleZeroValue
+                              .toString(),
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Global.colors.dominoColors[dominoType] ??
+                            context.watch<SettingsProvider>().appAccentColor,
+                      ),
+                    )),
         ),
       ),
     );

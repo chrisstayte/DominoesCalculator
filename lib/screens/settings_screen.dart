@@ -40,7 +40,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
         title: const Text(
           'Options',
           style: TextStyle(
@@ -52,7 +51,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           visible: widget.controller == null,
           child: TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Done'),
+            child: Text(
+              'Done',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
       ),
@@ -114,8 +118,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ListTile(
             title: Text('Double Zero Value'),
-            trailing: Text(
-                context.watch<SettingsProvider>().doubleZeroValue.toString()),
+            trailing: GestureDetector(
+              onDoubleTap: () =>
+                  context.read<SettingsProvider>().setDoubleZeroValue(50),
+              child: Text(
+                context.watch<SettingsProvider>().doubleZeroValue.toString(),
+              ),
+            ),
           ),
           Slider(
             onChanged: (value) => context

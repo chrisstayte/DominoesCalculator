@@ -24,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _gapBetweenAreas = 5.0;
+  final ScrollController _controller = ScrollController();
 
   List<DominoType> _calcHistory = [];
 
@@ -31,6 +32,11 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _calcHistory.insert(0, dominoType);
     });
+    _controller.animateTo(
+      _controller.position.minScrollExtent,
+      duration: Duration(seconds: 1),
+      curve: Curves.fastOutSlowIn,
+    );
   }
 
   void _removeTileHistory(int index) {
@@ -194,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             onTap: _addCalculation,
                                           ),
                                           KeypadKey(
-                                            dominoType: DominoType.custom,
+                                            dominoType: DominoType.blank,
                                             onTap: _addCalculation,
                                           ),
                                         ],
@@ -211,6 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Container(
                       width: 60,
+                      clipBehavior: Clip.hardEdge,
                       decoration: BoxDecoration(
                         borderRadius:
                             BorderRadius.circular(Global.ui.cornerRadius),
@@ -219,6 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: ListView.separated(
+                          controller: _controller,
                           reverse: true,
                           itemBuilder: (context, index) {
                             return TileHistory(
@@ -279,8 +287,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () async {
                           if (Platform.isIOS) {
                             showCupertinoModalBottomSheet(
-                                context: context,
-                                builder: (context) => const SettingsScreen());
+                              context: context,
+                              builder: (context) => const SettingsScreen(),
+                            );
                           } else {
                             Navigator.pushNamed(context, '/settings');
                             // DraggableScrollableController controller =
