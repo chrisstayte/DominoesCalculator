@@ -333,7 +333,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => setState(() {}),
+                        onTap: () async {
+                          await Navigator.pushNamed(context, '/camera');
+                        },
                         child: Container(
                           decoration: BoxDecoration(
                             color: HSLColor.fromColor(context

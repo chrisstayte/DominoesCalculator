@@ -1,5 +1,6 @@
 import 'package:dominoes/global/global.dart';
 import 'package:dominoes/providers/settings_provider.dart';
+import 'package:dominoes/screens/camera_screen.dart';
 import 'package:dominoes/screens/home_screen.dart';
 import 'package:dominoes/screens/settings_screen.dart';
 import 'package:flutter/cupertino.dart';
@@ -32,7 +33,7 @@ class MyApp extends StatelessWidget {
           ? ThemeMode.dark
           : ThemeMode.light,
       theme: ThemeData.light().copyWith(
-        // textTheme: GoogleFonts.quicksandTextTheme(),
+        textTheme: GoogleFonts.quicksandTextTheme(),
         appBarTheme: AppBarTheme(
           centerTitle: true,
           color: Color(0XFFF3F4F8),
@@ -40,9 +41,9 @@ class MyApp extends StatelessWidget {
           iconTheme: IconThemeData(
             color: Colors.black,
           ),
-          titleTextStyle: TextStyle(
-            color: Colors.black,
-          ),
+          titleTextStyle: GoogleFonts.quicksandTextTheme().headline5?.copyWith(
+                color: Colors.black,
+              ),
           toolbarTextStyle: TextStyle(
             color: context.watch<SettingsProvider>().appAccentColor,
           ),
@@ -51,6 +52,9 @@ class MyApp extends StatelessWidget {
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
             primary: context.watch<SettingsProvider>().appAccentColor,
+            textStyle: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         switchTheme: SwitchThemeData(
@@ -61,9 +65,8 @@ class MyApp extends StatelessWidget {
             (states) {
               if (states.contains(MaterialState.selected)) {
                 return HSLColor.fromColor(
-                        context.watch<SettingsProvider>().appAccentColor)
-                    .withLightness(.5)
-                    .toColor();
+                  context.watch<SettingsProvider>().appAccentColor,
+                ).withLightness(.5).toColor();
               }
               return CupertinoColors.tertiarySystemFill;
             },
@@ -84,14 +87,15 @@ class MyApp extends StatelessWidget {
         ),
       ),
       darkTheme: ThemeData.dark().copyWith(
+        textTheme: GoogleFonts.quicksandTextTheme(ThemeData.dark().textTheme),
         appBarTheme: AppBarTheme(
-          centerTitle: false,
+          centerTitle: true,
           color: Global.colors.darkThemeColor,
           elevation: 0,
           iconTheme: IconThemeData(
             color: Colors.white,
           ),
-          titleTextStyle: Theme.of(context).textTheme.headline5?.copyWith(
+          titleTextStyle: GoogleFonts.quicksandTextTheme().headline5?.copyWith(
                 color: Colors.white,
               ),
         ),
@@ -99,6 +103,9 @@ class MyApp extends StatelessWidget {
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
             primary: context.watch<SettingsProvider>().appAccentColor,
+            textStyle: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         switchTheme: SwitchThemeData(
@@ -109,9 +116,8 @@ class MyApp extends StatelessWidget {
             (states) {
               if (states.contains(MaterialState.selected)) {
                 return HSLColor.fromColor(
-                        context.watch<SettingsProvider>().appAccentColor)
-                    .withLightness(.5)
-                    .toColor();
+                  context.watch<SettingsProvider>().appAccentColor,
+                ).withLightness(.5).toColor();
               }
               return CupertinoColors.inactiveGray;
             },
@@ -143,6 +149,11 @@ class MyApp extends StatelessWidget {
           case '/settings':
             return PageTransition(
               child: SettingsScreen(),
+              type: PageTransitionType.bottomToTop,
+            );
+          case '/camera':
+            return PageTransition(
+              child: CameraScreen(),
               type: PageTransitionType.bottomToTop,
             );
         }
