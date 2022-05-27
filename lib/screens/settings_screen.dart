@@ -51,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           visible: widget.controller == null,
           child: TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
+            child: const Text(
               'Done',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -69,7 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: Theme.of(context).textTheme.headline6,
             ),
           ),
-          ListTile(
+          const ListTile(
             title: Text('Accent Color'),
           ),
           Padding(
@@ -88,7 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           ListTile(
-            title: Text('Dark Mode'),
+            title: const Text('Dark Mode'),
             trailing: Switch(
               value: context.watch<SettingsProvider>().isDarkMode,
               onChanged: (bool value) =>
@@ -96,7 +96,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           ListTile(
-            title: Text('Dark Dominoes'),
+            title: const Text('Dark Dominoes'),
             trailing: Switch(
               value: context.watch<SettingsProvider>().isDarkDominoes,
               onChanged: (bool value) =>
@@ -104,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           ListTile(
-            title: Text('Domino Display'),
+            title: const Text('Domino Display'),
             trailing: CupertinoSlidingSegmentedControl(
               thumbColor: context.watch<SettingsProvider>().appAccentColor,
               groupValue: context.watch<SettingsProvider>().isPips ? 1 : 0,
@@ -117,7 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           ListTile(
-            title: Text('Double Zero Value'),
+            title: const Text('Double Zero Value'),
             trailing: GestureDetector(
               onDoubleTap: () =>
                   context.read<SettingsProvider>().setDoubleZeroValue(50),
@@ -142,8 +142,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           ListTile(
-            leading: FaIcon(FontAwesomeIcons.twitter),
-            title: Text('@ChrisStayte'),
+            leading: const FaIcon(FontAwesomeIcons.twitter),
+            title: const Text('@ChrisStayte'),
             onTap: () async {
               final Uri uri = Uri(
                 scheme: 'https',
@@ -161,8 +161,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           ListTile(
-            leading: FaIcon(FontAwesomeIcons.envelope),
-            title: Text('dominoes@chrisstayte.com'),
+            leading: const FaIcon(FontAwesomeIcons.envelope),
+            title: const Text('dominoes@chrisstayte.com'),
             onTap: () async {
               final Uri uri = Uri(
                 scheme: 'mailto',
@@ -180,8 +180,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Text('License'),
           ),
           ListTile(
-            leading: Icon(Icons.lock),
-            title: Text('Privacy Policy'),
+            leading: const Icon(Icons.lock),
+            title: const Text('Privacy Policy'),
             onTap: () async {
               final Uri uri = Uri(
                 scheme: 'https',
@@ -199,8 +199,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           ListTile(
-            leading: Icon(FontAwesomeIcons.solidFileLines),
-            title: Text('Terms And Conditions'),
+            leading: const Icon(FontAwesomeIcons.solidFileLines),
+            title: const Text('Terms And Conditions'),
             onTap: () async {
               final Uri uri = Uri(
                 scheme: 'https',
@@ -218,8 +218,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           ListTile(
-            leading: FaIcon(FontAwesomeIcons.github),
-            title: Text('Repo'),
+            leading: const FaIcon(FontAwesomeIcons.github),
+            title: const Text('Repo'),
             onTap: () async {
               final Uri uri = Uri(
                 scheme: 'https',

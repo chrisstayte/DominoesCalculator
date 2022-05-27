@@ -8,7 +8,7 @@ import 'package:dominoes/providers/settings_provider.dart';
 import 'package:dominoes/screens/settings_screen.dart';
 import 'package:dominoes/screens/widgets/keypad_key.dart';
 import 'package:dominoes/screens/widgets/tile_history.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _gapBetweenAreas = 5.0;
   final ScrollController _controller = ScrollController();
 
-  List<DominoType> _calcHistory = [];
+  final List<DominoType> _calcHistory = [];
 
   void _addCalculation(DominoType dominoType) {
     setState(() {
@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     _controller.animateTo(
       _controller.position.minScrollExtent,
-      duration: Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
       curve: Curves.fastOutSlowIn,
     );
   }
@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
               Expanded(
@@ -96,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       .watch<SettingsProvider>()
                                                       .doubleZeroValue))
                                       .toString(),
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 52,
                                   ),
@@ -236,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           },
                           separatorBuilder: (context, index) {
-                            return Icon(
+                            return const Icon(
                               Icons.add,
                               size: 18,
                             );
@@ -285,6 +285,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: GestureDetector(
                         onTap: () async {
+                          if (kIsWeb) {
+                            Navigator.pushNamed(context, '/settings');
+                          }
                           if (Platform.isIOS) {
                             showCupertinoModalBottomSheet(
                               context: context,
@@ -328,34 +331,50 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () async {
-                          await Navigator.pushNamed(context, '/camera');
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: HSLColor.fromColor(context
-                                    .watch<SettingsProvider>()
-                                    .appAccentColor)
-                                .withLightness(.4)
-                                .toColor(),
-                            borderRadius: BorderRadius.circular(
-                              Global.ui.cornerRadius,
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.camera_alt_rounded,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    // const SizedBox(
+                    //   width: 5,
+                    // ),
+                    // Expanded(
+                    //   child: GestureDetector(
+                    //     onTap: () async {
+                    //       // await Navigator.pushNamed(context, '/camera');
+                    //       await showDialog(
+                    //         context: context,
+                    //         builder: (builder) {
+                    //           return AlertDialog(
+                    //             title: const Text(
+                    //                 'This is still a work in progress. You can hide this button in the settings.'),
+                    //             actions: [
+                    //               TextButton(
+                    //                   onPressed: () => Navigator.pop(context),
+                    //                   child: const Text('OK'))
+                    //             ],
+                    //           );
+                    //         },
+                    //       );
+                    //       Navigator.pop(context);
+                    //       return;
+                    //     },
+                    //     child: Container(
+                    //       decoration: BoxDecoration(
+                    //         color: HSLColor.fromColor(context
+                    //                 .watch<SettingsProvider>()
+                    //                 .appAccentColor)
+                    //             .withLightness(.4)
+                    //             .toColor(),
+                    //         borderRadius: BorderRadius.circular(
+                    //           Global.ui.cornerRadius,
+                    //         ),
+                    //       ),
+                    //       child: const Center(
+                    //         child: Icon(
+                    //           Icons.camera_alt_rounded,
+                    //           color: Colors.white,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

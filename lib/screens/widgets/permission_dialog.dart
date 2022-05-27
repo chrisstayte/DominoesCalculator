@@ -1,10 +1,6 @@
 import 'package:dominoes/global/global.dart';
-import 'package:dominoes/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:provider/provider.dart';
 
 class PermissionDialog extends StatefulWidget {
   const PermissionDialog({super.key, required this.hasAccessToCamera});
@@ -42,7 +38,7 @@ class _PermissionDialogState extends State<PermissionDialog>
       child: Material(
         color: Colors.transparent,
         child: Container(
-          padding: EdgeInsets.all(15),
+          padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(Global.ui.cornerRadius),
@@ -75,8 +71,8 @@ class _PermissionDialogState extends State<PermissionDialog>
                     onTap: () =>
                         Navigator.popUntil(context, (route) => route.isFirst),
                     child: Container(
-                      margin: EdgeInsets.all(8),
-                      padding: EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         borderRadius:
                             BorderRadius.circular(Global.ui.cornerRadius),
@@ -101,8 +97,8 @@ class _PermissionDialogState extends State<PermissionDialog>
                       openAppSettings();
                     },
                     child: Container(
-                      margin: EdgeInsets.all(8),
-                      padding: EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         borderRadius:
                             BorderRadius.circular(Global.ui.cornerRadius),
