@@ -29,7 +29,7 @@ class TileHistory extends StatelessWidget {
       },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
-        height: 42,
+        width: 42,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(
             Global.ui.cornerRadius,
