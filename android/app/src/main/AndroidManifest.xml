@@ -3,7 +3,7 @@
    <application
         android:label="dominoes"
         android:name="${applicationName}"
-        android:icon="@mipmap/domnioes">
+        android:icon="@mipmap/dominoes">
         <activity
             android:name=".MainActivity"
             android:exported="true"

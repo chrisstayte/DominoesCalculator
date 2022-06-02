@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dominoes/enums/domino_type.dart';
 import 'package:dominoes/global/global.dart';
 import 'package:dominoes/providers/settings_provider.dart';
@@ -42,14 +43,14 @@ class KeypadKey extends StatelessWidget {
                         'assets/pips/${dominoType.name}_colored.svg',
                       ),
                     )
-                  : Text(
+                  : AutoSizeText(
                       Global.values.dominoValues[dominoType]?.toString() ??
                           context
                               .watch<SettingsProvider>()
                               .doubleZeroValue
                               .toString(),
                       style: TextStyle(
-                        fontSize: 26,
+                        fontSize: 46,
                         fontWeight: FontWeight.bold,
                         color: Global.colors.dominoColors[dominoType] ??
                             context.watch<SettingsProvider>().appAccentColor,
