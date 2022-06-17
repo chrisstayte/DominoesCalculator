@@ -1,9 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.dominoes">
+    package="com.chrisstayte.dominoes">
    <application
         android:label="dominoes"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/dominoes">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -31,4 +31,14 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.view"/>
+            <data android:scheme="https"/>
+        </intent>
+    </queries>
+     <!-- Permissions options for the 'internet' group -->
+    <uses-permission android:name="android.permission.Internet" />
+    <!-- Permissions options for the `camera` group -->
+    <uses-permission android:name="android.permission.CAMERA"/>
 </manifest>
