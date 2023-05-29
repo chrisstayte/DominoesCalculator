@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -269,33 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () async {
-                          if (kIsWeb) {
-                            Navigator.pushNamed(context, '/settings');
-                          }
-                          if (Platform.isIOS) {
-                            showCupertinoModalBottomSheet(
-                              context: context,
-                              builder: (context) => const SettingsScreen(),
-                            );
-                          } else {
-                            Navigator.pushNamed(context, '/settings');
-                            // DraggableScrollableController controller =
-                            //     new DraggableScrollableController();
-                            // await showModalBottomSheet(
-                            //   backgroundColor: Colors.transparent,
-                            //   isScrollControlled: true,
-                            //   context: context,
-                            //   builder: (context) => DraggableScrollableSheet(
-                            //     controller: controller,
-                            //     builder: ((context, scrollController) =>
-                            //         SettingsScreen(
-                            //           controller: scrollController,
-                            //         )),
-                            //   ),
-                            // );
-                          }
-                        },
+                        onTap: () => Navigator.pushNamed(context, '/settings'),
                         child: Container(
                           decoration: BoxDecoration(
                             color: HSLColor.fromColor(context
@@ -316,50 +290,34 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    // const SizedBox(
-                    //   width: 5,
-                    // ),
-                    // Expanded(
-                    //   child: GestureDetector(
-                    //     onTap: () async {
-                    //       // await Navigator.pushNamed(context, '/camera');
-                    //       await showDialog(
-                    //         context: context,
-                    //         builder: (builder) {
-                    //           return AlertDialog(
-                    //             title: const Text(
-                    //                 'This is still a work in progress. You can hide this button in the settings.'),
-                    //             actions: [
-                    //               TextButton(
-                    //                   onPressed: () => Navigator.pop(context),
-                    //                   child: const Text('OK'))
-                    //             ],
-                    //           );
-                    //         },
-                    //       );
-                    //       Navigator.pop(context);
-                    //       return;
-                    //     },
-                    //     child: Container(
-                    //       decoration: BoxDecoration(
-                    //         color: HSLColor.fromColor(context
-                    //                 .watch<SettingsProvider>()
-                    //                 .appAccentColor)
-                    //             .withLightness(.4)
-                    //             .toColor(),
-                    //         borderRadius: BorderRadius.circular(
-                    //           Global.ui.cornerRadius,
-                    //         ),
-                    //       ),
-                    //       child: const Center(
-                    //         child: Icon(
-                    //           Icons.camera_alt_rounded,
-                    //           color: Colors.white,
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () async {
+                          await Navigator.pushNamed(context, '/camera');
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: HSLColor.fromColor(context
+                                    .watch<SettingsProvider>()
+                                    .appAccentColor)
+                                .withLightness(.4)
+                                .toColor(),
+                            borderRadius: BorderRadius.circular(
+                              Global.ui.cornerRadius,
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.camera_alt_rounded,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

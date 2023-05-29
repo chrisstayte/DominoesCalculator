@@ -25,20 +25,61 @@ class _CameraScreenState extends State<CameraScreen>
   CameraController? _controller;
   Uint8List? _byte;
 
+  bool isProcessing = false;
+  List<dynamic>? recognitions = [];
+
   final int _points = 0;
 
+  Future<File> getFile(String fileName) async {
+    try {
+      // Get the temporary directory for the app
+      final appDir = await getTemporaryDirectory();
+      final appPath = appDir.path;
+
+      // Create a File object for the file on the device
+      final fileOnDevice = File('$appPath/$fileName');
+
+      // Load the asset file and convert it to a Uint8List
+      final rawAssetFile = await rootBundle.load(fileName);
+      final rawBytes = rawAssetFile.buffer.asUint8List();
+
+      // Write the Uint8List to the file on the device
+      await fileOnDevice.writeAsBytes(rawBytes, flush: true);
+
+      // Return the File object wrapped in a Future
+      return fileOnDevice;
+    } catch (e) {
+      // Handle any errors that occur during the file operations
+      print('Error getting file: $e');
+      return null;
+    }
+  }
+
   @override
-  void initState() {
+  void initState() async {
     WidgetsBinding.instance.addObserver(this);
+
+    // Tflite.loadModel(
+    //   model: "assets/lite-model_ssd_mobilenet_v1_1_metadata_2",
+    //   labels: "assets/ssd_mobilenet.txt",
+    // );
+
     _setupCamera();
     super.initState();
   }
 
   @override
   void dispose() async {
+    // Remove this widget as an observer of the widget tree
     WidgetsBinding.instance.removeObserver(this);
+
+    // Dispose of the camera controller
     _controller?.dispose();
+
+    // Set the camera controller to null
     _controller = null;
+
+    // Call the superclass dispose method
     super.dispose();
   }
 
@@ -55,12 +96,6 @@ class _CameraScreenState extends State<CameraScreen>
         break;
     }
     super.didChangeAppLifecycleState(state);
-  }
-
-  Uint8List _concatenatePlanes(List<Plane> planes) {
-    final WriteBuffer allBytes = WriteBuffer();
-    planes.forEach((Plane plane) => allBytes.putUint8List(plane.bytes));
-    return allBytes.done().buffer.asUint8List();
   }
 
   Future<void> _setupCamera() async {
@@ -105,32 +140,45 @@ class _CameraScreenState extends State<CameraScreen>
           await _controller
               ?.lockCaptureOrientation((DeviceOrientation.portraitUp));
           _controller?.startImageStream((image) async {
-            // Uint8List bytes = _concatenatePlanes(image.planes);
-            // XFile img = XFile.fromData(bytes);
-            // Directory dir = await getApplicationDocumentsDirectory();
-            // String dirName = dir.path;
-            // String imgPath = dirName + '/original.jpg';
-            // await img.saveTo(imgPath);
-            // await Cv2.cvtColor(
-            //         pathString: imgPath, outputType: Cv2.COLOR_BGR2GRAY)
-            //     .then((grayImageBytes) async {
-            //   img = XFile.fromData(grayImageBytes!);
-            //   imgPath = dirName + '/gray.jpg';
-            //   await img.saveTo(imgPath);
-            //   Cv2.threshold(
-            //           pathString: imgPath,
-            //           thresholdValue: 0,
-            //           maxThresholdValue: 255,
-            //           thresholdType: Cv2.THRESH_BINARY_INV)
-            //       .then((thresh) {
-            //     // img = XFile.fromData(thresh);
-            //     setState(() {
-            //       _byte = thresh;
-            //     });
-            //     // imgPath = dirName + '/thresh.jpg';
-            //     // img.saveTo(imgPath);
-            //   });
-            // });
+            if (!isProcessing) {
+              isProcessing = true;
+              // Interpreter interpreter = await Interpreter.fromAsset(
+              //     'assets/lite-model_ssd_mobilenet_v1_1_metadata_2');
+
+              // TFL
+              // interpreter
+              //     .runSegmentationOnImage(
+              //   imageBytes: image.planes.map((plane) {
+              //     return plane.bytes;
+              //   }).toList(),
+              //   imageWidth: image.width,
+              //   imageHeight: image.height,
+              //   numResults: 1,
+              //   threshold: 0.5,
+              // )
+              //     .then((results) {
+              //   setState(() {
+              //     segments = results;
+              //   });
+              // });
+              // Tflite.detectObjectOnFrame(
+              //   bytesList: image.planes.map((plane) {
+              //     return plane.bytes;
+              //   }).toList(),
+              //   model: "assets/ssd_mobilenet.tflite",
+              //   imageHeight: image.height,
+              //   imageWidth: image.width,
+              //   imageMean: 127.5,
+              //   imageStd: 127.5,
+              //   numResultsPerClass: 1,
+              //   threshold: 0.4,
+              // ).then((results) {
+              //   setState(() {
+              //     recognitions = results;
+              //   });
+              // });
+              isProcessing = false;
+            }
           });
           if (mounted) {
             setState(() {});
@@ -206,7 +254,7 @@ class _CameraScreenState extends State<CameraScreen>
                               width: 155,
                               child: Center(
                                 child: Text(
-                                  'Points: $_points',
+                                  'Points: $_points ${recognitions?.length}',
                                   textAlign: TextAlign.left,
                                   style: const TextStyle(
                                     color: Colors.white,

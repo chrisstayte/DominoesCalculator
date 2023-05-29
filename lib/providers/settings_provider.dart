@@ -3,69 +3,69 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsProvider extends ChangeNotifier {
-  SharedPreferences? prefs;
+  late final SharedPreferences preferences;
 
   SettingsProvider() {
     setup();
   }
 
   void setup() async {
-    prefs = await SharedPreferences.getInstance();
+    preferences = await SharedPreferences.getInstance();
 
-    _isDarkMode = prefs?.getBool('isDarkMode') ?? false;
-    _isDarkDominoes = prefs?.getBool('isDarkDominoes') ?? false;
-    _isPips = prefs?.getBool('isPips') ?? true;
-    _doubleZeroValue = prefs?.getInt('doubleZeroValue') ?? 50;
+    _isDarkMode = preferences.getBool('isDarkMode') ?? false;
+    _isDarkDominoes = preferences.getBool('isDarkDominoes') ?? false;
+    _isPips = preferences.getBool('isPips') ?? true;
+    _doubleZeroValue = preferences.getInt('doubleZeroValue') ?? 50;
     _appAccentColor = Color(
-      prefs?.getInt('appAccentColor') ??
+      preferences.getInt('appAccentColor') ??
           Global.colors.accentColors.elementAt(4).value,
     );
 
     notifyListeners();
   }
 
-  bool _isDarkMode = false;
+  late final bool _isDarkMode;
   bool get isDarkMode => _isDarkMode;
 
   void setIsDarkMode(bool value) async {
     _isDarkMode = value;
-    await prefs?.setBool('isDarkMode', value);
+    await preferences.setBool('isDarkMode', value);
     notifyListeners();
   }
 
-  Color _appAccentColor = Global.colors.accentColors.first;
+  late final Color _appAccentColor;
   Color get appAccentColor => _appAccentColor;
 
   void setAppAccentColor(Color color) async {
     _appAccentColor = color;
-    await prefs?.setInt('appAccentColor', color.value);
+    await preferences.setInt('appAccentColor', color.value);
     notifyListeners();
   }
 
-  bool _isDarkDominoes = false;
+  late final bool _isDarkDominoes;
   bool get isDarkDominoes => _isDarkDominoes;
 
   void setIsDarkDominoes(bool value) async {
     _isDarkDominoes = value;
-    await prefs?.setBool('isDarkDominoes', value);
+    await preferences.setBool('isDarkDominoes', value);
     notifyListeners();
   }
 
-  bool _isPips = true;
+  late final bool _isPips;
   bool get isPips => _isPips;
 
   void setIsPips(bool value) async {
     _isPips = value;
-    await prefs?.setBool('isPips', value);
+    await preferences.setBool('isPips', value);
     notifyListeners();
   }
 
-  int _doubleZeroValue = 50;
+  late final int _doubleZeroValue;
   int get doubleZeroValue => _doubleZeroValue;
 
   void setDoubleZeroValue(int value) async {
     _doubleZeroValue = value;
-    await prefs?.setInt('doubleZeroValue', value);
+    await preferences.setInt('doubleZeroValue', value);
     notifyListeners();
   }
 }
