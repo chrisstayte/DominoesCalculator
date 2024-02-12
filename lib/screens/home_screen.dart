@@ -290,34 +290,34 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () async {
-                          await Navigator.pushNamed(context, '/camera');
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: HSLColor.fromColor(context
-                                    .watch<SettingsProvider>()
-                                    .appAccentColor)
-                                .withLightness(.4)
-                                .toColor(),
-                            borderRadius: BorderRadius.circular(
-                              Global.ui.cornerRadius,
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.camera_alt_rounded,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    // const SizedBox(
+                    //   width: 5,
+                    // ),
+                    // Expanded(
+                    //   child: GestureDetector(
+                    //     onTap: () async {
+                    //       await Navigator.pushNamed(context, '/camera');
+                    //     },
+                    //     child: Container(
+                    //       decoration: BoxDecoration(
+                    //         color: HSLColor.fromColor(context
+                    //                 .watch<SettingsProvider>()
+                    //                 .appAccentColor)
+                    //             .withLightness(.4)
+                    //             .toColor(),
+                    //         borderRadius: BorderRadius.circular(
+                    //           Global.ui.cornerRadius,
+                    //         ),
+                    //       ),
+                    //       child: const Center(
+                    //         child: Icon(
+                    //           Icons.camera_alt_rounded,
+                    //           color: Colors.white,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

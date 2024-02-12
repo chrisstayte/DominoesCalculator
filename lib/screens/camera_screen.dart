@@ -30,7 +30,7 @@ class _CameraScreenState extends State<CameraScreen>
 
   final int _points = 0;
 
-  Future<File> getFile(String fileName) async {
+  Future<File?> getFile(String fileName) async {
     try {
       // Get the temporary directory for the app
       final appDir = await getTemporaryDirectory();
@@ -94,6 +94,12 @@ class _CameraScreenState extends State<CameraScreen>
       case AppLifecycleState.resumed:
         _setupCamera();
         break;
+      case AppLifecycleState.detached:
+      // TODO: Handle this case.
+      case AppLifecycleState.inactive:
+      // TODO: Handle this case.
+      case AppLifecycleState.hidden:
+      // TODO: Handle this case.
     }
     super.didChangeAppLifecycleState(state);
   }

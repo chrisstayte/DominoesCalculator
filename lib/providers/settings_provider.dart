@@ -24,7 +24,7 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  late final bool _isDarkMode;
+  bool _isDarkMode = false;
   bool get isDarkMode => _isDarkMode;
 
   void setIsDarkMode(bool value) async {
@@ -33,7 +33,7 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  late final Color _appAccentColor;
+  Color _appAccentColor = Global.colors.accentColors.elementAt(4);
   Color get appAccentColor => _appAccentColor;
 
   void setAppAccentColor(Color color) async {
@@ -42,7 +42,7 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  late final bool _isDarkDominoes;
+  bool _isDarkDominoes = false;
   bool get isDarkDominoes => _isDarkDominoes;
 
   void setIsDarkDominoes(bool value) async {
@@ -51,7 +51,7 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  late final bool _isPips;
+  bool _isPips = true;
   bool get isPips => _isPips;
 
   void setIsPips(bool value) async {
@@ -60,7 +60,7 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  late final int _doubleZeroValue;
+  int _doubleZeroValue = 50;
   int get doubleZeroValue => _doubleZeroValue;
 
   void setDoubleZeroValue(int value) async {
