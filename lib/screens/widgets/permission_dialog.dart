@@ -52,7 +52,7 @@ class _PermissionDialogState extends State<PermissionDialog>
             ),
             Text(
               'Camera Required',
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8.0),

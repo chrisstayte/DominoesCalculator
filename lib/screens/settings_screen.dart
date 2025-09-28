@@ -66,7 +66,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             title: Text(
               'Personalize',
-              style: Theme.of(context).textTheme.headline6,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
           const ListTile(
@@ -138,7 +138,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             title: Text(
               'FAQ',
-              style: Theme.of(context).textTheme.headline6,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
           ListTile(

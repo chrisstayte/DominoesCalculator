@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
               color: Colors.black,
             ),
             titleTextStyle:
-                GoogleFonts.quicksandTextTheme().headline5?.copyWith(
+                GoogleFonts.quicksandTextTheme().titleMedium?.copyWith(
                       color: Colors.black,
                     ),
             toolbarTextStyle: TextStyle(
@@ -52,7 +52,7 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color(0XFFF3F4F8),
           textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(
-              primary: context.watch<SettingsProvider>().appAccentColor,
+              foregroundColor: context.watch<SettingsProvider>().appAccentColor,
               textStyle: const TextStyle(
                 fontWeight: FontWeight.bold,
               ),
@@ -100,14 +100,15 @@ class MyApp extends StatelessWidget {
           iconTheme: const IconThemeData(
             color: Colors.white,
           ),
-          titleTextStyle: GoogleFonts.quicksandTextTheme().headline5?.copyWith(
-                color: Colors.white,
-              ),
+          titleTextStyle:
+              GoogleFonts.quicksandTextTheme().titleMedium?.copyWith(
+                    color: Colors.white,
+                  ),
         ),
         scaffoldBackgroundColor: Global.colors.darkThemeColor,
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            primary: context.watch<SettingsProvider>().appAccentColor,
+            foregroundColor: context.watch<SettingsProvider>().appAccentColor,
             textStyle: const TextStyle(
               fontWeight: FontWeight.bold,
             ),
