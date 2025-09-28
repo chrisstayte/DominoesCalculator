@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({Key? key, this.controller}) : super(key: key);
+  const SettingsScreen({super.key, this.controller});
 
   final ScrollController? controller;
 

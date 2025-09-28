@@ -11,10 +11,10 @@ typedef KeypadKeyCallback = Function(DominoType dominoType);
 
 class KeypadKey extends StatelessWidget {
   const KeypadKey({
-    Key? key,
+    super.key,
     required this.dominoType,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   final DominoType dominoType;
   final KeypadKeyCallback onTap;

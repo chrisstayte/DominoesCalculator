@@ -1,23 +1,19 @@
-import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dominoes/enums/domino_type.dart';
 import 'package:dominoes/global/global.dart';
 
 import 'package:dominoes/providers/settings_provider.dart';
-import 'package:dominoes/screens/settings_screen.dart';
 import 'package:dominoes/screens/widgets/keypad_key.dart';
 import 'package:dominoes/screens/widgets/tile_history.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

@@ -21,7 +21,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
           textTheme: GoogleFonts.quicksandTextTheme(),
           appBarTheme: AppBarTheme(
             centerTitle: true,
-            color: const Color(0XFFF3F4F8),
+            backgroundColor: const Color(0XFFF3F4F8),
             elevation: 0,
             iconTheme: const IconThemeData(
               color: Colors.black,
@@ -59,12 +59,12 @@ class MyApp extends StatelessWidget {
             ),
           ),
           switchTheme: SwitchThemeData(
-            thumbColor: MaterialStateProperty.all(
+            thumbColor: WidgetStateProperty.all(
               context.watch<SettingsProvider>().appAccentColor,
             ),
-            trackColor: MaterialStateProperty.resolveWith(
+            trackColor: WidgetStateProperty.resolveWith(
               (states) {
-                if (states.contains(MaterialState.selected)) {
+                if (states.contains(WidgetState.selected)) {
                   return HSLColor.fromColor(
                     context.watch<SettingsProvider>().appAccentColor,
                   ).withLightness(.5).toColor();
@@ -95,7 +95,7 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.quicksandTextTheme(ThemeData.dark().textTheme),
         appBarTheme: AppBarTheme(
           centerTitle: true,
-          color: Global.colors.darkThemeColor,
+          backgroundColor: Global.colors.darkThemeColor,
           elevation: 0,
           iconTheme: const IconThemeData(
             color: Colors.white,
@@ -115,12 +115,12 @@ class MyApp extends StatelessWidget {
           ),
         ),
         switchTheme: SwitchThemeData(
-          thumbColor: MaterialStateProperty.all(
+          thumbColor: WidgetStateProperty.all(
             context.watch<SettingsProvider>().appAccentColor,
           ),
-          trackColor: MaterialStateProperty.resolveWith(
+          trackColor: WidgetStateProperty.resolveWith(
             (states) {
-              if (states.contains(MaterialState.selected)) {
+              if (states.contains(WidgetState.selected)) {
                 return HSLColor.fromColor(
                   context.watch<SettingsProvider>().appAccentColor,
                 ).withLightness(.5).toColor();

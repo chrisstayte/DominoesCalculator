@@ -5,8 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class AccentColorPickerItem extends StatelessWidget {
-  const AccentColorPickerItem({Key? key, required this.colorIndex})
-      : super(key: key);
+  const AccentColorPickerItem({super.key, required this.colorIndex});
 
   final colorIndex;
 
