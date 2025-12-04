@@ -1,71 +1,41 @@
-import 'package:dominoes/global/global.dart';
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:dominoes/models/local_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SettingsProvider extends ChangeNotifier {
-  late final SharedPreferences preferences;
+class LocalSettingsProvider extends ChangeNotifier {
+  LocalSettings localSettings = LocalSettings(themeMode: ThemeMode.system);
+  final Completer _completer = Completer<void>();
 
-  SettingsProvider() {
-    setup();
+  Future<void> get isReady => _completer.future;
+
+  LocalSettingsProvider() {
+    _loadSettings();
   }
 
-  void setup() async {
-    preferences = await SharedPreferences.getInstance();
+  Future<void> _loadSettings() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? localSettingsJson = preferences.getString('localSettings');
 
-    _isDarkMode = preferences.getBool('isDarkMode') ?? false;
-    _isDarkDominoes = preferences.getBool('isDarkDominoes') ?? false;
-    _isPips = preferences.getBool('isPips') ?? true;
-    _doubleZeroValue = preferences.getInt('doubleZeroValue') ?? 50;
-    _appAccentColor = Color(
-      preferences.getInt('appAccentColor') ??
-          Global.colors.accentColors.elementAt(4).value,
-    );
+    if (localSettingsJson != null) {
+      Map<String, dynamic> json = jsonDecode(localSettingsJson);
+      localSettings = LocalSettings.fromJson(json);
+    }
 
-    notifyListeners();
+    _completer.complete();
   }
 
-  bool _isDarkMode = false;
-  bool get isDarkMode => _isDarkMode;
-
-  void setIsDarkMode(bool value) async {
-    _isDarkMode = value;
-    await preferences.setBool('isDarkMode', value);
-    notifyListeners();
+  Future<void> saveSettings() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String localSettingsJson = jsonEncode(localSettings.toJson());
+    await preferences.setString('localSettings', localSettingsJson);
   }
 
-  Color _appAccentColor = Global.colors.accentColors.elementAt(4);
-  Color get appAccentColor => _appAccentColor;
-
-  void setAppAccentColor(Color color) async {
-    _appAccentColor = color;
-    await preferences.setInt('appAccentColor', color.value);
-    notifyListeners();
-  }
-
-  bool _isDarkDominoes = false;
-  bool get isDarkDominoes => _isDarkDominoes;
-
-  void setIsDarkDominoes(bool value) async {
-    _isDarkDominoes = value;
-    await preferences.setBool('isDarkDominoes', value);
-    notifyListeners();
-  }
-
-  bool _isPips = true;
-  bool get isPips => _isPips;
-
-  void setIsPips(bool value) async {
-    _isPips = value;
-    await preferences.setBool('isPips', value);
-    notifyListeners();
-  }
-
-  int _doubleZeroValue = 50;
-  int get doubleZeroValue => _doubleZeroValue;
-
-  void setDoubleZeroValue(int value) async {
-    _doubleZeroValue = value;
-    await preferences.setInt('doubleZeroValue', value);
+  void setThemeMode(ThemeMode themeMode) {
+    localSettings.themeMode = themeMode;
+    saveSettings();
     notifyListeners();
   }
 }

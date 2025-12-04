@@ -1,10 +1,16 @@
-# dominoes 
-a domino counter app
+# dominoes
 
-This app in it's basic function is designed to count domnioes. I have everything setup to do camera collection but need to work on getting open cv to work in flutter. 
+A new Flutter project.
 
-<a href="https://apps.apple.com/us/app/dominoes-counter/id1621969716" style="display: inline-block; overflow: hidden; border-radius: 13px; width: 250px; height: 83px;"><img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&amp;releaseDate=1461542400&h=0b0afb667ea62f9108846f6ea8215e75" alt="Download on the App Store" style="border-radius: 13px; width: 250px; height: 83px;"></a>
+## Getting Started
 
-<a href='https://play.google.com/store/apps/details?id=com.chrisstayte.dominoes'><img style="width: 290px;" alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
+This project is a starting point for a Flutter application.
 
-Google Play and the Google Play logo are trademarks of Google LLC.
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
