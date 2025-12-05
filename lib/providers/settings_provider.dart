@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/models/local_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalSettingsProvider extends ChangeNotifier {
-  LocalSettings localSettings = LocalSettings(themeMode: ThemeMode.system);
+  LocalSettings localSettings = LocalSettings();
   final Completer _completer = Completer<void>();
 
   Future<void> get isReady => _completer.future;
@@ -35,6 +36,24 @@ class LocalSettingsProvider extends ChangeNotifier {
 
   void setThemeMode(ThemeMode themeMode) {
     localSettings.themeMode = themeMode;
+    saveSettings();
+    notifyListeners();
+  }
+
+  void setNumberStyle(NumberStyle numberStyle) {
+    localSettings.numberStyle = numberStyle;
+    saveSettings();
+    notifyListeners();
+  }
+
+  void setVibration(bool vibration) {
+    localSettings.vibration = vibration;
+    saveSettings();
+    notifyListeners();
+  }
+
+  void setSoundEffects(bool soundEffects) {
+    localSettings.soundEffects = soundEffects;
     saveSettings();
     notifyListeners();
   }

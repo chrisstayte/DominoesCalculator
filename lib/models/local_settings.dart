@@ -1,17 +1,43 @@
 import 'package:flutter/material.dart';
+import '../enum/number_style.dart';
 
 class LocalSettings {
-  ThemeMode themeMode = ThemeMode.system;
-  bool vibration = true;
-  bool soundEffects = true;
+  ThemeMode themeMode;
+  bool vibration;
+  bool soundEffects;
+  bool showConfidence;
+  NumberStyle numberStyle;
 
-  LocalSettings({required this.themeMode});
+  LocalSettings({
+    this.themeMode = ThemeMode.system,
+    this.vibration = true,
+    this.soundEffects = true,
+    this.showConfidence = false,
+    this.numberStyle = NumberStyle.pips,
+  });
 
   factory LocalSettings.fromJson(Map<String, dynamic> json) {
-    int themeMode = json['themeMode'] as int;
+    // Parse ThemeMode from string, fallback to system
+    final themeName = json['themeMode'] as String?;
+    final themeMode = ThemeMode.values.firstWhere(
+      (e) => e.name == themeName,
+      orElse: () => ThemeMode.system,
+    );
 
-    return LocalSettings(themeMode: ThemeMode.values[themeMode]);
+    return LocalSettings(
+      themeMode: themeMode,
+      vibration: json['vibration'] as bool? ?? true,
+      soundEffects: json['soundEffects'] as bool? ?? true,
+      showConfidence: json['showConfidence'] as bool? ?? false,
+      numberStyle: NumberStyle.fromJson(json['numberStyle'] as String?),
+    );
   }
 
-  Map<String, dynamic> toJson() => {'themeMode': themeMode.index};
+  Map<String, dynamic> toJson() => {
+    'themeMode': themeMode.name,
+    'vibration': vibration,
+    'soundEffects': soundEffects,
+    'numberStyle': numberStyle.toJson(),
+    'showConfidence': showConfidence,
+  };
 }
