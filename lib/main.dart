@@ -1,5 +1,5 @@
 import 'package:dominoes/constants.dart';
-import 'package:dominoes/providers/settings_provider.dart';
+import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/router.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    ChangeNotifierProvider(
+    ChangeNotifierProvider<LocalSettingsProvider>(
       create: (context) => LocalSettingsProvider(),
       lazy: false,
       child: MyApp(),

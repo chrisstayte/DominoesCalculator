@@ -1,4 +1,5 @@
 import 'package:dominoes/constants.dart';
+import 'package:dominoes/screens/camera_screen.dart';
 import 'package:dominoes/screens/home_screen.dart';
 import 'package:dominoes/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,13 @@ GoRouter createRouter(BuildContext context) {
         path: '/${AppRoutes.settings}',
         pageBuilder: (context, state) =>
             getPage(child: SettingsScreen(), state: state),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        name: AppRoutes.camera,
+        path: '/${AppRoutes.camera}',
+        pageBuilder: (context, state) =>
+            getPage(child: CameraScreen(), state: state),
       ),
     ],
   );
