@@ -25,6 +25,28 @@ enum DominoPips {
   /// Short label string (e.g. "0", "1", ...).
   String get label => value.toString();
 
+  /// Readable word label (e.g. "zero", "one", "two", ...).
+  String get readable => _readable[value];
+
+  static const List<String> _readable = [
+    'zero',
+    'one',
+    'two',
+    'three',
+    'four',
+    'five',
+    'six',
+    'seven',
+    'eight',
+    'nine',
+    'ten',
+    'eleven',
+    'twelve',
+    'thirteen',
+    'fourteen',
+    'fifteen',
+  ];
+
   /// Convert an int (0..15) to the matching enum, throws RangeError for invalid values.
   static DominoPips fromInt(int value) => DominoPips.values.firstWhere(
     (e) => e.value == value,

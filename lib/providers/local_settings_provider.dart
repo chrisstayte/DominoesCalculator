@@ -57,4 +57,16 @@ class LocalSettingsProvider extends ChangeNotifier {
     saveSettings();
     notifyListeners();
   }
+
+  void setShowConfidence(bool showConfidence) {
+    localSettings.showConfidence = showConfidence;
+    saveSettings();
+    notifyListeners();
+  }
+
+  void setFreePointValue(int freePointValue) {
+    localSettings.freePointValue = freePointValue;
+    saveSettings();
+    notifyListeners();
+  }
 }

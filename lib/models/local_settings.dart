@@ -7,6 +7,7 @@ class LocalSettings {
   bool soundEffects;
   bool showConfidence;
   NumberStyle numberStyle;
+  int freePointValue;
 
   LocalSettings({
     this.themeMode = ThemeMode.system,
@@ -14,6 +15,7 @@ class LocalSettings {
     this.soundEffects = true,
     this.showConfidence = false,
     this.numberStyle = NumberStyle.pips,
+    this.freePointValue = 50,
   });
 
   factory LocalSettings.fromJson(Map<String, dynamic> json) {
@@ -30,6 +32,7 @@ class LocalSettings {
       soundEffects: json['soundEffects'] as bool? ?? true,
       showConfidence: json['showConfidence'] as bool? ?? false,
       numberStyle: NumberStyle.fromJson(json['numberStyle'] as String?),
+      freePointValue: json['freePointValue'] as int? ?? 50,
     );
   }
 
@@ -39,5 +42,6 @@ class LocalSettings {
     'soundEffects': soundEffects,
     'numberStyle': numberStyle.toJson(),
     'showConfidence': showConfidence,
+    'freePointValue': freePointValue,
   };
 }

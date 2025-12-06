@@ -29,9 +29,8 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home Screen'),
         leading: IconButton(
-          icon: Icon(Icons.menu),
+          icon: Icon(Icons.settings),
           onPressed: () {
             context.pushNamed(AppRoutes.settings);
           },
@@ -54,16 +53,20 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               children: [
                 Container(
-                  padding: EdgeInsets.all(8),
-                  color: Colors.blue,
-                  child: GridView.count(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    padding: EdgeInsets.zero,
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    children: [..._buildDominoTiles(settings.numberStyle)],
+                  decoration: BoxDecoration(color: AppColors.primary),
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    padding: EdgeInsets.all(1),
+
+                    child: GridView.count(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      padding: EdgeInsets.zero,
+                      crossAxisCount: 4,
+                      mainAxisSpacing: 2,
+                      crossAxisSpacing: 2,
+                      children: [..._buildDominoTiles(settings.numberStyle)],
+                    ),
                   ),
                 ),
                 Expanded(
