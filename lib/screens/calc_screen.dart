@@ -175,7 +175,7 @@ class HomeScreen extends StatelessWidget {
           ),
           Container(
             decoration: BoxDecoration(
-              color: nbt.accentYellow,
+              color: settings.appAccentColor.color,
               border: Border(top: BorderSide(color: nbt.borderColor, width: 3)),
             ),
             padding: const EdgeInsets.all(8.0),

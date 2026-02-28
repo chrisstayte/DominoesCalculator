@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:dominoes/enum/app_accent_color.dart';
 import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/models/local_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -66,6 +67,12 @@ class LocalSettingsProvider extends ChangeNotifier {
 
   void setFreePointValue(int freePointValue) {
     localSettings.freePointValue = freePointValue;
+    saveSettings();
+    notifyListeners();
+  }
+
+  void setAppAccentColor(AppAccentColor appAccentColor) {
+    localSettings.appAccentColor = appAccentColor;
     saveSettings();
     notifyListeners();
   }

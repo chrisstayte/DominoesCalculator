@@ -1,3 +1,4 @@
+import 'package:dominoes/enum/app_accent_color.dart';
 import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/screens/licenses_screen.dart';
@@ -67,6 +68,43 @@ class SettingsScreen extends StatelessWidget {
                     labels: const ['AUTO', 'LIGHT', 'DARK'],
                     selected: settings.themeMode,
                     onSelected: provider.setThemeMode,
+                  ),
+                ),
+                const ThickDivider(),
+                SettingRow(
+                  label: 'ACCENT',
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: AppAccentColor.values.map((accent) {
+                      final isSelected = settings.appAccentColor == accent;
+                      return GestureDetector(
+                        onTap: () => provider.setAppAccentColor(accent),
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          margin: const EdgeInsets.only(left: 8),
+                          decoration: BoxDecoration(
+                            color: accent.color,
+                            border: Border.all(
+                              color: nbt.borderColor,
+                              width: isSelected ? 3 : 2,
+                            ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: nbt.shadowColor,
+                                      offset: const Offset(2, 2),
+                                      blurRadius: 0,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: isSelected
+                              ? const Icon(Icons.check, size: 16, color: Colors.black)
+                              : null,
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
               ],

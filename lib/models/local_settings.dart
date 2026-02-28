@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../enum/number_style.dart';
+import '../enum/app_accent_color.dart';
 
 class LocalSettings {
   ThemeMode themeMode;
@@ -8,6 +9,7 @@ class LocalSettings {
   bool showConfidence;
   NumberStyle numberStyle;
   int freePointValue;
+  AppAccentColor appAccentColor;
 
   LocalSettings({
     this.themeMode = ThemeMode.system,
@@ -16,6 +18,7 @@ class LocalSettings {
     this.showConfidence = false,
     this.numberStyle = NumberStyle.pips,
     this.freePointValue = 50,
+    this.appAccentColor = AppAccentColor.yellow,
   });
 
   factory LocalSettings.fromJson(Map<String, dynamic> json) {
@@ -35,6 +38,7 @@ class LocalSettings {
       freePointValue: const [0, 25, 50].contains(json['freePointValue'])
           ? json['freePointValue'] as int
           : 50,
+      appAccentColor: AppAccentColor.fromJson(json['appAccentColor'] as String?),
     );
   }
 
@@ -45,5 +49,6 @@ class LocalSettings {
     'numberStyle': numberStyle.toJson(),
     'showConfidence': showConfidence,
     'freePointValue': freePointValue,
+    'appAccentColor': appAccentColor.toJson(),
   };
 }
