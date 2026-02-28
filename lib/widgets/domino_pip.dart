@@ -25,20 +25,24 @@ class DominoPip extends StatefulWidget {
 class _DominoPipState extends State<DominoPip> {
   bool _isPressed = false;
 
+  static const _valueTextStyle = TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.w900,
+    color: Colors.black,
+    letterSpacing: 0.5,
+  );
+
   Widget buildPipImage(DominoPips pip, BuildContext context) {
-    final freePointValue = context
-        .watch<LocalSettingsProvider>()
-        .localSettings
-        .freePointValue;
+    if (pip.value == 0) {
+      final freePointValue = context
+          .watch<LocalSettingsProvider>()
+          .localSettings
+          .freePointValue;
+      return Text(freePointValue.toString(), style: _valueTextStyle);
+    }
 
     return SvgPicture.asset(
       'assets/images/pips/${pip.readable}_black.svg',
-      errorBuilder: (_, _, stack) {
-        return Text(
-          pip.value == 0 ? freePointValue.toString() : pip.value.toString(),
-          style: const TextStyle(fontSize: 25),
-        );
-      },
     );
   }
 
@@ -81,12 +85,7 @@ class _DominoPipState extends State<DominoPip> {
                             .freePointValue
                             .toString()
                       : widget.pip.value.toString(),
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.black,
-                    letterSpacing: 0.5,
-                  ),
+                  style: _valueTextStyle,
                 ),
         ),
       ),
