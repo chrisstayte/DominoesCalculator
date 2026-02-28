@@ -2,9 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class ScaffoldWithNavBar extends StatelessWidget {
-  const ScaffoldWithNavBar({super.key, required this.navigationShell});
+  const ScaffoldWithNavBar({
+    super.key,
+    required this.navigationShell,
+    this.showLabels = false,
+  });
 
   final StatefulNavigationShell navigationShell;
+
+  final bool showLabels;
 
   static const _tabs = [
     (icon: Icons.calculate_outlined, label: 'CALC'),
@@ -54,15 +60,17 @@ class ScaffoldWithNavBar extends StatelessWidget {
                           color: isSelected ? Colors.white : Colors.black,
                           size: 28,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _tabs[i].label,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                        if (showLabels) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            _tabs[i].label,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),

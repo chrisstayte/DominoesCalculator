@@ -1,6 +1,7 @@
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
+import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/widgets/action_button.dart';
 import 'package:dominoes/widgets/domino_pip.dart';
@@ -142,7 +143,22 @@ class HomeScreen extends StatelessWidget {
                             icon: Icons.save_outlined,
                             color: Color(0xFF45FF45),
                             foregroundColor: Colors.black,
-                            onTap: () {},
+                            onTap: () {
+                              if (calculator.selectedPips.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('No pips to save'),
+                                    duration: Duration(seconds: 1),
+                                  ),
+                                );
+                                return;
+                              }
+                              context.read<GameLogProvider>().saveGame(
+                                calculator,
+                                settings.freePointValue,
+                              );
+                              calculator.clear();
+                            },
                           ),
                         ),
                       ],

@@ -1,5 +1,6 @@
 import 'package:dominoes/constants.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
+import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/router.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,10 @@ void main() async {
         ),
         ChangeNotifierProvider<CalculatorProvider>(
           create: (context) => CalculatorProvider(),
+        ),
+        ChangeNotifierProvider<GameLogProvider>(
+          create: (context) => GameLogProvider(),
+          lazy: false,
         ),
       ],
       child: MyApp(),
