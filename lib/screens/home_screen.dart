@@ -2,6 +2,7 @@ import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
+import 'package:dominoes/widgets/action_button.dart';
 import 'package:dominoes/widgets/domino_pip.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
 import 'package:flutter/material.dart';
@@ -35,9 +36,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<LocalSettingsProvider>().localSettings;
     final calculator = context.watch<CalculatorProvider>();
-    final total = calculator.total(
-      freePointValue: settings.freePointValue,
-    );
+    final total = calculator.total(freePointValue: settings.freePointValue);
 
     return Scaffold(
       appBar: AppBar(
@@ -105,6 +104,33 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ActionButton(
+                    label: 'Clear',
+                    icon: Icons.backspace_outlined,
+                    color: Color(0xFFFF4344),
+                    foregroundColor: Colors.black,
+                    onTap: () => calculator.removeLast(),
+                    onLongPressComplete: () => calculator.clear(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ActionButton(
+                    label: 'Save',
+                    icon: Icons.save_outlined,
+                    color: Color(0xFF45FF45),
+                    foregroundColor: Colors.black,
+                    onTap: () {},
+                  ),
+                ),
+              ],
+            ),
+          ),
           Container(
             decoration: BoxDecoration(color: Colors.yellow.shade600),
             padding: const EdgeInsets.all(8.0),
@@ -118,8 +144,8 @@ class HomeScreen extends StatelessWidget {
                 mainAxisSpacing: 2,
                 crossAxisSpacing: 2,
                 children: [
-                ..._buildDominoTiles(settings.numberStyle, calculator),
-              ],
+                  ..._buildDominoTiles(settings.numberStyle, calculator),
+                ],
               ),
             ),
           ),
