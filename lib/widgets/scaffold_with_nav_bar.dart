@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 class ScaffoldWithNavBar extends StatelessWidget {
@@ -13,10 +14,10 @@ class ScaffoldWithNavBar extends StatelessWidget {
   final bool showLabels;
 
   static const _tabs = [
-    (icon: Icons.calculate_outlined, label: 'CALC'),
-    (icon: Icons.list_alt, label: 'LOGS'),
-    (icon: Icons.camera_alt_outlined, label: 'CAM'),
-    (icon: Icons.settings_outlined, label: 'SET'),
+    (svg: 'assets/images/nav/calc.svg', label: 'CALC'),
+    (svg: 'assets/images/nav/logs.svg', label: 'LOGS'),
+    (svg: 'assets/images/nav/camera.svg', label: 'CAM'),
+    (svg: 'assets/images/nav/settings.svg', label: 'SET'),
   ];
 
   @override
@@ -55,10 +56,14 @@ class ScaffoldWithNavBar extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          _tabs[i].icon,
-                          color: isSelected ? Colors.white : Colors.black,
-                          size: 28,
+                        SvgPicture.asset(
+                          _tabs[i].svg,
+                          width: 28,
+                          height: 28,
+                          colorFilter: ColorFilter.mode(
+                            isSelected ? Colors.white : Colors.black,
+                            BlendMode.srcIn,
+                          ),
                         ),
                         if (showLabels) ...[
                           const SizedBox(height: 4),
