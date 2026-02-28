@@ -17,6 +17,13 @@ class CalculatorProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void removeAt(int index) {
+    if (index >= 0 && index < _selectedPips.length) {
+      _selectedPips.removeAt(index);
+      notifyListeners();
+    }
+  }
+
   void removeLast() {
     if (_selectedPips.isNotEmpty) {
       _selectedPips.removeLast();

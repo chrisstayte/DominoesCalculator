@@ -5,6 +5,7 @@ import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/widgets/action_button.dart';
 import 'package:dominoes/widgets/domino_pip.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
+import 'package:dominoes/widgets/pip_history_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -56,6 +57,22 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history, color: Colors.black, size: 28),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => ChangeNotifierProvider.value(
+                  value: calculator,
+                  child: PipHistoryDialog(
+                    freePointValue: settings.freePointValue,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
           child: Container(color: Colors.black, height: 3),
