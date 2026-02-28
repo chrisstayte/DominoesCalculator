@@ -1,7 +1,7 @@
 import 'package:dominoes/constants.dart';
 import 'package:dominoes/screens/camera_screen.dart';
-import 'package:dominoes/screens/history_screen.dart';
-import 'package:dominoes/screens/home_screen.dart';
+import 'package:dominoes/screens/logs_screen.dart';
+import 'package:dominoes/screens/calc_screen.dart';
 import 'package:dominoes/screens/settings_screen.dart';
 import 'package:dominoes/widgets/scaffold_with_nav_bar.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +16,7 @@ final _settingsNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'settings');
 GoRouter createRouter() {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/${AppRoutes.home}',
+    initialLocation: '/${AppRoutes.calc}',
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -27,8 +27,8 @@ GoRouter createRouter() {
             navigatorKey: _calcNavigatorKey,
             routes: [
               GoRoute(
-                name: AppRoutes.home,
-                path: '/${AppRoutes.home}',
+                name: AppRoutes.calc,
+                path: '/${AppRoutes.calc}',
                 builder: (context, state) => const HomeScreen(),
               ),
             ],
@@ -37,8 +37,8 @@ GoRouter createRouter() {
             navigatorKey: _historyNavigatorKey,
             routes: [
               GoRoute(
-                name: AppRoutes.history,
-                path: '/${AppRoutes.history}',
+                name: AppRoutes.logs,
+                path: '/${AppRoutes.logs}',
                 builder: (context, state) => const HistoryScreen(),
               ),
             ],
