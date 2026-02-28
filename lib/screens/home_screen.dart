@@ -57,8 +57,8 @@ class HomeScreen extends StatelessWidget {
         ),
         centerTitle: true,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(color: Colors.black, height: 1),
+          preferredSize: const Size.fromHeight(3),
+          child: Container(color: Colors.black, height: 3),
         ),
       ),
       body: Column(
@@ -66,73 +66,80 @@ class HomeScreen extends StatelessWidget {
           Expanded(
             child: CustomPaint(
               painter: DotGridPainter(),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Transform(
-                      transform: Matrix4.skewX(-0.15),
-                      child: Container(
-                        color: Colors.black,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        child: Text(
-                          'CURRENT_SCORE',
-                          style: GoogleFonts.bricolageGrotesque(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Transform(
+                            transform: Matrix4.skewX(-0.15),
+                            child: Container(
+                              color: Colors.black,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              child: Text(
+                                'CURRENT_SCORE',
+                                style: GoogleFonts.bricolageGrotesque(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '$total',
+                            style: GoogleFonts.bricolageGrotesque(
+                              fontSize: 128,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.black,
+                              height: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ActionButton(
+                            icon: Icons.backspace_outlined,
+                            color: Color(0xFFFF4344),
+                            foregroundColor: Colors.black,
+                            onTap: () => calculator.removeLast(),
+                            onLongPressComplete: () => calculator.clear(),
                           ),
                         ),
-                      ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ActionButton(
+                            icon: Icons.save_outlined,
+                            color: Color(0xFF45FF45),
+                            foregroundColor: Colors.black,
+                            onTap: () {},
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$total',
-                      style: GoogleFonts.bricolageGrotesque(
-                        fontSize: 128,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.black,
-                        height: 1,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ActionButton(
-                    label: 'Clear',
-                    icon: Icons.backspace_outlined,
-                    color: Color(0xFFFF4344),
-                    foregroundColor: Colors.black,
-                    onTap: () => calculator.removeLast(),
-                    onLongPressComplete: () => calculator.clear(),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ActionButton(
-                    label: 'Save',
-                    icon: Icons.save_outlined,
-                    color: Color(0xFF45FF45),
-                    foregroundColor: Colors.black,
-                    onTap: () {},
-                  ),
-                ),
-              ],
-            ),
-          ),
           Container(
-            decoration: BoxDecoration(color: Colors.yellow.shade600),
+            decoration: BoxDecoration(
+              color: Colors.yellow.shade600,
+              border: const Border(top: BorderSide(color: Colors.black, width: 3)),
+            ),
             padding: const EdgeInsets.all(8.0),
             child: Container(
               padding: EdgeInsets.all(1),

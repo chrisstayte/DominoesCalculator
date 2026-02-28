@@ -1,12 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class ActionButton extends StatefulWidget {
   const ActionButton({
     super.key,
-    required this.label,
     required this.icon,
     required this.color,
     this.foregroundColor = Colors.white,
@@ -14,7 +12,6 @@ class ActionButton extends StatefulWidget {
     this.onLongPressComplete,
   });
 
-  final String label;
   final IconData icon;
   final Color color;
   final Color foregroundColor;
@@ -145,25 +142,10 @@ class _ActionButtonState extends State<ActionButton>
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            widget.icon,
-                            color: widget.foregroundColor,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            widget.label.toUpperCase(),
-                            style: GoogleFonts.bricolageGrotesque(
-                              color: widget.foregroundColor,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 14,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ],
+                      child: Icon(
+                        widget.icon,
+                        color: widget.foregroundColor,
+                        size: 24,
                       ),
                     ),
                   ),

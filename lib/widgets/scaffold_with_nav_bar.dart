@@ -22,7 +22,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
 
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.black, width: 2)),
+          border: Border(top: BorderSide(color: Colors.black, width: 3)),
         ),
         child: IntrinsicHeight(
           child: Row(
@@ -41,7 +41,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                       color: isSelected ? Colors.black : Colors.white,
                       border: i > 0
                           ? Border(
-                              left: BorderSide(color: Colors.black, width: 2),
+                              left: BorderSide(color: Colors.black, width: 3),
                             )
                           : null,
                     ),
