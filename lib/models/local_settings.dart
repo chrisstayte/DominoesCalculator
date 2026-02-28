@@ -32,7 +32,9 @@ class LocalSettings {
       soundEffects: json['soundEffects'] as bool? ?? true,
       showConfidence: json['showConfidence'] as bool? ?? false,
       numberStyle: NumberStyle.fromJson(json['numberStyle'] as String?),
-      freePointValue: json['freePointValue'] as int? ?? 50,
+      freePointValue: const [0, 25, 50].contains(json['freePointValue'])
+          ? json['freePointValue'] as int
+          : 50,
     );
   }
 
