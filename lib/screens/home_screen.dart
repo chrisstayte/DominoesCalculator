@@ -29,53 +29,20 @@ class HomeScreen extends StatelessWidget {
       body: Column(
         children: [
           Expanded(child: Container(color: Colors.red)),
-          Expanded(
-            flex: 2,
-            child: Column(
-              children: [
-                Container(
-                  decoration: BoxDecoration(color: Colors.yellow.shade600),
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    padding: EdgeInsets.all(1),
-
-                    child: GridView.count(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      padding: EdgeInsets.zero,
-                      crossAxisCount: 4,
-                      mainAxisSpacing: 2,
-                      crossAxisSpacing: 2,
-                      children: [..._buildDominoTiles(settings.numberStyle)],
-                    ),
-                  ),
-                ),
-                // Expanded(
-                //   child: Container(
-                //     padding: EdgeInsets.symmetric(horizontal: 8),
-                //     color: Colors.green,
-                //     child: Row(
-                //       crossAxisAlignment: .start,
-                //       spacing: 4,
-                //       children: [
-                //         Expanded(
-                //           flex: 2,
-                //           child: ElevatedButton(
-                //             onPressed: () {},
-                //             child: Text('Clear'),
-                //           ),
-                //         ),
-                //         Expanded(
-                //           child: ElevatedButton(
-                //             onPressed: () {},
-                //             child: Text('-'),
-                //           ),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ),
-              ],
+          Container(
+            decoration: BoxDecoration(color: Colors.yellow.shade600),
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              padding: EdgeInsets.all(1),
+              child: GridView.count(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
+                crossAxisCount: 4,
+                mainAxisSpacing: 2,
+                crossAxisSpacing: 2,
+                children: [..._buildDominoTiles(settings.numberStyle)],
+              ),
             ),
           ),
         ],
