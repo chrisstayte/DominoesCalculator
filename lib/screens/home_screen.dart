@@ -1,10 +1,8 @@
-import 'package:dominoes/constants.dart';
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/widgets/domino_pip.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -28,23 +26,6 @@ class HomeScreen extends StatelessWidget {
     final settings = context.watch<LocalSettingsProvider>().localSettings;
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.settings),
-          onPressed: () {
-            context.pushNamed(AppRoutes.settings);
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.camera_alt),
-            onPressed: () {
-              context.pushNamed(AppRoutes.camera);
-            },
-          ),
-        ],
-      ),
-
       body: Column(
         children: [
           Expanded(child: Container(color: Colors.red)),
@@ -53,7 +34,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               children: [
                 Container(
-                  decoration: BoxDecoration(color: AppColors.primary),
+                  decoration: BoxDecoration(color: Colors.yellow.shade600),
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
                     padding: EdgeInsets.all(1),
@@ -69,31 +50,31 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    color: Colors.green,
-                    child: Row(
-                      crossAxisAlignment: .start,
-                      spacing: 4,
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: ElevatedButton(
-                            onPressed: () {},
-                            child: Text('Clear'),
-                          ),
-                        ),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {},
-                            child: Text('-'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                // Expanded(
+                //   child: Container(
+                //     padding: EdgeInsets.symmetric(horizontal: 8),
+                //     color: Colors.green,
+                //     child: Row(
+                //       crossAxisAlignment: .start,
+                //       spacing: 4,
+                //       children: [
+                //         Expanded(
+                //           flex: 2,
+                //           child: ElevatedButton(
+                //             onPressed: () {},
+                //             child: Text('Clear'),
+                //           ),
+                //         ),
+                //         Expanded(
+                //           child: ElevatedButton(
+                //             onPressed: () {},
+                //             child: Text('-'),
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ),

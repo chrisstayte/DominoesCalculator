@@ -2,7 +2,6 @@ import 'package:dominoes/constants.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/router.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -24,13 +23,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late final GoRouter _router;
-
-  @override
-  void initState() {
-    super.initState();
-    _router = createRouter(context);
-  }
+  final _router = createRouter();
 
   @override
   Widget build(BuildContext context) {

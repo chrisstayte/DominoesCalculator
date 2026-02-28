@@ -2,6 +2,7 @@ import 'dart:ui';
 
 class AppRoutes {
   static const String home = 'home';
+  static const String history = 'history';
   static const String settings = 'settings';
   static const String camera = 'camera';
 }
