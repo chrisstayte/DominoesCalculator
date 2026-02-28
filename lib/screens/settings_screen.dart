@@ -52,6 +52,7 @@ class SettingsScreen extends StatelessWidget {
             // GAMEPLAY Section
             SectionCard(
               label: 'GAMEPLAY',
+              titleColor: Colors.blueAccent,
               children: [
                 SettingRow(
                   label: 'FREE_POINT_VALUE',
@@ -79,6 +80,7 @@ class SettingsScreen extends StatelessWidget {
             // FEEDBACK Section
             SectionCard(
               label: 'FEEDBACK',
+              titleColor: Colors.deepOrange,
               children: [
                 SettingRow(
                   label: 'SOUND_EFFECTS',
@@ -106,18 +108,18 @@ class SettingsScreen extends StatelessWidget {
             // ABOUT Section
             SectionCard(
               label: 'ABOUT',
+              titleColor: Colors.purpleAccent,
               children: [
                 TappableRow(
                   label: 'LICENSES',
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const LicensesScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const LicensesScreen()),
                   ),
                 ),
                 const ThickDivider(),
                 TappableRow(
                   label: 'GITHUB',
+                  icon: Icons.language,
                   onTap: () => launchUrl(
                     Uri.parse(
                       'https://github.com/chrisstayte/DominoesCalculator',
@@ -128,6 +130,7 @@ class SettingsScreen extends StatelessWidget {
                 const ThickDivider(),
                 TappableRow(
                   label: 'X_(TWITTER)',
+                  icon: Icons.language,
                   onTap: () => launchUrl(
                     Uri.parse('https://x.com/chrisstayte'),
                     mode: LaunchMode.externalApplication,

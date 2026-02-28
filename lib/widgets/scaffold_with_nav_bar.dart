@@ -6,10 +6,12 @@ class ScaffoldWithNavBar extends StatelessWidget {
   const ScaffoldWithNavBar({
     super.key,
     required this.navigationShell,
+    required this.branchNavigatorKeys,
     this.showLabels = false,
   });
 
   final StatefulNavigationShell navigationShell;
+  final List<GlobalKey<NavigatorState>> branchNavigatorKeys;
 
   final bool showLabels;
 
@@ -39,10 +41,17 @@ class ScaffoldWithNavBar extends StatelessWidget {
               final bottomPadding = MediaQuery.of(context).padding.bottom;
               return Expanded(
                 child: GestureDetector(
-                  onTap: () => navigationShell.goBranch(
-                    i,
-                    initialLocation: i == selected,
-                  ),
+                  onTap: () {
+                    if (i == selected) {
+                      branchNavigatorKeys[i]
+                          .currentState
+                          ?.popUntil((route) => route.isFirst);
+                    }
+                    navigationShell.goBranch(
+                      i,
+                      initialLocation: i == selected,
+                    );
+                  },
                   child: Container(
                     decoration: BoxDecoration(
                       color: isSelected ? Colors.black : Colors.white,

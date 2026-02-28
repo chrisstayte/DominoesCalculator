@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SectionCard extends StatelessWidget {
-  const SectionCard({super.key, required this.label, required this.children});
+  const SectionCard({
+    super.key,
+    required this.label,
+    required this.children,
+    this.titleColor = Colors.black,
+  });
 
   final String label;
   final List<Widget> children;
+  final Color titleColor;
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +21,7 @@ class SectionCard extends StatelessWidget {
         Transform(
           transform: Matrix4.skewX(-0.15),
           child: Container(
-            color: Colors.black,
+            color: titleColor,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             child: Text(
               label,

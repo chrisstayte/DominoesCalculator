@@ -20,7 +20,15 @@ GoRouter createRouter() {
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return ScaffoldWithNavBar(navigationShell: navigationShell);
+          return ScaffoldWithNavBar(
+            navigationShell: navigationShell,
+            branchNavigatorKeys: [
+              _calcNavigatorKey,
+              _historyNavigatorKey,
+              _cameraNavigatorKey,
+              _settingsNavigatorKey,
+            ],
+          );
         },
         branches: [
           StatefulShellBranch(
