@@ -2,6 +2,7 @@ import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/widgets/domino_pip.dart';
+import 'package:dominoes/widgets/dot_grid_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,9 +27,12 @@ class HomeScreen extends StatelessWidget {
     final settings = context.watch<LocalSettingsProvider>().localSettings;
 
     return Scaffold(
+      appBar: AppBar(title: const Text('Dominoes')),
       body: Column(
         children: [
-          Expanded(child: Container(color: Colors.red)),
+          Expanded(
+            child: CustomPaint(painter: DotGridPainter(), child: Container()),
+          ),
           Container(
             decoration: BoxDecoration(color: Colors.yellow.shade600),
             padding: const EdgeInsets.all(8.0),

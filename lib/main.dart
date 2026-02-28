@@ -36,7 +36,7 @@ class _MyAppState extends State<MyApp> {
       title: 'Dominoes',
       themeMode: themeMode,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
