@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 enum AppAccentColor {
-  yellow(Color(0xFFC8B900), 'YELLOW'),
+  yellow(Color(0xFFFFFF04), 'YELLOW'),
   hotPink(Color(0xFFFF5CA2), 'PINK'),
   electricBlue(Color(0xFF3B82F6), 'BLUE'),
   lime(Color(0xFF84CC16), 'LIME'),
