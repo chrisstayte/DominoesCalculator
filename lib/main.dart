@@ -1,4 +1,5 @@
 import 'package:dominoes/constants.dart';
+import 'package:dominoes/providers/calculator_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/router.dart';
 import 'package:flutter/material.dart';
@@ -8,9 +9,16 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    ChangeNotifierProvider<LocalSettingsProvider>(
-      create: (context) => LocalSettingsProvider(),
-      lazy: false,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<LocalSettingsProvider>(
+          create: (context) => LocalSettingsProvider(),
+          lazy: false,
+        ),
+        ChangeNotifierProvider<CalculatorProvider>(
+          create: (context) => CalculatorProvider(),
+        ),
+      ],
       child: MyApp(),
     ),
   );

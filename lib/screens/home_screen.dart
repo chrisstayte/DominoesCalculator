@@ -1,5 +1,6 @@
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/enum/number_style.dart';
+import 'package:dominoes/providers/calculator_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/widgets/domino_pip.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
@@ -10,7 +11,10 @@ import 'package:provider/provider.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  List<Widget> _buildDominoTiles(NumberStyle numberStyle) {
+  List<Widget> _buildDominoTiles(
+    NumberStyle numberStyle,
+    CalculatorProvider calculator,
+  ) {
     final orderedPips = [
       ...DominoPips.values.skip(12).take(4), // Row 1 (top): 12, 13, 14, 15
       ...DominoPips.values.skip(8).take(4), // Row 2: 8, 9, 10, 11
@@ -19,13 +23,21 @@ class HomeScreen extends StatelessWidget {
     ];
 
     return orderedPips.map((pip) {
-      return DominoPip(pip: pip, numberStyle: numberStyle, onTap: () {});
+      return DominoPip(
+        pip: pip,
+        numberStyle: numberStyle,
+        onTap: () => calculator.addPip(pip),
+      );
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<LocalSettingsProvider>().localSettings;
+    final calculator = context.watch<CalculatorProvider>();
+    final total = calculator.total(
+      freePointValue: settings.freePointValue,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -53,7 +65,45 @@ class HomeScreen extends StatelessWidget {
       body: Column(
         children: [
           Expanded(
-            child: CustomPaint(painter: DotGridPainter(), child: Container()),
+            child: CustomPaint(
+              painter: DotGridPainter(),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Transform(
+                      transform: Matrix4.skewX(-0.15),
+                      child: Container(
+                        color: Colors.black,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        child: Text(
+                          'CURRENT_SCORE',
+                          style: GoogleFonts.bricolageGrotesque(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$total',
+                      style: GoogleFonts.bricolageGrotesque(
+                        fontSize: 128,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black,
+                        height: 1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
           Container(
             decoration: BoxDecoration(color: Colors.yellow.shade600),
@@ -67,7 +117,9 @@ class HomeScreen extends StatelessWidget {
                 crossAxisCount: 4,
                 mainAxisSpacing: 2,
                 crossAxisSpacing: 2,
-                children: [..._buildDominoTiles(settings.numberStyle)],
+                children: [
+                ..._buildDominoTiles(settings.numberStyle, calculator),
+              ],
               ),
             ),
           ),
