@@ -37,21 +37,43 @@ class DominoPip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      borderRadius: BorderRadius.circular(4),
-      color: Colors.white,
-      child: InkWell(
-        onTap: () => onTap(),
-        child: Center(
-          child: numberStyle == .pips
-              ? buildPipImage(pip, context)
-              : Text(
-                  pip.toString().split('.').last,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+    return Container(
+      margin: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.black, width: 4),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black,
+            offset: Offset(6, 6),
+            blurRadius: 0,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => onTap(),
+          child: Center(
+            child: numberStyle == NumberStyle.pips
+                ? buildPipImage(pip, context)
+                : Text(
+                    pip.value == 0
+                        ? context
+                              .watch<LocalSettingsProvider>()
+                              .localSettings
+                              .freePointValue
+                              .toString()
+                        : pip.value.toString(),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                ),
+          ),
         ),
       ),
     );
