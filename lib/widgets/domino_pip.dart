@@ -36,7 +36,7 @@ class _DominoPipState extends State<DominoPip> {
       errorBuilder: (_, _, stack) {
         return Text(
           pip.value == 0 ? freePointValue.toString() : pip.value.toString(),
-          style: const TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 25),
         );
       },
     );
@@ -82,7 +82,7 @@ class _DominoPipState extends State<DominoPip> {
                             .toString()
                       : widget.pip.value.toString(),
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 28,
                     fontWeight: FontWeight.w900,
                     color: Colors.black,
                     letterSpacing: 0.5,

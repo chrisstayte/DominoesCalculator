@@ -2,6 +2,7 @@ import 'package:dominoes/constants.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/router.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -37,12 +38,16 @@ class _MyAppState extends State<MyApp> {
       themeMode: themeMode,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
+        textTheme: GoogleFonts.bricolageGrotesqueTextTheme(),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primary,
           brightness: Brightness.dark,
+        ),
+        textTheme: GoogleFonts.bricolageGrotesqueTextTheme(
+          ThemeData(brightness: Brightness.dark).textTheme,
         ),
       ),
     );

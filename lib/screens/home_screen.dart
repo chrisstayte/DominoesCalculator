@@ -4,6 +4,7 @@ import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/widgets/domino_pip.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -27,7 +28,28 @@ class HomeScreen extends StatelessWidget {
     final settings = context.watch<LocalSettingsProvider>().localSettings;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Dominoes')),
+      appBar: AppBar(
+        title: Transform(
+          transform: Matrix4.skewX(-0.15),
+          child: Container(
+            color: Colors.black,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: Text(
+              'DOMINO_CALC',
+              style: GoogleFonts.bricolageGrotesque(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+              ),
+            ),
+          ),
+        ),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: Colors.black, height: 1),
+        ),
+      ),
       body: Column(
         children: [
           Expanded(
