@@ -3,18 +3,22 @@ import 'package:dominoes/providers/calculator_provider.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/router.dart';
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final localSettingsProvider = LocalSettingsProvider();
+  await localSettingsProvider.isReady;
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider<LocalSettingsProvider>(
-          create: (context) => LocalSettingsProvider(),
-          lazy: false,
+        ChangeNotifierProvider<LocalSettingsProvider>.value(
+          value: localSettingsProvider,
         ),
         ChangeNotifierProvider<CalculatorProvider>(
           create: (context) => CalculatorProvider(),
@@ -52,6 +56,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         textTheme: GoogleFonts.bricolageGrotesqueTextTheme(),
+        extensions: [NeoBrutalistTheme.light()],
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
@@ -62,6 +67,7 @@ class _MyAppState extends State<MyApp> {
         textTheme: GoogleFonts.bricolageGrotesqueTextTheme(
           ThemeData(brightness: Brightness.dark).textTheme,
         ),
+        extensions: [NeoBrutalistTheme.dark()],
       ),
     );
   }

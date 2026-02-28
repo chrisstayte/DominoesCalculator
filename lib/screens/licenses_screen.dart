@@ -1,4 +1,5 @@
 import 'package:dominoes/screens/license_detail_screen.dart';
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/tappable_row.dart';
 import 'package:dominoes/widgets/thick_divider.dart';
 import 'package:flutter/foundation.dart';
@@ -33,6 +34,7 @@ class _LicensesScreenState extends State<LicensesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
     final sortedPackages = _licenses.keys.toList()..sort();
 
     return Scaffold(
@@ -40,12 +42,12 @@ class _LicensesScreenState extends State<LicensesScreen> {
         title: Transform(
           transform: Matrix4.skewX(-0.15),
           child: Container(
-            color: Colors.black,
+            color: nbt.headerColor,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: Text(
               'LICENSES',
               style: GoogleFonts.bricolageGrotesque(
-                color: Colors.white,
+                color: nbt.headerTextColor,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1,
               ),
@@ -54,12 +56,12 @@ class _LicensesScreenState extends State<LicensesScreen> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: nbt.iconColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
-          child: Container(color: Colors.black, height: 3),
+          child: Container(color: nbt.borderColor, height: 3),
         ),
       ),
       body: !_loaded
@@ -78,12 +80,12 @@ class _LicensesScreenState extends State<LicensesScreen> {
               itemCount: 1,
               itemBuilder: (context, _) => Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.black, width: 3),
-                  boxShadow: const [
+                  color: nbt.cardColor,
+                  border: Border.all(color: nbt.borderColor, width: 3),
+                  boxShadow: [
                     BoxShadow(
-                      color: Colors.black,
-                      offset: Offset(4, 4),
+                      color: nbt.shadowColor,
+                      offset: const Offset(4, 4),
                       blurRadius: 0,
                     ),
                   ],

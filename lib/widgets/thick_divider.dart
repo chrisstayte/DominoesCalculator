@@ -1,3 +1,4 @@
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 
 class ThickDivider extends StatelessWidget {
@@ -5,6 +6,7 @@ class ThickDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(height: 2, color: Colors.black);
+    final nbt = NeoBrutalistTheme.of(context);
+    return Container(height: 2, color: nbt.borderColor);
   }
 }

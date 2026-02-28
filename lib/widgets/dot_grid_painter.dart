@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 
 class DotGridPainter extends CustomPainter {
+  DotGridPainter({required this.backgroundColor, required this.dotColor});
+
+  final Color backgroundColor;
+  final Color dotColor;
+
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(Offset.zero & size, Paint()..color = Colors.white);
+    canvas.drawRect(Offset.zero & size, Paint()..color = backgroundColor);
 
     final paint = Paint()
-      ..color = Colors.grey.shade300
+      ..color = dotColor
       ..style = PaintingStyle.fill;
 
     const spacing = 16.0;
@@ -20,5 +25,7 @@ class DotGridPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant DotGridPainter oldDelegate) =>
+      backgroundColor != oldDelegate.backgroundColor ||
+      dotColor != oldDelegate.dotColor;
 }

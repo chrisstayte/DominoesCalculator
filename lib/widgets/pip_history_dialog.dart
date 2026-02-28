@@ -1,5 +1,6 @@
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,6 +13,7 @@ class PipHistoryDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
     final calculator = context.watch<CalculatorProvider>();
     final pips = calculator.selectedPips;
 
@@ -20,12 +22,12 @@ class PipHistoryDialog extends StatelessWidget {
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.black, width: 4),
-          boxShadow: const [
+          color: nbt.cardColor,
+          border: Border.all(color: nbt.borderColor, width: 4),
+          boxShadow: [
             BoxShadow(
-              color: Colors.black,
-              offset: Offset(6, 6),
+              color: nbt.shadowColor,
+              offset: const Offset(6, 6),
               blurRadius: 0,
               spreadRadius: 0,
             ),
@@ -36,7 +38,7 @@ class PipHistoryDialog extends StatelessWidget {
           children: [
             Container(
               width: double.infinity,
-              color: Colors.black,
+              color: nbt.headerColor,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
@@ -44,7 +46,7 @@ class PipHistoryDialog extends StatelessWidget {
                     child: Text(
                       'PIP_HISTORY',
                       style: GoogleFonts.bricolageGrotesque(
-                        color: Colors.white,
+                        color: nbt.headerTextColor,
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
                         letterSpacing: 1,
@@ -53,9 +55,9 @@ class PipHistoryDialog extends StatelessWidget {
                   ),
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
-                    child: const Icon(
+                    child: Icon(
                       Icons.close,
-                      color: Colors.white,
+                      color: nbt.headerTextColor,
                       size: 24,
                     ),
                   ),
@@ -70,7 +72,7 @@ class PipHistoryDialog extends StatelessWidget {
                   style: GoogleFonts.bricolageGrotesque(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black45,
+                    color: nbt.secondaryTextColor,
                     letterSpacing: 1,
                   ),
                 ),
@@ -92,7 +94,7 @@ class PipHistoryDialog extends StatelessWidget {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: Colors.black,
+                            color: nbt.borderColor,
                             width: index < pips.length - 1 ? 2 : 0,
                           ),
                         ),
@@ -110,7 +112,7 @@ class PipHistoryDialog extends StatelessWidget {
                               style: GoogleFonts.bricolageGrotesque(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
-                                color: Colors.black,
+                                color: nbt.bodyTextColor,
                               ),
                             ),
                           ),
@@ -119,13 +121,13 @@ class PipHistoryDialog extends StatelessWidget {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: nbt.cardColor,
                               border:
-                                  Border.all(color: Colors.black, width: 2),
-                              boxShadow: const [
+                                  Border.all(color: nbt.borderColor, width: 2),
+                              boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black,
-                                  offset: Offset(2, 2),
+                                  color: nbt.shadowColor,
+                                  offset: const Offset(2, 2),
                                   blurRadius: 0,
                                   spreadRadius: 0,
                                 ),
@@ -136,15 +138,16 @@ class PipHistoryDialog extends StatelessWidget {
                                 ? Center(
                                     child: Text(
                                       freePointValue.toString(),
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w900,
-                                        color: Colors.black,
+                                        color: nbt.bodyTextColor,
                                       ),
                                     ),
                                   )
                                 : SvgPicture.asset(
                                     'assets/images/pips/${pip.readable}_black.svg',
+                                    colorFilter: ColorFilter.mode(nbt.bodyTextColor, BlendMode.srcIn),
                                   ),
                           ),
                           const SizedBox(width: 12),
@@ -154,7 +157,7 @@ class PipHistoryDialog extends StatelessWidget {
                               style: GoogleFonts.bricolageGrotesque(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.black,
+                                color: nbt.bodyTextColor,
                               ),
                             ),
                           ),
@@ -164,8 +167,8 @@ class PipHistoryDialog extends StatelessWidget {
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
                                 border:
-                                    Border.all(color: Colors.black, width: 2),
-                                color: const Color(0xFFFF4344),
+                                    Border.all(color: nbt.borderColor, width: 2),
+                                color: nbt.accentRed,
                               ),
                               child: const Icon(
                                 Icons.close,

@@ -1,4 +1,5 @@
 import 'package:dominoes/providers/game_log_provider.dart';
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/game_log_detail_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,6 +11,7 @@ class HistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
     final gameLogProvider = context.watch<GameLogProvider>();
     final logs = gameLogProvider.logs;
     final dateFormat = DateFormat('MMM d, yyyy  h:mm a');
@@ -19,12 +21,12 @@ class HistoryScreen extends StatelessWidget {
         title: Transform(
           transform: Matrix4.skewX(-0.15),
           child: Container(
-            color: Colors.black,
+            color: nbt.headerColor,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: Text(
               'GAME_LOGS',
               style: GoogleFonts.bricolageGrotesque(
-                color: Colors.white,
+                color: nbt.headerTextColor,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1,
               ),
@@ -34,7 +36,7 @@ class HistoryScreen extends StatelessWidget {
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
-          child: Container(color: Colors.black, height: 3),
+          child: Container(color: nbt.borderColor, height: 3),
         ),
       ),
       body: logs.isEmpty
@@ -44,7 +46,7 @@ class HistoryScreen extends StatelessWidget {
                 style: GoogleFonts.bricolageGrotesque(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black45,
+                  color: nbt.secondaryTextColor,
                   letterSpacing: 1,
                 ),
               ),
@@ -68,12 +70,12 @@ class HistoryScreen extends StatelessWidget {
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.black, width: 3),
-                        boxShadow: const [
+                        color: nbt.cardColor,
+                        border: Border.all(color: nbt.borderColor, width: 3),
+                        boxShadow: [
                           BoxShadow(
-                            color: Colors.black,
-                            offset: Offset(4, 4),
+                            color: nbt.shadowColor,
+                            offset: const Offset(4, 4),
                             blurRadius: 0,
                             spreadRadius: 0,
                           ),
@@ -91,7 +93,7 @@ class HistoryScreen extends StatelessWidget {
                                   style: GoogleFonts.bricolageGrotesque(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
-                                    color: Colors.black,
+                                    color: nbt.bodyTextColor,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -100,7 +102,7 @@ class HistoryScreen extends StatelessWidget {
                                   style: GoogleFonts.bricolageGrotesque(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.black54,
+                                    color: nbt.secondaryTextColor,
                                   ),
                                 ),
                               ],
@@ -111,7 +113,7 @@ class HistoryScreen extends StatelessWidget {
                             style: GoogleFonts.bricolageGrotesque(
                               fontSize: 28,
                               fontWeight: FontWeight.w900,
-                              color: Colors.black,
+                              color: nbt.bodyTextColor,
                             ),
                           ),
                         ],

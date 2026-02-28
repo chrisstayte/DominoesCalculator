@@ -1,6 +1,7 @@
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
@@ -25,29 +26,38 @@ class DominoPip extends StatefulWidget {
 class _DominoPipState extends State<DominoPip> {
   bool _isPressed = false;
 
-  static const _valueTextStyle = TextStyle(
-    fontSize: 28,
-    fontWeight: FontWeight.w900,
-    color: Colors.black,
-    letterSpacing: 0.5,
-  );
+  Widget buildPipImage(DominoPips pip, BuildContext context, NeoBrutalistTheme nbt) {
+    final valueTextStyle = TextStyle(
+      fontSize: 28,
+      fontWeight: FontWeight.w900,
+      color: nbt.bodyTextColor,
+      letterSpacing: 0.5,
+    );
 
-  Widget buildPipImage(DominoPips pip, BuildContext context) {
     if (pip.value == 0) {
       final freePointValue = context
           .watch<LocalSettingsProvider>()
           .localSettings
           .freePointValue;
-      return Text(freePointValue.toString(), style: _valueTextStyle);
+      return Text(freePointValue.toString(), style: valueTextStyle);
     }
 
     return SvgPicture.asset(
       'assets/images/pips/${pip.readable}_black.svg',
+      colorFilter: ColorFilter.mode(nbt.bodyTextColor, BlendMode.srcIn),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
+    final valueTextStyle = TextStyle(
+      fontSize: 28,
+      fontWeight: FontWeight.w900,
+      color: nbt.bodyTextColor,
+      letterSpacing: 0.5,
+    );
+
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
@@ -63,11 +73,11 @@ class _DominoPipState extends State<DominoPip> {
           0,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.black, width: 4),
+          color: nbt.cardColor,
+          border: Border.all(color: nbt.borderColor, width: 4),
           boxShadow: [
             BoxShadow(
-              color: Colors.black,
+              color: nbt.shadowColor,
               offset: _isPressed ? const Offset(2, 2) : const Offset(6, 6),
               blurRadius: 0,
               spreadRadius: 0,
@@ -76,7 +86,7 @@ class _DominoPipState extends State<DominoPip> {
         ),
         child: Center(
           child: widget.numberStyle == NumberStyle.pips
-              ? buildPipImage(widget.pip, context)
+              ? buildPipImage(widget.pip, context, nbt)
               : Text(
                   widget.pip.value == 0
                       ? context
@@ -85,7 +95,7 @@ class _DominoPipState extends State<DominoPip> {
                             .freePointValue
                             .toString()
                       : widget.pip.value.toString(),
-                  style: _valueTextStyle,
+                  style: valueTextStyle,
                 ),
         ),
       ),

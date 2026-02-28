@@ -1,6 +1,7 @@
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/models/game_log.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,6 +15,7 @@ class GameLogDetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
     final dateFormat = DateFormat('MMM d, yyyy  h:mm a');
 
     return Dialog(
@@ -21,12 +23,12 @@ class GameLogDetailDialog extends StatelessWidget {
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.black, width: 4),
-          boxShadow: const [
+          color: nbt.cardColor,
+          border: Border.all(color: nbt.borderColor, width: 4),
+          boxShadow: [
             BoxShadow(
-              color: Colors.black,
-              offset: Offset(6, 6),
+              color: nbt.shadowColor,
+              offset: const Offset(6, 6),
               blurRadius: 0,
               spreadRadius: 0,
             ),
@@ -38,7 +40,7 @@ class GameLogDetailDialog extends StatelessWidget {
             // Header
             Container(
               width: double.infinity,
-              color: Colors.black,
+              color: nbt.headerColor,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
@@ -46,7 +48,7 @@ class GameLogDetailDialog extends StatelessWidget {
                     child: Text(
                       'GAME_LOG',
                       style: GoogleFonts.bricolageGrotesque(
-                        color: Colors.white,
+                        color: nbt.headerTextColor,
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
                         letterSpacing: 1,
@@ -55,9 +57,9 @@ class GameLogDetailDialog extends StatelessWidget {
                   ),
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
-                    child: const Icon(
+                    child: Icon(
                       Icons.close,
-                      color: Colors.white,
+                      color: nbt.headerTextColor,
                       size: 24,
                     ),
                   ),
@@ -68,9 +70,9 @@ class GameLogDetailDialog extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: Colors.black, width: 2),
+                  bottom: BorderSide(color: nbt.borderColor, width: 2),
                 ),
               ),
               child: Column(
@@ -81,7 +83,7 @@ class GameLogDetailDialog extends StatelessWidget {
                     style: GoogleFonts.bricolageGrotesque(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      color: nbt.bodyTextColor,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -90,7 +92,7 @@ class GameLogDetailDialog extends StatelessWidget {
                     style: GoogleFonts.bricolageGrotesque(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black54,
+                      color: nbt.secondaryTextColor,
                       letterSpacing: 1,
                     ),
                   ),
@@ -115,7 +117,7 @@ class GameLogDetailDialog extends StatelessWidget {
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: Colors.black,
+                          color: nbt.borderColor,
                           width: index < log.pips.length - 1 ? 2 : 0,
                         ),
                       ),
@@ -133,7 +135,7 @@ class GameLogDetailDialog extends StatelessWidget {
                             style: GoogleFonts.bricolageGrotesque(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
-                              color: Colors.black,
+                              color: nbt.bodyTextColor,
                             ),
                           ),
                         ),
@@ -142,12 +144,12 @@ class GameLogDetailDialog extends StatelessWidget {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.black, width: 2),
-                            boxShadow: const [
+                            color: nbt.cardColor,
+                            border: Border.all(color: nbt.borderColor, width: 2),
+                            boxShadow: [
                               BoxShadow(
-                                color: Colors.black,
-                                offset: Offset(2, 2),
+                                color: nbt.shadowColor,
+                                offset: const Offset(2, 2),
                                 blurRadius: 0,
                                 spreadRadius: 0,
                               ),
@@ -158,15 +160,16 @@ class GameLogDetailDialog extends StatelessWidget {
                               ? Center(
                                   child: Text(
                                     log.freePointValue.toString(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w900,
-                                      color: Colors.black,
+                                      color: nbt.bodyTextColor,
                                     ),
                                   ),
                                 )
                               : SvgPicture.asset(
                                   'assets/images/pips/${pip.readable}_black.svg',
+                                  colorFilter: ColorFilter.mode(nbt.bodyTextColor, BlendMode.srcIn),
                                 ),
                         ),
                         const SizedBox(width: 12),
@@ -176,7 +179,7 @@ class GameLogDetailDialog extends StatelessWidget {
                             style: GoogleFonts.bricolageGrotesque(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: Colors.black,
+                              color: nbt.bodyTextColor,
                             ),
                           ),
                         ),
@@ -190,9 +193,9 @@ class GameLogDetailDialog extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(color: Colors.black, width: 2),
+                  top: BorderSide(color: nbt.borderColor, width: 2),
                 ),
               ),
               child: Row(
@@ -203,7 +206,7 @@ class GameLogDetailDialog extends StatelessWidget {
                       style: GoogleFonts.bricolageGrotesque(
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
-                        color: Colors.black,
+                        color: nbt.bodyTextColor,
                         letterSpacing: 1,
                       ),
                     ),
@@ -219,12 +222,12 @@ class GameLogDetailDialog extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black, width: 2),
-                        color: const Color(0xFFFF4344),
-                        boxShadow: const [
+                        border: Border.all(color: nbt.borderColor, width: 2),
+                        color: nbt.accentRed,
+                        boxShadow: [
                           BoxShadow(
-                            color: Colors.black,
-                            offset: Offset(2, 2),
+                            color: nbt.shadowColor,
+                            offset: const Offset(2, 2),
                             blurRadius: 0,
                             spreadRadius: 0,
                           ),
@@ -233,7 +236,7 @@ class GameLogDetailDialog extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.delete_outline,
                             size: 18,
                             color: Colors.black,

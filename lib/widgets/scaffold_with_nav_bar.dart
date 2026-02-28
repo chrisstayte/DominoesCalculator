@@ -1,3 +1,4 @@
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -24,6 +25,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
     final selected = navigationShell.currentIndex;
 
     return Scaffold(
@@ -31,7 +33,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
 
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.black, width: 3)),
+          border: Border(top: BorderSide(color: nbt.borderColor, width: 3)),
         ),
         child: IntrinsicHeight(
           child: Row(
@@ -54,10 +56,10 @@ class ScaffoldWithNavBar extends StatelessWidget {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.black : Colors.white,
+                      color: isSelected ? nbt.selectedColor : nbt.unselectedColor,
                       border: i > 0
                           ? Border(
-                              left: BorderSide(color: Colors.black, width: 3),
+                              left: BorderSide(color: nbt.borderColor, width: 3),
                             )
                           : null,
                     ),
@@ -70,7 +72,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                           width: 28,
                           height: 28,
                           colorFilter: ColorFilter.mode(
-                            isSelected ? Colors.white : Colors.black,
+                            isSelected ? nbt.selectedTextColor : nbt.unselectedTextColor,
                             BlendMode.srcIn,
                           ),
                         ),
@@ -79,7 +81,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                           Text(
                             _tabs[i].label,
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
+                              color: isSelected ? nbt.selectedTextColor : nbt.unselectedTextColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),

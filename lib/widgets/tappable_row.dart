@@ -1,3 +1,4 @@
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -15,6 +16,7 @@ class TappableRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -34,7 +36,7 @@ class TappableRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Icon(icon, color: Colors.black),
+            Icon(icon, color: nbt.iconColor),
           ],
         ),
       ),

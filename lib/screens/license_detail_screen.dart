@@ -1,3 +1,4 @@
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,17 +15,18 @@ class LicenseDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Transform(
           transform: Matrix4.skewX(-0.15),
           child: Container(
-            color: Colors.black,
+            color: nbt.headerColor,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: Text(
               packageName.toUpperCase(),
               style: GoogleFonts.bricolageGrotesque(
-                color: Colors.white,
+                color: nbt.headerTextColor,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1,
                 fontSize: 14,
@@ -35,12 +37,12 @@ class LicenseDetailScreen extends StatelessWidget {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: nbt.iconColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
-          child: Container(color: Colors.black, height: 3),
+          child: Container(color: nbt.borderColor, height: 3),
         ),
       ),
       body: ListView(
@@ -49,12 +51,12 @@ class LicenseDetailScreen extends StatelessWidget {
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.black, width: 3),
-              boxShadow: const [
+              color: nbt.cardColor,
+              border: Border.all(color: nbt.borderColor, width: 3),
+              boxShadow: [
                 BoxShadow(
-                  color: Colors.black,
-                  offset: Offset(4, 4),
+                  color: nbt.shadowColor,
+                  offset: const Offset(4, 4),
                   blurRadius: 0,
                 ),
               ],
@@ -66,7 +68,7 @@ class LicenseDetailScreen extends StatelessWidget {
                 for (int i = 0; i < entries.length; i++) ...[
                   if (i > 0) ...[
                     const SizedBox(height: 16),
-                    Container(height: 2, color: Colors.black),
+                    Container(height: 2, color: nbt.borderColor),
                     const SizedBox(height: 16),
                   ],
                   ...entries[i].paragraphs.map(

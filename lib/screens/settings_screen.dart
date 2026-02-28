@@ -1,6 +1,7 @@
 import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/screens/licenses_screen.dart';
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/info_row.dart';
 import 'package:dominoes/widgets/section_card.dart';
 import 'package:dominoes/widgets/segmented_control.dart';
@@ -18,6 +19,7 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
     final settings = context.watch<LocalSettingsProvider>().localSettings;
     final provider = context.read<LocalSettingsProvider>();
 
@@ -26,12 +28,12 @@ class SettingsScreen extends StatelessWidget {
         title: Transform(
           transform: Matrix4.skewX(-0.15),
           child: Container(
-            color: Colors.black,
+            color: nbt.headerColor,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: Text(
               'SETTINGS',
               style: GoogleFonts.bricolageGrotesque(
-                color: Colors.white,
+                color: nbt.headerTextColor,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1,
               ),
@@ -41,7 +43,7 @@ class SettingsScreen extends StatelessWidget {
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
-          child: Container(color: Colors.black, height: 3),
+          child: Container(color: nbt.borderColor, height: 3),
         ),
       ),
       body: SingleChildScrollView(
@@ -49,6 +51,28 @@ class SettingsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // APPEARANCE Section
+            SectionCard(
+              label: 'APPEARANCE',
+              titleColor: Colors.teal,
+              children: [
+                SettingRow(
+                  label: 'THEME',
+                  child: SegmentedControl<ThemeMode>(
+                    options: const [
+                      ThemeMode.system,
+                      ThemeMode.light,
+                      ThemeMode.dark,
+                    ],
+                    labels: const ['AUTO', 'LIGHT', 'DARK'],
+                    selected: settings.themeMode,
+                    onSelected: provider.setThemeMode,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
             // GAMEPLAY Section
             SectionCard(
               label: 'GAMEPLAY',

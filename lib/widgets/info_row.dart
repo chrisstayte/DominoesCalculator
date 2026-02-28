@@ -1,3 +1,4 @@
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -9,6 +10,7 @@ class InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Row(
@@ -27,7 +29,7 @@ class InfoRow extends StatelessWidget {
             style: GoogleFonts.bricolageGrotesque(
               fontWeight: FontWeight.w600,
               fontSize: 14,
-              color: Colors.grey.shade700,
+              color: nbt.secondaryTextColor,
             ),
           ),
         ],

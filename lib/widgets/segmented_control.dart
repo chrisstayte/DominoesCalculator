@@ -1,3 +1,4 @@
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -17,9 +18,10 @@ class SegmentedControl<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black, width: 3),
+        border: Border.all(color: nbt.borderColor, width: 3),
       ),
       child: IntrinsicHeight(
         child: Row(
@@ -31,10 +33,10 @@ class SegmentedControl<T> extends StatelessWidget {
               onTap: () => onSelected(options[i]),
               child: Container(
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.black : Colors.white,
+                  color: isSelected ? nbt.selectedColor : nbt.unselectedColor,
                   border: i > 0
-                      ? const Border(
-                          left: BorderSide(color: Colors.black, width: 3),
+                      ? Border(
+                          left: BorderSide(color: nbt.borderColor, width: 3),
                         )
                       : null,
                 ),
@@ -43,7 +45,7 @@ class SegmentedControl<T> extends StatelessWidget {
                 child: Text(
                   labels[i],
                   style: GoogleFonts.bricolageGrotesque(
-                    color: isSelected ? Colors.white : Colors.black,
+                    color: isSelected ? nbt.selectedTextColor : nbt.unselectedTextColor,
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                   ),

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 
 class ActionButton extends StatefulWidget {
@@ -74,6 +75,7 @@ class _ActionButtonState extends State<ActionButton>
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
     final hasLongPress = widget.onLongPressComplete != null;
 
     return GestureDetector(
@@ -112,11 +114,10 @@ class _ActionButtonState extends State<ActionButton>
             transformAlignment: Alignment.center,
             decoration: BoxDecoration(
               color: widget.color,
-
-              border: Border.all(color: Colors.black, width: 3),
+              border: Border.all(color: nbt.borderColor, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black,
+                  color: nbt.shadowColor,
                   offset: _isPressed ? const Offset(2, 2) : const Offset(6, 6),
                   blurRadius: 0,
                   spreadRadius: 0,

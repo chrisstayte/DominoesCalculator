@@ -3,6 +3,7 @@ import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/action_button.dart';
 import 'package:dominoes/widgets/domino_pip.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
@@ -36,6 +37,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nbt = NeoBrutalistTheme.of(context);
     final settings = context.watch<LocalSettingsProvider>().localSettings;
     final calculator = context.watch<CalculatorProvider>();
     final total = calculator.total(freePointValue: settings.freePointValue);
@@ -45,12 +47,12 @@ class HomeScreen extends StatelessWidget {
         title: Transform(
           transform: Matrix4.skewX(-0.15),
           child: Container(
-            color: Colors.black,
+            color: nbt.headerColor,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: Text(
               'DOMINO_CALC',
               style: GoogleFonts.bricolageGrotesque(
-                color: Colors.white,
+                color: nbt.headerTextColor,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1,
               ),
@@ -60,7 +62,7 @@ class HomeScreen extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.history, color: Colors.black, size: 28),
+            icon: Icon(Icons.history, color: nbt.iconColor, size: 28),
             onPressed: () {
               showDialog(
                 context: context,
@@ -76,14 +78,17 @@ class HomeScreen extends StatelessWidget {
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
-          child: Container(color: Colors.black, height: 3),
+          child: Container(color: nbt.borderColor, height: 3),
         ),
       ),
       body: Column(
         children: [
           Expanded(
             child: CustomPaint(
-              painter: DotGridPainter(),
+              painter: DotGridPainter(
+                backgroundColor: nbt.dotGridBackground,
+                dotColor: nbt.dotGridDotColor,
+              ),
               child: Column(
                 children: [
                   Expanded(
@@ -94,7 +99,7 @@ class HomeScreen extends StatelessWidget {
                           Transform(
                             transform: Matrix4.skewX(-0.15),
                             child: Container(
-                              color: Colors.black,
+                              color: nbt.headerColor,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 10,
                                 vertical: 4,
@@ -102,7 +107,7 @@ class HomeScreen extends StatelessWidget {
                               child: Text(
                                 'CURRENT_SCORE',
                                 style: GoogleFonts.bricolageGrotesque(
-                                  color: Colors.white,
+                                  color: nbt.headerTextColor,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 1,
@@ -116,7 +121,7 @@ class HomeScreen extends StatelessWidget {
                             style: GoogleFonts.bricolageGrotesque(
                               fontSize: 128,
                               fontWeight: FontWeight.w900,
-                              color: Colors.black,
+                              color: nbt.bodyTextColor,
                               height: 1,
                             ),
                           ),
@@ -131,7 +136,7 @@ class HomeScreen extends StatelessWidget {
                         Expanded(
                           child: ActionButton(
                             icon: Icons.backspace_outlined,
-                            color: Color(0xFFFF4344),
+                            color: nbt.accentRed,
                             foregroundColor: Colors.black,
                             onTap: () => calculator.removeLast(),
                             onLongPressComplete: () => calculator.clear(),
@@ -141,7 +146,7 @@ class HomeScreen extends StatelessWidget {
                         Expanded(
                           child: ActionButton(
                             icon: Icons.save_outlined,
-                            color: Color(0xFF45FF45),
+                            color: nbt.accentGreen,
                             foregroundColor: Colors.black,
                             onTap: () {
                               if (calculator.selectedPips.isEmpty) {
@@ -170,15 +175,15 @@ class HomeScreen extends StatelessWidget {
           ),
           Container(
             decoration: BoxDecoration(
-              color: Colors.yellow.shade600,
-              border: const Border(top: BorderSide(color: Colors.black, width: 3)),
+              color: nbt.accentYellow,
+              border: Border(top: BorderSide(color: nbt.borderColor, width: 3)),
             ),
             padding: const EdgeInsets.all(8.0),
             child: Container(
-              padding: EdgeInsets.all(1),
+              padding: const EdgeInsets.all(1),
               child: GridView.count(
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 padding: EdgeInsets.zero,
                 crossAxisCount: 4,
                 mainAxisSpacing: 2,
