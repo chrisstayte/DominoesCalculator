@@ -65,6 +65,7 @@ class _CameraLoadingViewState extends State<CameraLoadingView>
             builder: (context, _) => CustomPaint(
               painter: _CameraLoadingPainter(
                 scanProgress: _scanController.value,
+                scanGoingDown: _scanController.status == AnimationStatus.forward,
                 cornerPulse: _cornerController.value,
                 accentColor: accent,
                 bracketColor: nbt.borderColor,
@@ -103,12 +104,14 @@ class _CameraLoadingViewState extends State<CameraLoadingView>
 class _CameraLoadingPainter extends CustomPainter {
   _CameraLoadingPainter({
     required this.scanProgress,
+    required this.scanGoingDown,
     required this.cornerPulse,
     required this.accentColor,
     required this.bracketColor,
   });
 
   final double scanProgress;
+  final bool scanGoingDown;
   final double cornerPulse;
   final Color accentColor;
   final Color bracketColor;
@@ -160,35 +163,40 @@ class _CameraLoadingPainter extends CustomPainter {
   }
 
   void _drawScanLine(Canvas canvas, Rect rect) {
-    final y = rect.top + rect.height * scanProgress;
+    const pixelSize = 4.0;
     const inset = 8.0;
+    const trailRows = 12;
 
-    // Glow
-    final glowPaint = Paint()
-      ..color = accentColor.withValues(alpha: 0.3)
-      ..strokeWidth = 6
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-    canvas.drawLine(
-      Offset(rect.left + inset, y),
-      Offset(rect.right - inset, y),
-      glowPaint,
-    );
+    final headY = rect.top + rect.height * scanProgress;
+    final left = rect.left + inset;
+    final right = rect.right - inset;
 
-    // Solid line
-    final linePaint = Paint()
-      ..color = accentColor
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      Offset(rect.left + inset, y),
-      Offset(rect.right - inset, y),
-      linePaint,
-    );
+    for (var row = trailRows; row >= 0; row--) {
+      final trailOffset = row * pixelSize * (scanGoingDown ? -1 : 1);
+      final rowY = headY + trailOffset;
+
+      if (rowY < rect.top || rowY > rect.bottom) continue;
+
+      final alpha = row == 0 ? 0.9 : 0.6 * (1.0 - row / trailRows);
+      final paint = Paint()..color = accentColor.withValues(alpha: alpha);
+
+      final snappedY = (rowY / pixelSize).floor() * pixelSize;
+
+      for (var x = left; x < right; x += pixelSize) {
+        final snappedX = (x / pixelSize).floor() * pixelSize;
+        canvas.drawRect(
+          Rect.fromLTWH(snappedX.toDouble(), snappedY.toDouble(),
+              pixelSize - 1, pixelSize - 1),
+          paint,
+        );
+      }
+    }
   }
 
   @override
   bool shouldRepaint(covariant _CameraLoadingPainter oldDelegate) =>
       scanProgress != oldDelegate.scanProgress ||
+      scanGoingDown != oldDelegate.scanGoingDown ||
       cornerPulse != oldDelegate.cornerPulse ||
       accentColor != oldDelegate.accentColor ||
       bracketColor != oldDelegate.bracketColor;

@@ -11,12 +11,14 @@ class ViewfinderOverlay extends CustomPainter {
   final String label;
   final DeviceOrientation deviceOrientation;
   final double? scanProgress;
+  final bool scanGoingDown;
 
   ViewfinderOverlay({
     required this.color,
     required this.label,
     this.deviceOrientation = DeviceOrientation.portrait,
     this.scanProgress,
+    this.scanGoingDown = true,
   });
 
   @override
@@ -164,28 +166,35 @@ class ViewfinderOverlay extends CustomPainter {
   }
 
   void _drawScanLine(Canvas canvas, Rect rect) {
-    final y = rect.top + rect.height * scanProgress!;
+    const pixelSize = 4.0;
     const inset = 8.0;
+    const trailRows = 12;
 
-    final glowPaint = Paint()
-      ..color = color.withValues(alpha: 0.3)
-      ..strokeWidth = 6
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-    canvas.drawLine(
-      Offset(rect.left + inset, y),
-      Offset(rect.right - inset, y),
-      glowPaint,
-    );
+    final headY = rect.top + rect.height * scanProgress!;
+    final left = rect.left + inset;
+    final right = rect.right - inset;
 
-    final linePaint = Paint()
-      ..color = color
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      Offset(rect.left + inset, y),
-      Offset(rect.right - inset, y),
-      linePaint,
-    );
+    for (var row = trailRows; row >= 0; row--) {
+      final trailOffset = row * pixelSize * (scanGoingDown ? -1 : 1);
+      final rowY = headY + trailOffset;
+
+      if (rowY < rect.top || rowY > rect.bottom) continue;
+
+      final alpha = row == 0 ? 0.9 : 0.6 * (1.0 - row / trailRows);
+      final paint = Paint()..color = color.withValues(alpha: alpha);
+
+      // Snap to pixel grid
+      final snappedY = (rowY / pixelSize).floor() * pixelSize;
+
+      for (var x = left; x < right; x += pixelSize) {
+        final snappedX = (x / pixelSize).floor() * pixelSize;
+        canvas.drawRect(
+          Rect.fromLTWH(snappedX.toDouble(), snappedY.toDouble(),
+              pixelSize - 1, pixelSize - 1),
+          paint,
+        );
+      }
+    }
   }
 
   @override
@@ -193,5 +202,6 @@ class ViewfinderOverlay extends CustomPainter {
       color != oldDelegate.color ||
       label != oldDelegate.label ||
       deviceOrientation != oldDelegate.deviceOrientation ||
-      scanProgress != oldDelegate.scanProgress;
+      scanProgress != oldDelegate.scanProgress ||
+      scanGoingDown != oldDelegate.scanGoingDown;
 }

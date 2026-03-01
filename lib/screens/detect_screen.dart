@@ -355,6 +355,7 @@ class _CameraScreenState extends State<CameraScreen>
                         label: 'TARGET',
                         deviceOrientation: _deviceOrientation,
                         scanProgress: _scanController.value,
+                        scanGoingDown: _scanController.status == AnimationStatus.forward,
                       ),
                     ),
                   )
