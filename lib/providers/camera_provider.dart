@@ -97,6 +97,16 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  Future<void> setFocusPoint(Offset normalizedPoint) async {
+    if (_controller == null || !_controller!.value.isInitialized) return;
+    try {
+      await _controller!.setFocusMode(FocusMode.auto);
+      await _controller!.setFocusPoint(normalizedPoint);
+    } catch (_) {
+      // Some devices don't support tap focus
+    }
+  }
+
   void retake() {
     _detections = [];
     _capturedImagePath = null;

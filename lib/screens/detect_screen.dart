@@ -17,6 +17,7 @@ import 'package:dominoes/widgets/segmented_control.dart';
 import 'package:dominoes/widgets/setting_row.dart';
 import 'package:dominoes/widgets/detection_overlay.dart';
 import 'package:dominoes/widgets/camera_loading_view.dart';
+import 'package:dominoes/widgets/focus_indicator_painter.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
 import 'package:dominoes/widgets/permission_denied_view.dart';
 import 'package:dominoes/widgets/viewfinder_overlay.dart';
@@ -39,6 +40,8 @@ class _CameraScreenState extends State<CameraScreen>
   late final AnimationController _scanController;
   late final AnimationController _loadingFadeController;
   late final AnimationController _bottomPanelController;
+  late final AnimationController _focusController;
+  Offset? _focusPoint;
   CameraState _prevCameraState = CameraState.uninitialized;
 
   @override
@@ -56,6 +59,10 @@ class _CameraScreenState extends State<CameraScreen>
       vsync: this,
       duration: const Duration(milliseconds: 400),
     );
+    _focusController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
     _accelSubscription = accelerometerEventStream(
       samplingPeriod: const Duration(milliseconds: 200),
     ).listen(_onAccelerometerEvent);
@@ -72,6 +79,7 @@ class _CameraScreenState extends State<CameraScreen>
     _scanController.dispose();
     _loadingFadeController.dispose();
     _bottomPanelController.dispose();
+    _focusController.dispose();
     _accelSubscription?.cancel();
     super.dispose();
   }
@@ -347,77 +355,110 @@ class _CameraScreenState extends State<CameraScreen>
     return Column(
       children: [
         Expanded(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Camera feed (behind everything, visible when ready)
-              if (isReady)
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: nbt.borderColor, width: 3),
+          child: GestureDetector(
+            onTapUp: isReady
+                ? (details) {
+                    final box = context.findRenderObject() as RenderBox;
+                    final localPos = details.localPosition;
+                    final size = box.size;
+                    final normalized = Offset(
+                      (localPos.dx / size.width).clamp(0.0, 1.0),
+                      (localPos.dy / size.height).clamp(0.0, 1.0),
+                    );
+                    setState(() => _focusPoint = localPos);
+                    camera.setFocusPoint(normalized);
+                    _focusController.forward(from: 0);
+                  }
+                : null,
+            behavior: HitTestBehavior.opaque,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Camera feed (behind everything, visible when ready)
+                if (isReady)
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: nbt.borderColor, width: 3),
+                      ),
                     ),
-                  ),
-                  child: ClipRect(
-                    child: OverflowBox(
-                      alignment: Alignment.center,
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: camera.controller!.value.previewSize!.height,
-                          height: camera.controller!.value.previewSize!.width,
-                          child: CameraPreview(camera.controller!),
+                    child: ClipRect(
+                      child: OverflowBox(
+                        alignment: Alignment.center,
+                        child: FittedBox(
+                          fit: BoxFit.cover,
+                          child: SizedBox(
+                            width: camera.controller!.value.previewSize!.height,
+                            height: camera.controller!.value.previewSize!.width,
+                            child: CameraPreview(camera.controller!),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
 
-              // Loading overlay — fades out when camera is ready
-              FadeTransition(
-                opacity: Tween<double>(begin: 1.0, end: 0.0).animate(
-                  CurvedAnimation(
-                    parent: _loadingFadeController,
-                    curve: Curves.easeOut,
-                  ),
-                ),
-                child: IgnorePointer(
-                  ignoring: isReady,
-                  child: CameraLoadingView(accentColor: accentColor),
-                ),
-              ),
-
-              // Viewfinder overlay (appears after loading fades)
-              if (isReady)
+                // Loading overlay — fades out when camera is ready
                 FadeTransition(
-                  opacity: CurvedAnimation(
-                    parent: _loadingFadeController,
-                    curve: const Interval(0.5, 1.0),
+                  opacity: Tween<double>(begin: 1.0, end: 0.0).animate(
+                    CurvedAnimation(
+                      parent: _loadingFadeController,
+                      curve: Curves.easeOut,
+                    ),
                   ),
-                  child: showScanLine
-                      ? AnimatedBuilder(
-                          animation: _scanController,
-                          builder: (context, _) => CustomPaint(
+                  child: IgnorePointer(
+                    ignoring: isReady,
+                    child: CameraLoadingView(accentColor: accentColor),
+                  ),
+                ),
+
+                // Focus indicator (above camera, below viewfinder)
+                if (isReady && _focusPoint != null)
+                  AnimatedBuilder(
+                    animation: _focusController,
+                    builder: (context, _) => _focusController.isAnimating ||
+                            _focusController.value < 1.0
+                        ? CustomPaint(
+                            painter: FocusIndicatorPainter(
+                              point: _focusPoint!,
+                              color: accentColor,
+                              progress: _focusController.value,
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+
+                // Viewfinder overlay (appears after loading fades)
+                if (isReady)
+                  FadeTransition(
+                    opacity: CurvedAnimation(
+                      parent: _loadingFadeController,
+                      curve: const Interval(0.5, 1.0),
+                    ),
+                    child: showScanLine
+                        ? AnimatedBuilder(
+                            animation: _scanController,
+                            builder: (context, _) => CustomPaint(
+                              painter: ViewfinderOverlay(
+                                color: accentColor,
+                                label: 'TARGET',
+                                deviceOrientation: _deviceOrientation,
+                                scanProgress: _scanController.value,
+                                scanGoingDown:
+                                    _scanController.status ==
+                                    AnimationStatus.forward,
+                              ),
+                            ),
+                          )
+                        : CustomPaint(
                             painter: ViewfinderOverlay(
                               color: accentColor,
                               label: 'TARGET',
                               deviceOrientation: _deviceOrientation,
-                              scanProgress: _scanController.value,
-                              scanGoingDown:
-                                  _scanController.status ==
-                                  AnimationStatus.forward,
                             ),
                           ),
-                        )
-                      : CustomPaint(
-                          painter: ViewfinderOverlay(
-                            color: accentColor,
-                            label: 'TARGET',
-                            deviceOrientation: _deviceOrientation,
-                          ),
-                        ),
-                ),
-            ],
+                  ),
+              ],
+            ),
           ),
         ),
 
