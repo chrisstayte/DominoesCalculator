@@ -11,6 +11,7 @@ import 'package:dominoes/widgets/capture_button.dart';
 import 'package:dominoes/widgets/detection_overlay.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
 import 'package:dominoes/widgets/permission_denied_view.dart';
+import 'package:dominoes/widgets/viewfinder_overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -74,7 +75,7 @@ class _CameraScreenState extends State<CameraScreen> {
         CameraState.permissionDenied => PermissionDeniedView(
           onRequestPermission: () => camera.requestPermissionAgain(),
         ),
-        CameraState.preview => _buildPreview(camera, nbt),
+        CameraState.preview => _buildPreview(camera, nbt, settings.appAccentColor.color),
         CameraState.capturing ||
         CameraState.processing => _buildProcessing(camera, nbt),
         CameraState.results => _buildResults(
@@ -182,7 +183,7 @@ class _CameraScreenState extends State<CameraScreen> {
     );
   }
 
-  Widget _buildPreview(CameraProvider camera, NeoBrutalistTheme nbt) {
+  Widget _buildPreview(CameraProvider camera, NeoBrutalistTheme nbt, Color accentColor) {
     return Column(
       children: [
         Expanded(
@@ -192,18 +193,29 @@ class _CameraScreenState extends State<CameraScreen> {
                 bottom: BorderSide(color: nbt.borderColor, width: 3),
               ),
             ),
-            child: ClipRect(
-              child: OverflowBox(
-                alignment: Alignment.center,
-                child: FittedBox(
-                  fit: BoxFit.cover,
-                  child: SizedBox(
-                    width: camera.controller!.value.previewSize!.height,
-                    height: camera.controller!.value.previewSize!.width,
-                    child: CameraPreview(camera.controller!),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                ClipRect(
+                  child: OverflowBox(
+                    alignment: Alignment.center,
+                    child: FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: camera.controller!.value.previewSize!.height,
+                        height: camera.controller!.value.previewSize!.width,
+                        child: CameraPreview(camera.controller!),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                CustomPaint(
+                  painter: ViewfinderOverlay(
+                    color: accentColor,
+                    label: 'TARGET',
+                  ),
+                ),
+              ],
             ),
           ),
         ),
