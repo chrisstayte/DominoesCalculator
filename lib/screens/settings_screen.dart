@@ -2,6 +2,8 @@ import 'package:dominoes/enum/app_accent_color.dart';
 import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/screens/licenses_screen.dart';
+import 'package:dominoes/services/sfx_service.dart';
+import 'package:dominoes/services/vibration_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/info_row.dart';
 import 'package:dominoes/widgets/section_card.dart';
@@ -150,7 +152,10 @@ class SettingsScreen extends StatelessWidget {
                     options: const [true, false],
                     labels: const ['ON', 'OFF'],
                     selected: settings.soundEffects,
-                    onSelected: provider.setSoundEffects,
+                    onSelected: (value) {
+                      context.read<SfxService>().playToggle();
+                      provider.setSoundEffects(value);
+                    },
                   ),
                 ),
                 const ThickDivider(),
@@ -160,7 +165,10 @@ class SettingsScreen extends StatelessWidget {
                     options: const [true, false],
                     labels: const ['ON', 'OFF'],
                     selected: settings.vibration,
-                    onSelected: provider.setVibration,
+                    onSelected: (value) {
+                      context.read<VibrationService>().selection();
+                      provider.setVibration(value);
+                    },
                   ),
                 ),
               ],

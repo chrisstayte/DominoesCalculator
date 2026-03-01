@@ -3,6 +3,8 @@ import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
+import 'package:dominoes/services/sfx_service.dart';
+import 'package:dominoes/services/vibration_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/action_button.dart';
 import 'package:dominoes/widgets/domino_pip.dart';
@@ -16,9 +18,13 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   List<Widget> _buildDominoTiles(
+    BuildContext context,
     NumberStyle numberStyle,
     CalculatorProvider calculator,
   ) {
+    final sfx = context.read<SfxService>();
+    final vibration = context.read<VibrationService>();
+
     final orderedPips = [
       ...DominoPips.values.skip(12).take(4), // Row 1 (top): 12, 13, 14, 15
       ...DominoPips.values.skip(8).take(4), // Row 2: 8, 9, 10, 11
@@ -30,7 +36,11 @@ class HomeScreen extends StatelessWidget {
       return DominoPip(
         pip: pip,
         numberStyle: numberStyle,
-        onTap: () => calculator.addPip(pip),
+        onTap: () {
+          sfx.playTap();
+          vibration.light();
+          calculator.addPip(pip);
+        },
       );
     }).toList();
   }
@@ -40,6 +50,8 @@ class HomeScreen extends StatelessWidget {
     final nbt = NeoBrutalistTheme.of(context);
     final settings = context.watch<LocalSettingsProvider>().localSettings;
     final calculator = context.watch<CalculatorProvider>();
+    final sfx = context.read<SfxService>();
+    final vibration = context.read<VibrationService>();
     final total = calculator.total(freePointValue: settings.freePointValue);
 
     return Scaffold(
@@ -138,8 +150,16 @@ class HomeScreen extends StatelessWidget {
                             icon: Icons.backspace_outlined,
                             color: nbt.accentRed,
                             foregroundColor: Colors.black,
-                            onTap: () => calculator.removeLast(),
-                            onLongPressComplete: () => calculator.clear(),
+                            onTap: () {
+                              sfx.playDelete();
+                              vibration.medium();
+                              calculator.removeLast();
+                            },
+                            onLongPressComplete: () {
+                              sfx.playClear();
+                              vibration.heavy();
+                              calculator.clear();
+                            },
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -158,6 +178,8 @@ class HomeScreen extends StatelessWidget {
                                 );
                                 return;
                               }
+                              sfx.playSuccess();
+                              vibration.medium();
                               context.read<GameLogProvider>().saveGame(
                                 calculator,
                                 settings.freePointValue,
@@ -189,7 +211,7 @@ class HomeScreen extends StatelessWidget {
                 mainAxisSpacing: 2,
                 crossAxisSpacing: 2,
                 children: [
-                  ..._buildDominoTiles(settings.numberStyle, calculator),
+                  ..._buildDominoTiles(context, settings.numberStyle, calculator),
                 ],
               ),
             ),

@@ -4,6 +4,8 @@ import 'package:dominoes/providers/camera_provider.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/router.dart';
+import 'package:dominoes/services/sfx_service.dart';
+import 'package:dominoes/services/vibration_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,6 +16,11 @@ void main() async {
 
   final localSettingsProvider = LocalSettingsProvider();
   await localSettingsProvider.isReady;
+
+  final sfxService = SfxService(localSettingsProvider);
+  await sfxService.initialize();
+
+  final vibrationService = VibrationService(localSettingsProvider);
 
   runApp(
     MultiProvider(
@@ -31,6 +38,8 @@ void main() async {
         ChangeNotifierProvider<CameraProvider>(
           create: (context) => CameraProvider(),
         ),
+        Provider<SfxService>.value(value: sfxService),
+        Provider<VibrationService>.value(value: vibrationService),
       ],
       child: MyApp(),
     ),

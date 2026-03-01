@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:dominoes/providers/camera_provider.dart';
+import 'package:dominoes/services/sfx_service.dart';
+import 'package:dominoes/services/vibration_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:sensors_plus/sensors_plus.dart';
@@ -369,7 +371,13 @@ class _CameraScreenState extends State<CameraScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 24),
             child: Center(
-              child: CaptureButton(onTap: () => camera.captureAndDetect()),
+              child: CaptureButton(
+                onTap: () {
+                  context.read<SfxService>().playCapture();
+                  context.read<VibrationService>().medium();
+                  camera.captureAndDetect();
+                },
+              ),
             ),
           ),
         ),
@@ -547,7 +555,11 @@ class _CameraScreenState extends State<CameraScreen> {
                         icon: Icons.refresh,
                         color: nbt.accentRed,
                         foregroundColor: Colors.black,
-                        onTap: () => camera.retake(),
+                        onTap: () {
+                          context.read<SfxService>().playDelete();
+                          context.read<VibrationService>().medium();
+                          camera.retake();
+                        },
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -557,6 +569,8 @@ class _CameraScreenState extends State<CameraScreen> {
                         color: nbt.accentGreen,
                         foregroundColor: Colors.black,
                         onTap: () {
+                          context.read<SfxService>().playSuccess();
+                          context.read<VibrationService>().medium();
                           // Placeholder for future calculator integration
                           camera.retake();
                         },
