@@ -88,7 +88,9 @@ class TfliteDetector implements ObjectDetector {
       final classIndex = outputClasses[0][i].toInt();
       final label = classIndex < _labels.length
           ? _labels[classIndex]
-          : 'Unknown ($classIndex)';
+          : '';
+
+      if (label.isEmpty || label == '???') continue;
 
       // Bounding box: [top, left, bottom, right] normalized 0-1
       final top = outputBoxes[0][i][0];
