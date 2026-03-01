@@ -88,4 +88,10 @@ class LocalSettingsProvider extends ChangeNotifier {
     saveSettings();
     notifyListeners();
   }
+
+  void setShowSplashScreen(bool showSplashScreen) {
+    localSettings.showSplashScreen = showSplashScreen;
+    saveSettings();
+    notifyListeners();
+  }
 }

@@ -9,6 +9,7 @@ class LocalSettings {
   bool showConfidence;
   bool showScanLine;
   bool coloredPips;
+  bool showSplashScreen;
   NumberStyle numberStyle;
   int freePointValue;
   AppAccentColor appAccentColor;
@@ -20,6 +21,7 @@ class LocalSettings {
     this.showConfidence = false,
     this.showScanLine = true,
     this.coloredPips = false,
+    this.showSplashScreen = true,
     this.numberStyle = NumberStyle.pips,
     this.freePointValue = 50,
     this.appAccentColor = AppAccentColor.yellow,
@@ -40,6 +42,7 @@ class LocalSettings {
       showConfidence: json['showConfidence'] as bool? ?? false,
       showScanLine: json['showScanLine'] as bool? ?? true,
       coloredPips: json['coloredPips'] as bool? ?? false,
+      showSplashScreen: json['showSplashScreen'] as bool? ?? true,
       numberStyle: NumberStyle.fromJson(json['numberStyle'] as String?),
       freePointValue: const [0, 25, 50].contains(json['freePointValue'])
           ? json['freePointValue'] as int
@@ -56,6 +59,7 @@ class LocalSettings {
     'showConfidence': showConfidence,
     'showScanLine': showScanLine,
     'coloredPips': coloredPips,
+    'showSplashScreen': showSplashScreen,
     'freePointValue': freePointValue,
     'appAccentColor': appAccentColor.toJson(),
   };

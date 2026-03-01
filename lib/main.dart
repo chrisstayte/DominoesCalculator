@@ -4,6 +4,7 @@ import 'package:dominoes/providers/camera_provider.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/router.dart';
+import 'package:dominoes/screens/splash_screen.dart';
 import 'package:dominoes/services/sfx_service.dart';
 import 'package:dominoes/services/vibration_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
@@ -55,17 +56,29 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _router = createRouter();
+  bool _showSplash = true;
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = Provider.of<LocalSettingsProvider>(
-      context,
-    ).localSettings.themeMode;
+    final localSettingsProvider = Provider.of<LocalSettingsProvider>(context);
+    final themeMode = localSettingsProvider.localSettings.themeMode;
+    final splashEnabled = localSettingsProvider.localSettings.showSplashScreen;
 
     return MaterialApp.router(
       routerConfig: _router,
       title: 'Dominoes',
       themeMode: themeMode,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            child!,
+            if (_showSplash && splashEnabled)
+              SplashScreen(
+                onComplete: () => setState(() => _showSplash = false),
+              ),
+          ],
+        );
+      },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         textTheme: GoogleFonts.bricolageGrotesqueTextTheme(),

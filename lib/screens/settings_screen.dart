@@ -109,6 +109,16 @@ class SettingsScreen extends StatelessWidget {
                     }).toList(),
                   ),
                 ),
+                const ThickDivider(),
+                SettingRow(
+                  label: 'SPLASH_SCREEN',
+                  child: SegmentedControl<bool>(
+                    options: const [true, false],
+                    labels: const ['ON', 'OFF'],
+                    selected: settings.showSplashScreen,
+                    onSelected: provider.setShowSplashScreen,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
