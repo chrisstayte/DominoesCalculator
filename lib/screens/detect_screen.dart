@@ -33,10 +33,13 @@ class CameraScreen extends StatefulWidget {
 }
 
 class _CameraScreenState extends State<CameraScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   DeviceOrientation _deviceOrientation = DeviceOrientation.portrait;
   StreamSubscription<AccelerometerEvent>? _accelSubscription;
   late final AnimationController _scanController;
+  late final AnimationController _loadingFadeController;
+  late final AnimationController _bottomPanelController;
+  CameraState _prevCameraState = CameraState.uninitialized;
 
   @override
   void initState() {
@@ -45,6 +48,14 @@ class _CameraScreenState extends State<CameraScreen>
       vsync: this,
       duration: const Duration(milliseconds: 2000),
     )..repeat(reverse: true);
+    _loadingFadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _bottomPanelController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
     _accelSubscription = accelerometerEventStream(
       samplingPeriod: const Duration(milliseconds: 200),
     ).listen(_onAccelerometerEvent);
@@ -59,6 +70,8 @@ class _CameraScreenState extends State<CameraScreen>
   @override
   void dispose() {
     _scanController.dispose();
+    _loadingFadeController.dispose();
+    _bottomPanelController.dispose();
     _accelSubscription?.cancel();
     super.dispose();
   }
@@ -88,6 +101,17 @@ class _CameraScreenState extends State<CameraScreen>
     final nbt = NeoBrutalistTheme.of(context);
     final camera = context.watch<CameraProvider>();
     final settings = context.watch<LocalSettingsProvider>().localSettings;
+
+    if (camera.state == CameraState.preview &&
+        _prevCameraState == CameraState.uninitialized) {
+      _loadingFadeController.forward(from: 0);
+      _bottomPanelController.forward(from: 0);
+    } else if (camera.state == CameraState.uninitialized &&
+        _prevCameraState != CameraState.uninitialized) {
+      _loadingFadeController.reset();
+      _bottomPanelController.reset();
+    }
+    _prevCameraState = camera.state;
 
     return Scaffold(
       appBar: AppBar(
@@ -135,17 +159,15 @@ class _CameraScreenState extends State<CameraScreen>
         ),
       ),
       body: switch (camera.state) {
-        CameraState.uninitialized => CameraLoadingView(
-          accentColor: settings.appAccentColor.color,
-        ),
-        CameraState.permissionDenied => PermissionDeniedView(
-          onRequestPermission: () => camera.requestPermissionAgain(),
-        ),
-        CameraState.preview => _buildPreview(
+        CameraState.uninitialized ||
+        CameraState.preview => _buildCameraView(
           camera,
           nbt,
           settings.appAccentColor.color,
           settings.showScanLine,
+        ),
+        CameraState.permissionDenied => PermissionDeniedView(
+          onRequestPermission: () => camera.requestPermissionAgain(),
         ),
         CameraState.capturing ||
         CameraState.processing => _buildProcessing(camera, nbt),
@@ -315,76 +337,111 @@ class _CameraScreenState extends State<CameraScreen>
     );
   }
 
-  Widget _buildPreview(
+  Widget _buildCameraView(
     CameraProvider camera,
     NeoBrutalistTheme nbt,
     Color accentColor,
     bool showScanLine,
   ) {
+    final isReady = camera.state == CameraState.preview;
+
     return Column(
       children: [
         Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: nbt.borderColor, width: 3),
-              ),
-            ),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                ClipRect(
-                  child: OverflowBox(
-                    alignment: Alignment.center,
-                    child: FittedBox(
-                      fit: BoxFit.cover,
-                      child: SizedBox(
-                        width: camera.controller!.value.previewSize!.height,
-                        height: camera.controller!.value.previewSize!.width,
-                        child: CameraPreview(camera.controller!),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Camera feed (behind everything, visible when ready)
+              if (isReady)
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: nbt.borderColor, width: 3),
+                    ),
+                  ),
+                  child: ClipRect(
+                    child: OverflowBox(
+                      alignment: Alignment.center,
+                      child: FittedBox(
+                        fit: BoxFit.cover,
+                        child: SizedBox(
+                          width: camera.controller!.value.previewSize!.height,
+                          height: camera.controller!.value.previewSize!.width,
+                          child: CameraPreview(camera.controller!),
+                        ),
                       ),
                     ),
                   ),
                 ),
-                if (showScanLine)
-                  AnimatedBuilder(
-                    animation: _scanController,
-                    builder: (context, _) => CustomPaint(
-                      painter: ViewfinderOverlay(
-                        color: accentColor,
-                        label: 'TARGET',
-                        deviceOrientation: _deviceOrientation,
-                        scanProgress: _scanController.value,
-                        scanGoingDown: _scanController.status == AnimationStatus.forward,
-                      ),
-                    ),
-                  )
-                else
-                  CustomPaint(
-                    painter: ViewfinderOverlay(
-                      color: accentColor,
-                      label: 'TARGET',
-                      deviceOrientation: _deviceOrientation,
-                    ),
+
+              // Loading overlay — fades out when camera is ready
+              FadeTransition(
+                opacity: Tween<double>(begin: 1.0, end: 0.0)
+                    .animate(CurvedAnimation(
+                  parent: _loadingFadeController,
+                  curve: Curves.easeOut,
+                )),
+                child: IgnorePointer(
+                  ignoring: isReady,
+                  child: CameraLoadingView(accentColor: accentColor),
+                ),
+              ),
+
+              // Viewfinder overlay (appears after loading fades)
+              if (isReady)
+                FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: _loadingFadeController,
+                    curve: const Interval(0.5, 1.0),
                   ),
-              ],
-            ),
+                  child: showScanLine
+                      ? AnimatedBuilder(
+                          animation: _scanController,
+                          builder: (context, _) => CustomPaint(
+                            painter: ViewfinderOverlay(
+                              color: accentColor,
+                              label: 'TARGET',
+                              deviceOrientation: _deviceOrientation,
+                              scanProgress: _scanController.value,
+                              scanGoingDown: _scanController.status ==
+                                  AnimationStatus.forward,
+                            ),
+                          ),
+                        )
+                      : CustomPaint(
+                          painter: ViewfinderOverlay(
+                            color: accentColor,
+                            label: 'TARGET',
+                            deviceOrientation: _deviceOrientation,
+                          ),
+                        ),
+                ),
+            ],
           ),
         ),
-        CustomPaint(
-          painter: DotGridPainter(
-            backgroundColor: nbt.dotGridBackground,
-            dotColor: nbt.dotGridDotColor,
+
+        // Bottom panel — grows up, pushing camera area higher
+        SizeTransition(
+          sizeFactor: CurvedAnimation(
+            parent: _bottomPanelController,
+            curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Center(
-              child: CaptureButton(
-                onTap: () {
-                  context.read<SfxService>().playCapture();
-                  context.read<VibrationService>().medium();
-                  camera.captureAndDetect();
-                },
+          axisAlignment: 1.0,
+          child: CustomPaint(
+            painter: DotGridPainter(
+              backgroundColor: nbt.dotGridBackground,
+              dotColor: nbt.dotGridDotColor,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: CaptureButton(
+                  onTap: () {
+                    context.read<SfxService>().playCapture();
+                    context.read<VibrationService>().medium();
+                    camera.captureAndDetect();
+                  },
+                ),
               ),
             ),
           ),
