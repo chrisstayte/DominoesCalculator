@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:dominoes/providers/camera_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:sensors_plus/sensors_plus.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/action_button.dart';
@@ -24,15 +26,47 @@ class CameraScreen extends StatefulWidget {
 }
 
 class _CameraScreenState extends State<CameraScreen> {
+  DeviceOrientation _deviceOrientation = DeviceOrientation.portrait;
+  StreamSubscription<AccelerometerEvent>? _accelSubscription;
+
   @override
   void initState() {
     super.initState();
+    _accelSubscription = accelerometerEventStream(
+      samplingPeriod: const Duration(milliseconds: 200),
+    ).listen(_onAccelerometerEvent);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<CameraProvider>();
       if (provider.state == CameraState.uninitialized) {
         provider.initializeCamera();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _accelSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _onAccelerometerEvent(AccelerometerEvent event) {
+    final x = event.x;
+    final y = event.y;
+
+    DeviceOrientation orientation;
+    if (y.abs() > x.abs()) {
+      orientation = y > 0
+          ? DeviceOrientation.portrait
+          : DeviceOrientation.upsideDown;
+    } else {
+      orientation = x > 0
+          ? DeviceOrientation.landscapeLeft
+          : DeviceOrientation.landscapeRight;
+    }
+
+    if (orientation != _deviceOrientation) {
+      setState(() => _deviceOrientation = orientation);
+    }
   }
 
   @override
@@ -213,6 +247,7 @@ class _CameraScreenState extends State<CameraScreen> {
                   painter: ViewfinderOverlay(
                     color: accentColor,
                     label: 'TARGET',
+                    deviceOrientation: _deviceOrientation,
                   ),
                 ),
               ],

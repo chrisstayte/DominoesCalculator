@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:dominoes/models/detection_result.dart';
 import 'package:dominoes/services/object_detector.dart';
 import 'package:dominoes/services/tflite_detector.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -59,6 +60,7 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
       );
 
       await _controller!.initialize();
+      await _controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
       await _detector.initialize();
 
       _state = CameraState.preview;
@@ -115,8 +117,6 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_controller == null || !_controller!.value.isInitialized) return;
-
     if (state == AppLifecycleState.inactive) {
       _controller?.dispose();
       _controller = null;

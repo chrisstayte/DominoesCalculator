@@ -1,13 +1,21 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+enum DeviceOrientation { portrait, landscapeLeft, landscapeRight, upsideDown }
+
 class ViewfinderOverlay extends CustomPainter {
   final Color color;
   final String label;
+  final DeviceOrientation deviceOrientation;
 
-  ViewfinderOverlay({required this.color, required this.label});
+  ViewfinderOverlay({
+    required this.color,
+    required this.label,
+    this.deviceOrientation = DeviceOrientation.portrait,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -28,10 +36,8 @@ class ViewfinderOverlay extends CustomPainter {
       size.height - padding * 2,
     );
 
-    // Draw dashed rectangle
     _drawDashedRect(canvas, rect, dashedPaint, dashWidth, dashGap);
 
-    // Label badge centered at top of rect
     final textSpan = TextSpan(
       text: label,
       style: GoogleFonts.bricolageGrotesque(
@@ -49,18 +55,87 @@ class ViewfinderOverlay extends CustomPainter {
 
     final badgeWidth = textPainter.width + 14;
     final badgeHeight = textPainter.height + 8;
-    final badgeLeft = rect.center.dx - badgeWidth / 2;
-    final badgeTop = rect.top - badgeHeight / 2;
 
-    final badgeRect = Rect.fromLTWH(
-      badgeLeft,
-      badgeTop,
-      badgeWidth,
-      badgeHeight,
+    // Position badge on the edge that is physically "up"
+    // and rotate text to read correctly
+    switch (deviceOrientation) {
+      case DeviceOrientation.portrait:
+        // Badge on top edge, centered
+        final badgeLeft = rect.center.dx - badgeWidth / 2;
+        final badgeTop = rect.top - badgeHeight / 2;
+        _drawBadge(canvas, textPainter, badgeLeft, badgeTop, badgeWidth, badgeHeight, 0);
+
+      case DeviceOrientation.upsideDown:
+        // Badge on bottom edge, centered, text rotated 180°
+        final badgeLeft = rect.center.dx - badgeWidth / 2;
+        final badgeTop = rect.bottom - badgeHeight / 2;
+        _drawBadge(canvas, textPainter, badgeLeft, badgeTop, badgeWidth, badgeHeight, math.pi);
+
+      case DeviceOrientation.landscapeLeft:
+        // Badge on left edge, centered vertically, text rotated -90°
+        final badgeLeft = rect.left - badgeHeight / 2;
+        final badgeTop = rect.center.dy - badgeWidth / 2;
+        _drawBadgeRotated(canvas, textPainter, badgeLeft, badgeTop, badgeWidth, badgeHeight, -math.pi / 2);
+
+      case DeviceOrientation.landscapeRight:
+        // Badge on right edge, centered vertically, text rotated 90°
+        final badgeLeft = rect.right - badgeHeight / 2;
+        final badgeTop = rect.center.dy - badgeWidth / 2;
+        _drawBadgeRotated(canvas, textPainter, badgeLeft, badgeTop, badgeWidth, badgeHeight, math.pi / 2);
+    }
+  }
+
+  void _drawBadge(
+    Canvas canvas,
+    TextPainter textPainter,
+    double badgeLeft,
+    double badgeTop,
+    double badgeWidth,
+    double badgeHeight,
+    double rotation,
+  ) {
+    final center = Offset(badgeLeft + badgeWidth / 2, badgeTop + badgeHeight / 2);
+
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(rotation);
+    canvas.translate(-center.dx, -center.dy);
+
+    canvas.drawRect(
+      Rect.fromLTWH(badgeLeft, badgeTop, badgeWidth, badgeHeight),
+      Paint()..color = color,
     );
-
-    canvas.drawRect(badgeRect, Paint()..color = color);
     textPainter.paint(canvas, Offset(badgeLeft + 7, badgeTop + 4));
+
+    canvas.restore();
+  }
+
+  void _drawBadgeRotated(
+    Canvas canvas,
+    TextPainter textPainter,
+    double anchorX,
+    double anchorY,
+    double badgeWidth,
+    double badgeHeight,
+    double rotation,
+  ) {
+    // For sideways orientations, we swap width/height for positioning
+    // but draw the badge in its normal orientation then rotate
+    final centerX = anchorX + badgeHeight / 2;
+    final centerY = anchorY + badgeWidth / 2;
+
+    canvas.save();
+    canvas.translate(centerX, centerY);
+    canvas.rotate(rotation);
+    canvas.translate(-badgeWidth / 2, -badgeHeight / 2);
+
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, badgeWidth, badgeHeight),
+      Paint()..color = color,
+    );
+    textPainter.paint(canvas, const Offset(7, 4));
+
+    canvas.restore();
   }
 
   void _drawDashedRect(
@@ -113,5 +188,7 @@ class ViewfinderOverlay extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant ViewfinderOverlay oldDelegate) =>
-      color != oldDelegate.color || label != oldDelegate.label;
+      color != oldDelegate.color ||
+      label != oldDelegate.label ||
+      deviceOrientation != oldDelegate.deviceOrientation;
 }
