@@ -10,7 +10,6 @@ import 'package:dominoes/screens/widgets/keypad_key.dart';
 import 'package:dominoes/screens/widgets/tile_history.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -46,19 +45,50 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
+  void _undoLast() {
+    if (_calcHistory.isNotEmpty) {
+      setState(() {
+        _calcHistory.removeAt(0);
+      });
+      HapticFeedback.mediumImpact();
+    }
+  }
+
+  Future<void> _confirmClear() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear All?'),
+        content: const Text(
+            'Are you sure you want to clear all entries? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Clear',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      setState(_calcHistory.clear);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
         statusBarBrightness: Brightness.light,
-        statusBarIconBrightness:
-            Brightness.dark //or set color with: Color(0xFF0000FF)
-        ));
-    return Scaffold(
+        statusBarIconBrightness: Brightness.dark,
+      ),
+      child: Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -243,7 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       flex: 3,
                       child: GestureDetector(
-                        onTap: () => setState(_calcHistory.clear),
+                        onTap: _confirmClear,
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.red.shade400,
@@ -269,31 +299,38 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Expanded(
                       child: GestureDetector(
+                        onTap: _undoLast,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade500,
+                            borderRadius: BorderRadius.circular(
+                              Global.ui.cornerRadius,
+                            ),
+                          ),
+                          child: const Center(
+                            child: FaIcon(
+                              FontAwesomeIcons.rotateLeft,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: _gapBetweenAreas,
+                    ),
+                    Expanded(
+                      child: GestureDetector(
                         onTap: () async {
                           if (kIsWeb) {
                             Navigator.pushNamed(context, '/settings');
-                          }
-                          if (Platform.isIOS) {
+                          } else if (!kIsWeb && Platform.isIOS) {
                             showCupertinoModalBottomSheet(
                               context: context,
                               builder: (context) => const SettingsScreen(),
                             );
                           } else {
                             Navigator.pushNamed(context, '/settings');
-                            // DraggableScrollableController controller =
-                            //     new DraggableScrollableController();
-                            // await showModalBottomSheet(
-                            //   backgroundColor: Colors.transparent,
-                            //   isScrollControlled: true,
-                            //   context: context,
-                            //   builder: (context) => DraggableScrollableSheet(
-                            //     controller: controller,
-                            //     builder: ((context, scrollController) =>
-                            //         SettingsScreen(
-                            //           controller: scrollController,
-                            //         )),
-                            //   ),
-                            // );
                           }
                         },
                         child: Container(
@@ -316,50 +353,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    // const SizedBox(
-                    //   width: 5,
-                    // ),
-                    // Expanded(
-                    //   child: GestureDetector(
-                    //     onTap: () async {
-                    //       // await Navigator.pushNamed(context, '/camera');
-                    //       await showDialog(
-                    //         context: context,
-                    //         builder: (builder) {
-                    //           return AlertDialog(
-                    //             title: const Text(
-                    //                 'This is still a work in progress. You can hide this button in the settings.'),
-                    //             actions: [
-                    //               TextButton(
-                    //                   onPressed: () => Navigator.pop(context),
-                    //                   child: const Text('OK'))
-                    //             ],
-                    //           );
-                    //         },
-                    //       );
-                    //       Navigator.pop(context);
-                    //       return;
-                    //     },
-                    //     child: Container(
-                    //       decoration: BoxDecoration(
-                    //         color: HSLColor.fromColor(context
-                    //                 .watch<SettingsProvider>()
-                    //                 .appAccentColor)
-                    //             .withLightness(.4)
-                    //             .toColor(),
-                    //         borderRadius: BorderRadius.circular(
-                    //           Global.ui.cornerRadius,
-                    //         ),
-                    //       ),
-                    //       child: const Center(
-                    //         child: Icon(
-                    //           Icons.camera_alt_rounded,
-                    //           color: Colors.white,
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
@@ -367,6 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }

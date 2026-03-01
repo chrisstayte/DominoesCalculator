@@ -147,13 +147,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () async {
               final Uri uri = Uri(
                 scheme: 'https',
-                path: 'www.twitter.com/ChrisStayte',
+                host: 'www.twitter.com',
+                path: '/ChrisStayte',
               );
 
               if (await canLaunchUrl(uri)) {
                 await launchUrl(uri).catchError(
                   (error) {
-                    print(error);
+                    debugPrint(error.toString());
                     return false;
                   },
                 );
@@ -166,7 +167,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () async {
               final Uri uri = Uri(
                 scheme: 'mailto',
-                path: 'cashew@chrisstayte.com',
+                path: 'dominoes@chrisstayte.com',
                 query: 'subject=App Feedback (${_packageInfo.version})',
               );
 
@@ -185,13 +186,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () async {
               final Uri uri = Uri(
                 scheme: 'https',
-                path: 'www.chrisstayte.app/dominoes/privacy',
+                host: 'www.chrisstayte.app',
+                path: '/dominoes/privacy',
               );
 
               if (await canLaunchUrl(uri)) {
                 await launchUrl(uri).catchError(
                   (error) {
-                    print(error);
+                    debugPrint(error.toString());
                     return false;
                   },
                 );
@@ -204,13 +206,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () async {
               final Uri uri = Uri(
                 scheme: 'https',
-                path: 'www.chrisstayte.app/dominoes/terms',
+                host: 'www.chrisstayte.app',
+                path: '/dominoes/terms',
               );
 
               if (await canLaunchUrl(uri)) {
                 await launchUrl(uri).catchError(
                   (error) {
-                    print(error);
+                    debugPrint(error.toString());
                     return false;
                   },
                 );
@@ -223,13 +226,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () async {
               final Uri uri = Uri(
                 scheme: 'https',
-                path: 'www.github.com/ChrisStayte/DominoCounter',
+                host: 'www.github.com',
+                path: '/ChrisStayte/DominoCounter',
               );
 
               if (await canLaunchUrl(uri)) {
                 await launchUrl(uri).catchError(
                   (error) {
-                    print(error);
+                    debugPrint(error.toString());
                     return false;
                   },
                 );

@@ -8,7 +8,7 @@ class AccentColorPickerItem extends StatelessWidget {
   const AccentColorPickerItem({Key? key, required this.colorIndex})
       : super(key: key);
 
-  final colorIndex;
+  final int colorIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class AccentColorPickerItem extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: context.read<SettingsProvider>().appAccentColor ==
+              child: context.watch<SettingsProvider>().appAccentColor ==
                       Global.colors.accentColors.elementAt(colorIndex)
                   ? FaIcon(
                       FontAwesomeIcons.circleCheck,
@@ -33,12 +33,6 @@ class AccentColorPickerItem extends StatelessWidget {
                           : Colors.white,
                     )
                   : null,
-              // : FaIcon(
-              //     FontAwesomeIcons.circle,
-              //     color: context.watch<SettingsProvider>().isDarkMode
-              //         ? Global.colors.darkThemeColor
-              //         : Colors.white,
-              //   ),
             ),
           ),
         ),
