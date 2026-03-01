@@ -19,15 +19,8 @@ class ViewfinderOverlay extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const double dashWidth = 8;
-    const double dashGap = 5;
     const double strokeWidth = 2.5;
     const double padding = 24;
-
-    final dashedPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
 
     final rect = Rect.fromLTWH(
       padding,
@@ -36,7 +29,7 @@ class ViewfinderOverlay extends CustomPainter {
       size.height - padding * 2,
     );
 
-    _drawDashedRect(canvas, rect, dashedPaint, dashWidth, dashGap);
+    _drawCornerBrackets(canvas, rect, strokeWidth);
 
     final textSpan = TextSpan(
       text: label,
@@ -138,52 +131,30 @@ class ViewfinderOverlay extends CustomPainter {
     canvas.restore();
   }
 
-  void _drawDashedRect(
-    Canvas canvas,
-    Rect rect,
-    Paint paint,
-    double dashWidth,
-    double dashGap,
-  ) {
-    _drawDashedLine(canvas, rect.topLeft, rect.topRight, paint, dashWidth, dashGap);
-    _drawDashedLine(canvas, rect.topRight, rect.bottomRight, paint, dashWidth, dashGap);
-    _drawDashedLine(canvas, rect.bottomRight, rect.bottomLeft, paint, dashWidth, dashGap);
-    _drawDashedLine(canvas, rect.bottomLeft, rect.topLeft, paint, dashWidth, dashGap);
-  }
+  void _drawCornerBrackets(Canvas canvas, Rect rect, double strokeWidth) {
+    final bracketLength = math.min(rect.width, rect.height) * 0.12;
 
-  void _drawDashedLine(
-    Canvas canvas,
-    Offset start,
-    Offset end,
-    Paint paint,
-    double dashWidth,
-    double dashGap,
-  ) {
-    final dx = end.dx - start.dx;
-    final dy = end.dy - start.dy;
-    final length = (end - start).distance;
-    final unitDx = dx / length;
-    final unitDy = dy / length;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.square;
 
-    double drawn = 0;
-    bool draw = true;
+    // Top-left
+    canvas.drawLine(rect.topLeft, rect.topLeft + Offset(bracketLength, 0), paint);
+    canvas.drawLine(rect.topLeft, rect.topLeft + Offset(0, bracketLength), paint);
 
-    while (drawn < length) {
-      final segmentLength = draw ? dashWidth : dashGap;
-      final remaining = length - drawn;
-      final len = segmentLength < remaining ? segmentLength : remaining;
+    // Top-right
+    canvas.drawLine(rect.topRight, rect.topRight + Offset(-bracketLength, 0), paint);
+    canvas.drawLine(rect.topRight, rect.topRight + Offset(0, bracketLength), paint);
 
-      if (draw) {
-        canvas.drawLine(
-          Offset(start.dx + unitDx * drawn, start.dy + unitDy * drawn),
-          Offset(start.dx + unitDx * (drawn + len), start.dy + unitDy * (drawn + len)),
-          paint,
-        );
-      }
+    // Bottom-left
+    canvas.drawLine(rect.bottomLeft, rect.bottomLeft + Offset(bracketLength, 0), paint);
+    canvas.drawLine(rect.bottomLeft, rect.bottomLeft + Offset(0, -bracketLength), paint);
 
-      drawn += len;
-      draw = !draw;
-    }
+    // Bottom-right
+    canvas.drawLine(rect.bottomRight, rect.bottomRight + Offset(-bracketLength, 0), paint);
+    canvas.drawLine(rect.bottomRight, rect.bottomRight + Offset(0, -bracketLength), paint);
   }
 
   @override
