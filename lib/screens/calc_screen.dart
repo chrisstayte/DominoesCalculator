@@ -160,6 +160,7 @@ class HomeScreen extends StatelessWidget {
                               vibration.heavy();
                               calculator.clear();
                             },
+                            onShakeTick: () => vibration.light(),
                           ),
                         ),
                         const SizedBox(width: 12),

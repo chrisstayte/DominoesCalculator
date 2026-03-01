@@ -11,6 +11,7 @@ class ActionButton extends StatefulWidget {
     this.foregroundColor = Colors.white,
     required this.onTap,
     this.onLongPressComplete,
+    this.onShakeTick,
   });
 
   final IconData icon;
@@ -18,6 +19,7 @@ class ActionButton extends StatefulWidget {
   final Color foregroundColor;
   final VoidCallback onTap;
   final VoidCallback? onLongPressComplete;
+  final VoidCallback? onShakeTick;
 
   @override
   State<ActionButton> createState() => _ActionButtonState();
@@ -26,6 +28,7 @@ class ActionButton extends StatefulWidget {
 class _ActionButtonState extends State<ActionButton>
     with TickerProviderStateMixin {
   bool _isPressed = false;
+  bool _shakeTickHigh = false;
 
   late final AnimationController _fillController;
   late final AnimationController _shakeController;
@@ -48,7 +51,16 @@ class _ActionButtonState extends State<ActionButton>
     _shakeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 60),
-    );
+    )..addListener(() {
+        final v = _shakeController.value;
+        if (v > 0.9 && !_shakeTickHigh) {
+          _shakeTickHigh = true;
+          widget.onShakeTick?.call();
+        } else if (v < 0.1 && _shakeTickHigh) {
+          _shakeTickHigh = false;
+          widget.onShakeTick?.call();
+        }
+      });
   }
 
   @override
@@ -60,6 +72,7 @@ class _ActionButtonState extends State<ActionButton>
 
   void _onLongPressStart() {
     if (widget.onLongPressComplete == null) return;
+    _shakeTickHigh = false;
     _fillController.forward(from: 0);
     _shakeController.repeat(reverse: true);
   }
