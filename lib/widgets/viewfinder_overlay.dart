@@ -10,11 +10,13 @@ class ViewfinderOverlay extends CustomPainter {
   final Color color;
   final String label;
   final DeviceOrientation deviceOrientation;
+  final double? scanProgress;
 
   ViewfinderOverlay({
     required this.color,
     required this.label,
     this.deviceOrientation = DeviceOrientation.portrait,
+    this.scanProgress,
   });
 
   @override
@@ -30,6 +32,10 @@ class ViewfinderOverlay extends CustomPainter {
     );
 
     _drawCornerBrackets(canvas, rect, strokeWidth);
+
+    if (scanProgress != null) {
+      _drawScanLine(canvas, rect);
+    }
 
     final textSpan = TextSpan(
       text: label,
@@ -157,9 +163,35 @@ class ViewfinderOverlay extends CustomPainter {
     canvas.drawLine(rect.bottomRight, rect.bottomRight + Offset(0, -bracketLength), paint);
   }
 
+  void _drawScanLine(Canvas canvas, Rect rect) {
+    final y = rect.top + rect.height * scanProgress!;
+    const inset = 8.0;
+
+    final glowPaint = Paint()
+      ..color = color.withValues(alpha: 0.3)
+      ..strokeWidth = 6
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    canvas.drawLine(
+      Offset(rect.left + inset, y),
+      Offset(rect.right - inset, y),
+      glowPaint,
+    );
+
+    final linePaint = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(rect.left + inset, y),
+      Offset(rect.right - inset, y),
+      linePaint,
+    );
+  }
+
   @override
   bool shouldRepaint(covariant ViewfinderOverlay oldDelegate) =>
       color != oldDelegate.color ||
       label != oldDelegate.label ||
-      deviceOrientation != oldDelegate.deviceOrientation;
+      deviceOrientation != oldDelegate.deviceOrientation ||
+      scanProgress != oldDelegate.scanProgress;
 }

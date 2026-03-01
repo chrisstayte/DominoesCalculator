@@ -65,6 +65,12 @@ class LocalSettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setShowScanLine(bool showScanLine) {
+    localSettings.showScanLine = showScanLine;
+    saveSettings();
+    notifyListeners();
+  }
+
   void setFreePointValue(int freePointValue) {
     localSettings.freePointValue = freePointValue;
     saveSettings();

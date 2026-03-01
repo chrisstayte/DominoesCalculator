@@ -32,13 +32,19 @@ class CameraScreen extends StatefulWidget {
   State<CameraScreen> createState() => _CameraScreenState();
 }
 
-class _CameraScreenState extends State<CameraScreen> {
+class _CameraScreenState extends State<CameraScreen>
+    with SingleTickerProviderStateMixin {
   DeviceOrientation _deviceOrientation = DeviceOrientation.portrait;
   StreamSubscription<AccelerometerEvent>? _accelSubscription;
+  late final AnimationController _scanController;
 
   @override
   void initState() {
     super.initState();
+    _scanController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
     _accelSubscription = accelerometerEventStream(
       samplingPeriod: const Duration(milliseconds: 200),
     ).listen(_onAccelerometerEvent);
@@ -52,6 +58,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   void dispose() {
+    _scanController.dispose();
     _accelSubscription?.cancel();
     super.dispose();
   }
@@ -138,6 +145,7 @@ class _CameraScreenState extends State<CameraScreen> {
           camera,
           nbt,
           settings.appAccentColor.color,
+          settings.showScanLine,
         ),
         CameraState.capturing ||
         CameraState.processing => _buildProcessing(camera, nbt),
@@ -289,6 +297,15 @@ class _CameraScreenState extends State<CameraScreen> {
                       onSelected: provider.setShowConfidence,
                     ),
                   ),
+                  SettingRow(
+                    label: 'SCAN LINE',
+                    child: SegmentedControl<bool>(
+                      options: const [true, false],
+                      labels: const ['ON', 'OFF'],
+                      selected: provider.localSettings.showScanLine,
+                      onSelected: provider.setShowScanLine,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -302,6 +319,7 @@ class _CameraScreenState extends State<CameraScreen> {
     CameraProvider camera,
     NeoBrutalistTheme nbt,
     Color accentColor,
+    bool showScanLine,
   ) {
     return Column(
       children: [
@@ -328,13 +346,26 @@ class _CameraScreenState extends State<CameraScreen> {
                     ),
                   ),
                 ),
-                CustomPaint(
-                  painter: ViewfinderOverlay(
-                    color: accentColor,
-                    label: 'TARGET',
-                    deviceOrientation: _deviceOrientation,
+                if (showScanLine)
+                  AnimatedBuilder(
+                    animation: _scanController,
+                    builder: (context, _) => CustomPaint(
+                      painter: ViewfinderOverlay(
+                        color: accentColor,
+                        label: 'TARGET',
+                        deviceOrientation: _deviceOrientation,
+                        scanProgress: _scanController.value,
+                      ),
+                    ),
+                  )
+                else
+                  CustomPaint(
+                    painter: ViewfinderOverlay(
+                      color: accentColor,
+                      label: 'TARGET',
+                      deviceOrientation: _deviceOrientation,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
