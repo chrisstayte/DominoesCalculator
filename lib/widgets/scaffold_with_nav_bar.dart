@@ -1,7 +1,9 @@
+import 'package:dominoes/providers/camera_provider.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class ScaffoldWithNavBar extends StatelessWidget {
   const ScaffoldWithNavBar({
@@ -49,6 +51,15 @@ class ScaffoldWithNavBar extends StatelessWidget {
                           .currentState
                           ?.popUntil((route) => route.isFirst);
                     }
+
+                    const cameraIndex = 2;
+                    final camera = context.read<CameraProvider>();
+                    if (selected == cameraIndex && i != cameraIndex) {
+                      camera.pausePreview();
+                    } else if (selected != cameraIndex && i == cameraIndex) {
+                      camera.resumePreview();
+                    }
+
                     navigationShell.goBranch(
                       i,
                       initialLocation: i == selected,

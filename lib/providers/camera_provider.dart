@@ -25,12 +25,14 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
   List<DetectionResult> _detections = [];
   String? _capturedImagePath;
   String? _errorMessage;
+  FlashMode _flashMode = FlashMode.auto;
 
   CameraController? get controller => _controller;
   CameraState get state => _state;
   List<DetectionResult> get detections => List.unmodifiable(_detections);
   String? get capturedImagePath => _capturedImagePath;
   String? get errorMessage => _errorMessage;
+  FlashMode get flashMode => _flashMode;
 
   CameraProvider() {
     WidgetsBinding.instance.addObserver(this);
@@ -61,6 +63,7 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       await _controller!.initialize();
       await _controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      await _controller!.setFlashMode(_flashMode);
       await _detector.initialize();
 
       _state = CameraState.preview;
@@ -112,11 +115,36 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  Future<void> cycleFlashMode() async {
+    _flashMode = switch (_flashMode) {
+      FlashMode.auto => FlashMode.always,
+      FlashMode.always => FlashMode.off,
+      _ => FlashMode.auto,
+    };
+    await _controller?.setFlashMode(_flashMode);
+    notifyListeners();
+  }
+
   void retake() {
     _detections = [];
     _capturedImagePath = null;
     _state = CameraState.preview;
     notifyListeners();
+  }
+
+  void pausePreview() {
+    _controller?.dispose();
+    _controller = null;
+    if (_state == CameraState.preview) {
+      _state = CameraState.uninitialized;
+      notifyListeners();
+    }
+  }
+
+  void resumePreview() {
+    if (_state == CameraState.uninitialized) {
+      initializeCamera();
+    }
   }
 
   Future<void> requestPermissionAgain() async {

@@ -344,6 +344,18 @@ class _CameraScreenState extends State<CameraScreen>
     );
   }
 
+  IconData _flashIcon(FlashMode mode) => switch (mode) {
+        FlashMode.auto => Icons.flash_auto,
+        FlashMode.always => Icons.flash_on,
+        _ => Icons.flash_off,
+      };
+
+  String _flashLabel(FlashMode mode) => switch (mode) {
+        FlashMode.auto => 'AUTO',
+        FlashMode.always => 'ON',
+        _ => 'OFF',
+      };
+
   Widget _buildCameraView(
     CameraProvider camera,
     NeoBrutalistTheme nbt,
@@ -475,16 +487,44 @@ class _CameraScreenState extends State<CameraScreen>
               dotColor: nbt.dotGridDotColor,
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: CaptureButton(
-                  color: accentColor,
-                  onTap: () {
-                    context.read<SfxService>().playCapture();
-                    context.read<VibrationService>().medium();
-                    camera.captureAndDetect();
-                  },
-                ),
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+              child: Row(
+                children: [
+                  const SizedBox(width: 48),
+                  const Spacer(),
+                  CaptureButton(
+                    color: accentColor,
+                    onTap: () {
+                      context.read<SfxService>().playCapture();
+                      context.read<VibrationService>().medium();
+                      camera.captureAndDetect();
+                    },
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => camera.cycleFlashMode(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _flashIcon(camera.flashMode),
+                          color: nbt.bodyTextColor,
+                          size: 28,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _flashLabel(camera.flashMode),
+                          style: GoogleFonts.bricolageGrotesque(
+                            color: nbt.secondaryTextColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

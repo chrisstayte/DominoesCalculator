@@ -11,6 +11,7 @@ import 'package:dominoes/widgets/domino_pip.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
 import 'package:dominoes/widgets/pip_history_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
@@ -74,7 +75,12 @@ class HomeScreen extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.history, color: nbt.iconColor, size: 28),
+            icon: SvgPicture.asset(
+              'assets/images/icons/history.svg',
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(nbt.iconColor, BlendMode.srcIn),
+            ),
             onPressed: () {
               showDialog(
                 context: context,
