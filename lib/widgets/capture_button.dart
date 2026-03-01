@@ -2,9 +2,10 @@ import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 
 class CaptureButton extends StatefulWidget {
-  const CaptureButton({super.key, required this.onTap});
+  const CaptureButton({super.key, required this.onTap, this.color});
 
   final VoidCallback onTap;
+  final Color? color;
 
   @override
   State<CaptureButton> createState() => _CaptureButtonState();
@@ -16,6 +17,7 @@ class _CaptureButtonState extends State<CaptureButton> {
   @override
   Widget build(BuildContext context) {
     final nbt = NeoBrutalistTheme.of(context);
+    final buttonColor = widget.color ?? nbt.accentYellow;
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
@@ -33,7 +35,7 @@ class _CaptureButtonState extends State<CaptureButton> {
         width: 72,
         height: 72,
         decoration: BoxDecoration(
-          color: nbt.accentYellow,
+          color: buttonColor,
           shape: BoxShape.circle,
           border: Border.all(color: nbt.borderColor, width: 3),
           boxShadow: [
@@ -50,7 +52,7 @@ class _CaptureButtonState extends State<CaptureButton> {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: nbt.accentYellow,
+              color: buttonColor,
               shape: BoxShape.circle,
               border: Border.all(color: nbt.borderColor, width: 2),
             ),

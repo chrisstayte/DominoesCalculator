@@ -159,8 +159,7 @@ class _CameraScreenState extends State<CameraScreen>
         ),
       ),
       body: switch (camera.state) {
-        CameraState.uninitialized ||
-        CameraState.preview => _buildCameraView(
+        CameraState.uninitialized || CameraState.preview => _buildCameraView(
           camera,
           nbt,
           settings.appAccentColor.color,
@@ -376,11 +375,12 @@ class _CameraScreenState extends State<CameraScreen>
 
               // Loading overlay — fades out when camera is ready
               FadeTransition(
-                opacity: Tween<double>(begin: 1.0, end: 0.0)
-                    .animate(CurvedAnimation(
-                  parent: _loadingFadeController,
-                  curve: Curves.easeOut,
-                )),
+                opacity: Tween<double>(begin: 1.0, end: 0.0).animate(
+                  CurvedAnimation(
+                    parent: _loadingFadeController,
+                    curve: Curves.easeOut,
+                  ),
+                ),
                 child: IgnorePointer(
                   ignoring: isReady,
                   child: CameraLoadingView(accentColor: accentColor),
@@ -403,7 +403,8 @@ class _CameraScreenState extends State<CameraScreen>
                               label: 'TARGET',
                               deviceOrientation: _deviceOrientation,
                               scanProgress: _scanController.value,
-                              scanGoingDown: _scanController.status ==
+                              scanGoingDown:
+                                  _scanController.status ==
                                   AnimationStatus.forward,
                             ),
                           ),
@@ -436,6 +437,7 @@ class _CameraScreenState extends State<CameraScreen>
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: Center(
                 child: CaptureButton(
+                  color: accentColor,
                   onTap: () {
                     context.read<SfxService>().playCapture();
                     context.read<VibrationService>().medium();

@@ -68,7 +68,7 @@ class _CameraLoadingViewState extends State<CameraLoadingView>
                 scanGoingDown: _scanController.status == AnimationStatus.forward,
                 cornerPulse: _cornerController.value,
                 accentColor: accent,
-                bracketColor: nbt.borderColor,
+                bracketColor: accent,
               ),
             ),
           ),
