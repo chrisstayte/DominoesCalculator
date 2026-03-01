@@ -10,11 +10,15 @@ import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/action_button.dart';
 import 'package:dominoes/widgets/capture_button.dart';
+import 'package:dominoes/widgets/section_card.dart';
+import 'package:dominoes/widgets/segmented_control.dart';
+import 'package:dominoes/widgets/setting_row.dart';
 import 'package:dominoes/widgets/detection_overlay.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
 import 'package:dominoes/widgets/permission_denied_view.dart';
 import 'package:dominoes/widgets/viewfinder_overlay.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
@@ -95,10 +99,26 @@ class _CameraScreenState extends State<CameraScreen> {
         centerTitle: true,
         leading: kDebugMode
             ? IconButton(
-                icon: Icon(Icons.bug_report, color: nbt.iconColor),
+                icon: SvgPicture.asset(
+                  'assets/images/icons/bug.svg',
+                  width: 24,
+                  height: 24,
+                  colorFilter: ColorFilter.mode(nbt.iconColor, BlendMode.srcIn),
+                ),
                 onPressed: () => _showLabelsDialog(context, nbt),
               )
             : null,
+        actions: [
+          IconButton(
+            icon: SvgPicture.asset(
+              'assets/images/icons/sliders.svg',
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(nbt.iconColor, BlendMode.srcIn),
+            ),
+            onPressed: () => _showDetectSettingsDialog(context, nbt),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
           child: Container(color: nbt.borderColor, height: 3),
@@ -109,7 +129,11 @@ class _CameraScreenState extends State<CameraScreen> {
         CameraState.permissionDenied => PermissionDeniedView(
           onRequestPermission: () => camera.requestPermissionAgain(),
         ),
-        CameraState.preview => _buildPreview(camera, nbt, settings.appAccentColor.color),
+        CameraState.preview => _buildPreview(
+          camera,
+          nbt,
+          settings.appAccentColor.color,
+        ),
         CameraState.capturing ||
         CameraState.processing => _buildProcessing(camera, nbt),
         CameraState.results => _buildResults(
@@ -190,6 +214,85 @@ class _CameraScreenState extends State<CameraScreen> {
     );
   }
 
+  void _showDetectSettingsDialog(BuildContext context, NeoBrutalistTheme nbt) {
+    final provider = context.read<LocalSettingsProvider>();
+
+    showDialog(
+      context: context,
+      builder: (_) => ChangeNotifierProvider.value(
+        value: provider,
+        child: Consumer<LocalSettingsProvider>(
+          builder: (context, provider, _) => Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 48,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: nbt.cardColor,
+                border: Border.all(color: nbt.borderColor, width: 4),
+                boxShadow: [
+                  BoxShadow(
+                    color: nbt.shadowColor,
+                    offset: const Offset(6, 6),
+                    blurRadius: 0,
+                    spreadRadius: 0,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    color: nbt.headerColor,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'DETECT_SETTINGS',
+                            style: GoogleFonts.bricolageGrotesque(
+                              color: nbt.headerTextColor,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Icon(
+                            Icons.close,
+                            color: nbt.headerTextColor,
+                            size: 24,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SettingRow(
+                    label: 'CONFIDENCE',
+                    child: SegmentedControl<bool>(
+                      options: const [true, false],
+                      labels: const ['ON', 'OFF'],
+                      selected: provider.localSettings.showConfidence,
+                      onSelected: provider.setShowConfidence,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildLoading(NeoBrutalistTheme nbt) {
     return CustomPaint(
       painter: DotGridPainter(
@@ -217,7 +320,11 @@ class _CameraScreenState extends State<CameraScreen> {
     );
   }
 
-  Widget _buildPreview(CameraProvider camera, NeoBrutalistTheme nbt, Color accentColor) {
+  Widget _buildPreview(
+    CameraProvider camera,
+    NeoBrutalistTheme nbt,
+    Color accentColor,
+  ) {
     return Column(
       children: [
         Expanded(

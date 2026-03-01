@@ -3,7 +3,7 @@ description: 'A new Flutter project.'
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+1
+version: 2.0.0+2
 
 environment:
   sdk: ^3.10.3
@@ -44,4 +44,5 @@ flutter:
   assets:
     - assets/images/pips/
     - assets/images/nav/
+    - assets/images/icons/
     - assets/models/

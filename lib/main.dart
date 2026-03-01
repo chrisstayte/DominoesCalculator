@@ -60,6 +60,10 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         textTheme: GoogleFonts.bricolageGrotesqueTextTheme(),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.white,
+          scrolledUnderElevation: 0,
+        ),
         extensions: [NeoBrutalistTheme.light()],
       ),
       darkTheme: ThemeData(
@@ -70,6 +74,10 @@ class _MyAppState extends State<MyApp> {
         ),
         textTheme: GoogleFonts.bricolageGrotesqueTextTheme(
           ThemeData(brightness: Brightness.dark).textTheme,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.black,
+          scrolledUnderElevation: 0,
         ),
         extensions: [NeoBrutalistTheme.dark()],
       ),
