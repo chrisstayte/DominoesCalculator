@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:dominoes/models/game_log.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
@@ -25,8 +26,8 @@ class GameLogProvider extends ChangeNotifier {
             .toList();
         notifyListeners();
       }
-    } catch (_) {
-      // If loading fails, start with an empty log list
+    } catch (e) {
+      debugPrint('Failed to load game logs: $e');
       _logs = [];
     }
   }
@@ -36,8 +37,8 @@ class GameLogProvider extends ChangeNotifier {
       final preferences = await SharedPreferences.getInstance();
       final json = jsonEncode(_logs.map((e) => e.toJson()).toList());
       await preferences.setString('gameLogs', json);
-    } catch (_) {
-      // Silently fail on save errors
+    } catch (e) {
+      debugPrint('Failed to save game logs: $e');
     }
   }
 
@@ -73,7 +74,7 @@ class GameLogProvider extends ChangeNotifier {
     }
   }
 
-  int get highScore => _logs.isEmpty ? 0 : _logs.map((l) => l.total).reduce((a, b) => a > b ? a : b);
+  int get highScore => _logs.isEmpty ? 0 : _logs.map((l) => l.total).reduce(math.max);
   double get averageScore => _logs.isEmpty ? 0 : _logs.map((l) => l.total).reduce((a, b) => a + b) / _logs.length;
   int get totalGames => _logs.length;
 }
