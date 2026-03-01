@@ -16,6 +16,7 @@ import 'package:dominoes/widgets/section_card.dart';
 import 'package:dominoes/widgets/segmented_control.dart';
 import 'package:dominoes/widgets/setting_row.dart';
 import 'package:dominoes/widgets/detection_overlay.dart';
+import 'package:dominoes/widgets/camera_loading_view.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
 import 'package:dominoes/widgets/permission_denied_view.dart';
 import 'package:dominoes/widgets/viewfinder_overlay.dart';
@@ -127,7 +128,9 @@ class _CameraScreenState extends State<CameraScreen> {
         ),
       ),
       body: switch (camera.state) {
-        CameraState.uninitialized => _buildLoading(nbt),
+        CameraState.uninitialized => CameraLoadingView(
+          accentColor: settings.appAccentColor.color,
+        ),
         CameraState.permissionDenied => PermissionDeniedView(
           onRequestPermission: () => camera.requestPermissionAgain(),
         ),
@@ -290,33 +293,6 @@ class _CameraScreenState extends State<CameraScreen> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoading(NeoBrutalistTheme nbt) {
-    return CustomPaint(
-      painter: DotGridPainter(
-        backgroundColor: nbt.dotGridBackground,
-        dotColor: nbt.dotGridDotColor,
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(color: nbt.borderColor, strokeWidth: 3),
-            const SizedBox(height: 16),
-            Text(
-              'INITIALIZING...',
-              style: GoogleFonts.bricolageGrotesque(
-                color: nbt.secondaryTextColor,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
-              ),
-            ),
-          ],
         ),
       ),
     );

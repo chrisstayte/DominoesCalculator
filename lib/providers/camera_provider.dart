@@ -120,6 +120,10 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
     if (state == AppLifecycleState.inactive) {
       _controller?.dispose();
       _controller = null;
+      if (_state == CameraState.preview) {
+        _state = CameraState.uninitialized;
+        notifyListeners();
+      }
     } else if (state == AppLifecycleState.resumed) {
       if (_state == CameraState.preview || _state == CameraState.uninitialized) {
         initializeCamera();
