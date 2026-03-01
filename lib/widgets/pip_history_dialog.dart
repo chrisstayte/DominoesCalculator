@@ -1,5 +1,6 @@
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
+import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -16,6 +17,7 @@ class PipHistoryDialog extends StatelessWidget {
     final nbt = NeoBrutalistTheme.of(context);
     final calculator = context.watch<CalculatorProvider>();
     final pips = calculator.selectedPips;
+    final coloredPips = context.watch<LocalSettingsProvider>().localSettings.coloredPips;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -145,10 +147,14 @@ class PipHistoryDialog extends StatelessWidget {
                                       ),
                                     ),
                                   )
-                                : SvgPicture.asset(
-                                    'assets/images/pips/${pip.readable}_black.svg',
-                                    colorFilter: ColorFilter.mode(nbt.bodyTextColor, BlendMode.srcIn),
-                                  ),
+                                : coloredPips
+                                    ? SvgPicture.asset(
+                                        'assets/images/pips/${pip.readable}_colored.svg',
+                                      )
+                                    : SvgPicture.asset(
+                                        'assets/images/pips/${pip.readable}_black.svg',
+                                        colorFilter: ColorFilter.mode(nbt.bodyTextColor, BlendMode.srcIn),
+                                      ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(

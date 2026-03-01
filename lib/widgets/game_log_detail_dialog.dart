@@ -1,6 +1,7 @@
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/models/game_log.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
+import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -16,6 +17,7 @@ class GameLogDetailDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nbt = NeoBrutalistTheme.of(context);
+    final coloredPips = context.watch<LocalSettingsProvider>().localSettings.coloredPips;
     final dateFormat = DateFormat('MMM d, yyyy  h:mm a');
 
     return Dialog(
@@ -167,10 +169,14 @@ class GameLogDetailDialog extends StatelessWidget {
                                     ),
                                   ),
                                 )
-                              : SvgPicture.asset(
-                                  'assets/images/pips/${pip.readable}_black.svg',
-                                  colorFilter: ColorFilter.mode(nbt.bodyTextColor, BlendMode.srcIn),
-                                ),
+                              : coloredPips
+                                  ? SvgPicture.asset(
+                                      'assets/images/pips/${pip.readable}_colored.svg',
+                                    )
+                                  : SvgPicture.asset(
+                                      'assets/images/pips/${pip.readable}_black.svg',
+                                      colorFilter: ColorFilter.mode(nbt.bodyTextColor, BlendMode.srcIn),
+                                    ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(

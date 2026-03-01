@@ -18,6 +18,7 @@ import 'package:dominoes/widgets/setting_row.dart';
 import 'package:dominoes/widgets/detection_overlay.dart';
 import 'package:dominoes/widgets/camera_loading_view.dart';
 import 'package:dominoes/widgets/focus_indicator_painter.dart';
+import 'package:dominoes/widgets/processing_overlay.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
 import 'package:dominoes/widgets/permission_denied_view.dart';
 import 'package:dominoes/widgets/viewfinder_overlay.dart';
@@ -534,53 +535,7 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   Widget _buildProcessing(CameraProvider camera, NeoBrutalistTheme nbt) {
-    return Column(
-      children: [
-        Expanded(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (camera.capturedImagePath != null)
-                Image.file(File(camera.capturedImagePath!), fit: BoxFit.cover),
-              Container(
-                color: Colors.black.withValues(alpha: 0.5),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(
-                        color: nbt.accentYellow,
-                        strokeWidth: 3,
-                      ),
-                      const SizedBox(height: 16),
-                      Transform(
-                        transform: Matrix4.skewX(-0.15),
-                        child: Container(
-                          color: nbt.headerColor,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          child: Text(
-                            'PROCESSING...',
-                            style: GoogleFonts.bricolageGrotesque(
-                              color: nbt.headerTextColor,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+    return ProcessingOverlay(imagePath: camera.capturedImagePath, nbt: nbt);
   }
 
   Widget _buildResults(

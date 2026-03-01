@@ -71,6 +71,12 @@ class LocalSettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setColoredPips(bool coloredPips) {
+    localSettings.coloredPips = coloredPips;
+    saveSettings();
+    notifyListeners();
+  }
+
   void setFreePointValue(int freePointValue) {
     localSettings.freePointValue = freePointValue;
     saveSettings();

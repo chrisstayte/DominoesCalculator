@@ -137,6 +137,16 @@ class SettingsScreen extends StatelessWidget {
                     onSelected: provider.setNumberStyle,
                   ),
                 ),
+                const ThickDivider(),
+                SettingRow(
+                  label: 'PIP_STYLE',
+                  child: SegmentedControl<bool>(
+                    options: const [false, true],
+                    labels: const ['CLASSIC', 'COLORED'],
+                    selected: settings.coloredPips,
+                    onSelected: provider.setColoredPips,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),

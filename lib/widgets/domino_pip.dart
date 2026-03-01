@@ -42,6 +42,17 @@ class _DominoPipState extends State<DominoPip> {
       return Text(freePointValue.toString(), style: valueTextStyle);
     }
 
+    final coloredPips = context
+        .watch<LocalSettingsProvider>()
+        .localSettings
+        .coloredPips;
+
+    if (coloredPips) {
+      return SvgPicture.asset(
+        'assets/images/pips/${pip.readable}_colored.svg',
+      );
+    }
+
     return SvgPicture.asset(
       'assets/images/pips/${pip.readable}_black.svg',
       colorFilter: ColorFilter.mode(nbt.bodyTextColor, BlendMode.srcIn),
