@@ -1,5 +1,6 @@
 import 'package:dominoes/constants.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
+import 'package:dominoes/providers/camera_provider.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/router.dart';
@@ -26,6 +27,9 @@ void main() async {
         ChangeNotifierProvider<GameLogProvider>(
           create: (context) => GameLogProvider(),
           lazy: false,
+        ),
+        ChangeNotifierProvider<CameraProvider>(
+          create: (context) => CameraProvider(),
         ),
       ],
       child: MyApp(),
