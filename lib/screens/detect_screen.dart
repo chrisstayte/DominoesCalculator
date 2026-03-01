@@ -168,7 +168,8 @@ class _CameraScreenState extends State<CameraScreen>
         ),
       ),
       body: switch (camera.state) {
-        CameraState.uninitialized || CameraState.preview => _buildCameraView(
+        CameraState.uninitialized => Container(color: Colors.black),
+        CameraState.preview => _buildCameraView(
           camera,
           nbt,
           settings.appAccentColor.color,
