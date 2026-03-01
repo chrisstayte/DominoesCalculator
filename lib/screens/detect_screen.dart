@@ -59,7 +59,7 @@ class _CameraScreenState extends State<CameraScreen> {
           ? DeviceOrientation.portrait
           : DeviceOrientation.upsideDown;
     } else {
-      orientation = x > 0
+      orientation = x < 0
           ? DeviceOrientation.landscapeLeft
           : DeviceOrientation.landscapeRight;
     }
