@@ -12,7 +12,6 @@ import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/action_button.dart';
 import 'package:dominoes/widgets/capture_button.dart';
-import 'package:dominoes/widgets/section_card.dart';
 import 'package:dominoes/widgets/segmented_control.dart';
 import 'package:dominoes/widgets/setting_row.dart';
 import 'package:dominoes/widgets/detection_overlay.dart';
@@ -21,6 +20,7 @@ import 'package:dominoes/widgets/focus_indicator_painter.dart';
 import 'package:dominoes/widgets/processing_overlay.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
 import 'package:dominoes/widgets/permission_denied_view.dart';
+import 'package:dominoes/widgets/skewed_header.dart';
 import 'package:dominoes/widgets/viewfinder_overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -124,21 +124,7 @@ class _CameraScreenState extends State<CameraScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: Transform(
-          transform: Matrix4.skewX(-0.15),
-          child: Container(
-            color: nbt.headerColor,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Text(
-              'DETECT',
-              style: GoogleFonts.bricolageGrotesque(
-                color: nbt.headerTextColor,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1,
-              ),
-            ),
-          ),
-        ),
+        title: const SkewedHeader(label: 'DETECT'),
         centerTitle: true,
         leading: kDebugMode
             ? IconButton(

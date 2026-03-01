@@ -10,6 +10,7 @@ import 'package:dominoes/widgets/action_button.dart';
 import 'package:dominoes/widgets/domino_pip.dart';
 import 'package:dominoes/widgets/dot_grid_painter.dart';
 import 'package:dominoes/widgets/pip_history_dialog.dart';
+import 'package:dominoes/widgets/skewed_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -57,21 +58,7 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Transform(
-          transform: Matrix4.skewX(-0.15),
-          child: Container(
-            color: nbt.headerColor,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Text(
-              'DOMINO_CALC',
-              style: GoogleFonts.bricolageGrotesque(
-                color: nbt.headerTextColor,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1,
-              ),
-            ),
-          ),
-        ),
+        title: const SkewedHeader(label: 'DOMINO_CALC'),
         centerTitle: true,
         actions: [
           IconButton(

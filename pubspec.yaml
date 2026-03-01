@@ -1,5 +1,5 @@
 name: dominoes
-description: 'A new Flutter project.'
+description: 'A brutalist-styled domino score calculator with real-time scoring and game logging.'
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
