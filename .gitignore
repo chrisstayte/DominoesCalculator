@@ -1,3 +1,12 @@
+# Machine Learning
+machine_learning/data/
+machine_learning/models/
+*.h5
+*.tflite
+*.pt
+*.onnx
+.ipynb_checkpoints/
+
 # Miscellaneous
 *.class
 *.lock
