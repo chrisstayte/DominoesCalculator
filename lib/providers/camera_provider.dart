@@ -105,6 +105,11 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
     } catch (_) {
       // Some devices don't support tap focus
     }
+    try {
+      await _controller!.setExposurePoint(normalizedPoint);
+    } catch (_) {
+      // Some devices don't support tap exposure
+    }
   }
 
   void retake() {
