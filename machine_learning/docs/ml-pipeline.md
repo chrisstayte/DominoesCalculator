@@ -21,12 +21,12 @@
 
 ```mermaid
 flowchart LR
-    A["Take ~25 photos\n(~20 dominoes each)"] --> B["Label in\nLabel Studio"]
-    B --> C["Train YOLO26\ndomino detector"]
-    C --> D["Take more photos\nrun detection"]
-    D --> E["Crop detections\nsplit in half"]
-    E --> F["Label pip counts\n(0-15)"]
-    F --> G["Train pip\nclassifier"]
+    A["Take ~25 photos<br/>(~20 dominoes each)"] --> B["Label in<br/>Label Studio"]
+    B --> C["Train YOLO26<br/>domino detector"]
+    C --> D["Take more photos<br/>run detection"]
+    D --> E["Crop detections<br/>split in half"]
+    E --> F["Label pip counts<br/>(0-15)"]
+    F --> G["Train pip<br/>classifier"]
 ```
 
 ### Why Two Models?
@@ -45,8 +45,8 @@ flowchart LR
     A["User takes photo"] --> B["YOLO26 Model"]
     B --> C["Detected domino crops"]
     C --> D["Split each crop in half"]
-    D --> E["Pip Classifier\n(0-15)"]
-    E --> F["Paired values\ne.g. (5, 3)"]
+    D --> E["Pip Classifier<br/>(0-15)"]
+    E --> F["Paired values<br/>e.g. (5, 3)"]
     F --> G["Score calculation"]
 ```
 
@@ -115,10 +115,10 @@ Use this XML config in **Settings > Labeling Interface > Code**:
 
 ```mermaid
 flowchart TD
-    A["Open an image"] --> B["Draw a bounding box\naround each domino tile"]
-    B --> C{"More dominoes\nin this image?"}
+    A["Open an image"] --> B["Draw a bounding box<br/>around each domino tile"]
+    B --> C{"More dominoes<br/>in this image?"}
     C -->|Yes| B
-    C -->|No| D["Submit & open\nnext image"]
+    C -->|No| D["Submit & open<br/>next image"]
     D --> E{"More images?"}
     E -->|Yes| A
     E -->|No| F["Export annotations"]
@@ -402,18 +402,18 @@ When the model struggles with certain tiles or conditions:
 
 ```mermaid
 flowchart TD
-    A["Identify failure cases"] --> B["Take new photos\nof problem scenarios"]
+    A["Identify failure cases"] --> B["Take new photos<br/>of problem scenarios"]
     B --> C["Import into Label Studio"]
     C --> D["Label bounding boxes"]
     D --> E["Export YOLO format"]
     E --> F["Merge with existing dataset"]
-    F --> G["Retrain YOLO26\n(fine-tune from last weights)"]
-    G --> H["Run new YOLO on photos"]
-    H --> I["Auto-crop & split halves"]
-    I --> J["Sort into pip folders (0-15)"]
+    F --> G["Retrain YOLO26<br/>(fine-tune from last weights)"]
+    G --> H["Run new YOLO<br/>on photos"]
+    H --> I["Auto-crop &<br/>split halves"]
+    I --> J["Sort into pip<br/>folders (0-15)"]
     J --> K["Retrain pip classifier"]
-    K --> L["Export both models to TFLite"]
-    L --> M["Update models in Flutter app"]
+    K --> L["Export both models<br/>to TFLite"]
+    L --> M["Update models in<br/>Flutter app"]
 ```
 
 ### Fine-Tune YOLO26
