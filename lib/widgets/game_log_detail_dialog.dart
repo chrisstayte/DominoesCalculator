@@ -219,8 +219,123 @@ class GameLogDetailDialog extends StatelessWidget {
                   ),
                   GestureDetector(
                     onTap: () {
-                      context.read<GameLogProvider>().deleteLog(log.id);
-                      Navigator.of(context).pop();
+                      showDialog(
+                        context: context,
+                        builder: (dialogContext) => Dialog(
+                          backgroundColor: Colors.transparent,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: nbt.cardColor,
+                              border: Border.all(color: nbt.borderColor, width: 4),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: nbt.shadowColor,
+                                  offset: const Offset(6, 6),
+                                  blurRadius: 0,
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  color: nbt.headerColor,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                  child: Text(
+                                    'DELETE_LOG',
+                                    style: GoogleFonts.bricolageGrotesque(
+                                      color: nbt.headerTextColor,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 18,
+                                      letterSpacing: 1,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Text(
+                                    'Are you sure you want to delete this game log?',
+                                    style: GoogleFonts.bricolageGrotesque(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: nbt.bodyTextColor,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () => Navigator.of(dialogContext).pop(),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(vertical: 10),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(color: nbt.borderColor, width: 2),
+                                              color: nbt.cardColor,
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                'CANCEL',
+                                                style: GoogleFonts.bricolageGrotesque(
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 13,
+                                                  letterSpacing: 1,
+                                                  color: nbt.bodyTextColor,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            context.read<GameLogProvider>().deleteLog(log.id);
+                                            Navigator.of(dialogContext).pop();
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(vertical: 10),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(color: nbt.borderColor, width: 2),
+                                              color: nbt.accentRed,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: nbt.shadowColor,
+                                                  offset: const Offset(2, 2),
+                                                  blurRadius: 0,
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                'DELETE',
+                                                style: GoogleFonts.bricolageGrotesque(
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 13,
+                                                  letterSpacing: 1,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(

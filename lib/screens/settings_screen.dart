@@ -9,10 +9,10 @@ import 'package:dominoes/widgets/info_row.dart';
 import 'package:dominoes/widgets/section_card.dart';
 import 'package:dominoes/widgets/segmented_control.dart';
 import 'package:dominoes/widgets/setting_row.dart';
+import 'package:dominoes/widgets/skewed_header.dart';
 import 'package:dominoes/widgets/tappable_row.dart';
 import 'package:dominoes/widgets/thick_divider.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -28,21 +28,7 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Transform(
-          transform: Matrix4.skewX(-0.15),
-          child: Container(
-            color: nbt.headerColor,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Text(
-              'SETTINGS',
-              style: GoogleFonts.bricolageGrotesque(
-                color: nbt.headerTextColor,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1,
-              ),
-            ),
-          ),
-        ),
+        title: const SkewedHeader(label: 'SETTINGS'),
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
