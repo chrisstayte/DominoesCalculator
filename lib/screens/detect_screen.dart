@@ -12,7 +12,6 @@ import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/action_button.dart';
 import 'package:dominoes/widgets/capture_button.dart';
-import 'package:dominoes/widgets/section_card.dart';
 import 'package:dominoes/widgets/segmented_control.dart';
 import 'package:dominoes/widgets/setting_row.dart';
 import 'package:dominoes/widgets/detection_overlay.dart';
@@ -235,7 +234,7 @@ class _CameraScreenState extends State<CameraScreen>
               child: ListView.separated(
                 padding: const EdgeInsets.all(12),
                 itemCount: labels.length,
-                separatorBuilder: (_, __) => Divider(
+                separatorBuilder: (_, _) => Divider(
                   color: nbt.borderColor.withValues(alpha: 0.2),
                   height: 1,
                 ),
@@ -347,16 +346,16 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   IconData _flashIcon(FlashMode mode) => switch (mode) {
-        FlashMode.auto => Icons.flash_auto,
-        FlashMode.always => Icons.flash_on,
-        _ => Icons.flash_off,
-      };
+    FlashMode.auto => Icons.flash_auto,
+    FlashMode.always => Icons.flash_on,
+    _ => Icons.flash_off,
+  };
 
   String _flashLabel(FlashMode mode) => switch (mode) {
-        FlashMode.auto => 'AUTO',
-        FlashMode.always => 'ON',
-        _ => 'OFF',
-      };
+    FlashMode.auto => 'AUTO',
+    FlashMode.always => 'ON',
+    _ => 'OFF',
+  };
 
   Widget _buildCameraView(
     CameraProvider camera,
@@ -429,7 +428,8 @@ class _CameraScreenState extends State<CameraScreen>
                 if (isReady && _focusPoint != null)
                   AnimatedBuilder(
                     animation: _focusController,
-                    builder: (context, _) => _focusController.isAnimating ||
+                    builder: (context, _) =>
+                        _focusController.isAnimating ||
                             _focusController.value < 1.0
                         ? CustomPaint(
                             painter: FocusIndicatorPainter(
@@ -482,7 +482,7 @@ class _CameraScreenState extends State<CameraScreen>
             parent: _bottomPanelController,
             curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
           ),
-          axisAlignment: 1.0,
+          alignment: Alignment.bottomLeft,
           child: CustomPaint(
             painter: DotGridPainter(
               backgroundColor: nbt.dotGridBackground,
