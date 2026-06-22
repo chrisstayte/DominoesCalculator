@@ -7,21 +7,57 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class GameLogProvider extends ChangeNotifier {
   List<GameLog> _logs = [];
+  late final Future<void> _loadFuture;
 
   List<GameLog> get logs => List.unmodifiable(_logs);
+  Future<void> get isReady => _loadFuture;
 
   GameLogProvider() {
-    _loadLogs();
+    _loadFuture = _loadLogs();
   }
 
   Future<void> _loadLogs() async {
-    final preferences = await SharedPreferences.getInstance();
-    final json = preferences.getString('gameLogs');
-    if (json != null) {
-      final List<dynamic> decoded = jsonDecode(json);
-      _logs = decoded
-          .map((e) => GameLog.fromJson(e as Map<String, dynamic>))
-          .toList();
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      final json = preferences.getString('gameLogs');
+      if (json != null) {
+        final decoded = jsonDecode(json);
+        if (decoded is! List<dynamic>) {
+          throw FormatException('Expected gameLogs to be a JSON array');
+        }
+
+        final logs = <GameLog>[];
+        var removedMalformedLogs = false;
+
+        for (final entry in decoded) {
+          try {
+            if (entry is! Map<String, dynamic>) {
+              throw FormatException('Expected game log to be a JSON object');
+            }
+            logs.add(GameLog.fromJson(entry));
+          } catch (_) {
+            removedMalformedLogs = true;
+          }
+        }
+
+        _logs = logs;
+        if (removedMalformedLogs) {
+          try {
+            await _saveLogs();
+          } catch (_) {
+            // Loading should not fail just because cleanup could not be saved.
+          }
+        }
+        notifyListeners();
+      }
+    } catch (_) {
+      _logs = [];
+      try {
+        final preferences = await SharedPreferences.getInstance();
+        await preferences.remove('gameLogs');
+      } catch (_) {
+        // Keep startup moving even if the preferences store cannot be repaired.
+      }
       notifyListeners();
     }
   }
