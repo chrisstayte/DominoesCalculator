@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalSettingsProvider extends ChangeNotifier {
   LocalSettings localSettings = LocalSettings();
-  final Completer _completer = Completer<void>();
+  final Completer<void> _completer = Completer<void>();
 
   Future<void> get isReady => _completer.future;
 
@@ -18,15 +18,29 @@ class LocalSettingsProvider extends ChangeNotifier {
   }
 
   Future<void> _loadSettings() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    String? localSettingsJson = preferences.getString('localSettings');
+    SharedPreferences? preferences;
 
-    if (localSettingsJson != null) {
-      Map<String, dynamic> json = jsonDecode(localSettingsJson);
-      localSettings = LocalSettings.fromJson(json);
+    try {
+      preferences = await SharedPreferences.getInstance();
+      final localSettingsJson = preferences.getString('localSettings');
+
+      if (localSettingsJson != null) {
+        final decoded = jsonDecode(localSettingsJson);
+        if (decoded is! Map<String, dynamic>) {
+          throw FormatException('Expected localSettings to be a JSON object');
+        }
+        localSettings = LocalSettings.fromJson(decoded);
+      }
+    } catch (_) {
+      localSettings = LocalSettings();
+      try {
+        await preferences?.remove('localSettings');
+      } catch (_) {
+        // Keep startup moving even if the preferences store cannot be repaired.
+      }
+    } finally {
+      _completer.complete();
     }
-
-    _completer.complete();
   }
 
   Future<void> saveSettings() async {
