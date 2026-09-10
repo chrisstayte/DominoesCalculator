@@ -1,438 +1,130 @@
-# Domino ML Pipeline
+# Domino ML pipeline in Google Colab
 
-> Two models trained in sequence: **YOLO26** detects whole domino tiles, then a **classifier** reads the pip count on each half (0–15). All training runs in Google Colab notebooks.
+Two standalone notebooks replace the earlier combined training notebook:
 
----
+1. [01_domino_detector.ipynb](../notebooks/01_domino_detector.ipynb): import and check the OBB dataset, review arrangement groups, freeze train/validation/test splits, train YOLO26-nano OBB, and validate/export the detector.
+2. [02_pip_classifier.ipynb](../notebooks/02_pip_classifier.ipynb): generate straightened halves from the existing annotations, label them inside Colab, train a 16-class CNN, validate/export it, and evaluate full-photo scores.
 
-## Table of Contents
+Each notebook contains its helpers. Uploading Python support files or cloning the repository is unnecessary. The readable sources and build script are retained in this repository for maintenance.
 
-1. [Pipeline Overview](#1-pipeline-overview)
-2. [Phase 1: Photograph Dominoes](#2-phase-1-photograph-dominoes)
-3. [Phase 2: Label with Label Studio](#3-phase-2-label-with-label-studio)
-4. [Phase 3: Train Domino Detection (YOLO26)](#4-phase-3-train-domino-detection-yolo26)
-5. [Phase 4: Build Pip Classification Dataset](#5-phase-4-build-pip-classification-dataset)
-6. [Phase 5: Train Pip Classifier](#6-phase-5-train-pip-classifier)
-7. [Exporting for Mobile](#7-exporting-for-mobile)
-8. [Retraining Workflow](#8-retraining-workflow)
+## First-time setup
 
----
+1. Create `MyDrive/DominoesCalculator` in Google Drive.
+2. Upload the prepared local archive `machine_learning/data/colab/dominoes-v1.zip` into that folder. Keep its filename unchanged. The archive contains the 74 original export files (about 153 MiB).
+3. Open the first notebook using **Colab → File → Upload notebook**.
+4. Run installation and configuration. The default `ACTION = "prepare"` checks data without starting training.
+5. Run the annotation previews and review all arrangement groups. Set `GROUPS_REVIEWED = True` only after this review, then rerun the split cell.
+6. Choose a GPU runtime for training, set `ACTION = "train"`, and rerun configuration followed by the training/check cells. Run installation again after changing/resetting the runtime if packages are missing.
+7. Open the second notebook in a separate session. Its default `ACTION = "label"` creates the candidate crops and opens the labeling station; a CPU runtime is enough for this stage.
 
-## 1. Pipeline Overview
+The classifier's labeling stage can run before the detector is trained. Train the models sequentially to avoid competing for GPU resources.
 
-```mermaid
-flowchart LR
-    A["Take ~25 photos<br/>(~20 dominoes each)"] --> B["Label in<br/>Label Studio"]
-    B --> C["Train YOLO26<br/>domino detector"]
-    C --> D["Take more photos<br/>run detection"]
-    D --> E["Crop detections<br/>split in half"]
-    E --> F["Label pip counts<br/>(0-15)"]
-    F --> G["Train pip<br/>classifier"]
+## Dataset: dominoes-v1
+
+The Label Studio **YOLOv8 OBB with Images** export imported on September 10, 2026 is at `machine_learning/data/raw/dominoes-v1/`:
+
+- 36 original `.jpeg` photos, with 36 matching label files.
+- 821 rotated domino boxes, class `0 = domino`.
+- `classes.txt` and `notes.json`; the latter is export metadata, not a full Label Studio annotation JSON backup.
+
+All 74 files were copied unchanged from `~/Downloads/dominoes-v1`, excluding `.DS_Store`, and verified with SHA-256. The source download remains available. Every image/label pair matched; every box had eight finite normalized corner coordinates forming a non-degenerate convex quadrilateral.
+
+Keep the original export intact. All `machine_learning/data/` and `machine_learning/models/` contents remain excluded from Git. A normal Git commit does not back up these photos, labels, or models. Google Drive becomes their persistent location when you use Colab.
+
+## The shared photo split
+
+Both notebooks reuse `data/manifests/dominoes-v1/split.json`.
+
+- Photos of the same arrangement, including repeated shots/angles, must have the same group in `photo_groups.csv`.
+- Initial group suggestions only combine exact duplicate files. They do not detect repeated arrangements automatically.
+- The split uses seed 42 and approximately 70%/15%/15% of groups for train/validation/test. Actual photo proportions depend on group sizes.
+- Both halves and all tiles from a photograph inherit its split.
+- A dataset fingerprint and grouping signature prevent a rerun from silently changing the split. Changed data/group assignments require a new dataset version and model run.
+- Validation is for model/threshold selection. Set `FINAL_TEST = True` only for the final held-out evaluation after choices are settled.
+
+With 36 photographs, evaluation depends strongly on scene variety and group counts. The 821 boxes do not represent 821 independent scenes.
+
+## Label the two halves
+
+The second notebook rectifies each annotated box to a horizontal 256×128 RGB tile, then saves A (left) and B (right) as 128×128 PNGs. This produces 1,642 candidate halves before rejecting unusable crops.
+
+The labeling station displays both halves. Select values 0–15 and click **Save & next**, or **Reject crop** if either half is unreadable or the geometry is wrong. Navigate back by tile number to correct a label. Every save updates `pip_labels.csv` in Drive and preserves the previous CSV copy. Keep one labeling session open at a time.
+
+The classifier can also read a manually edited CSV. Keep `tile_id` unchanged; valid status values are `pending`, `labeled`, and `rejected`. A labeled tile requires both numeric values. The interface never fills in unknown values automatically.
+
+Training waits for all tiles to be reviewed, labeled examples in each split, and at least one training example for every value 0–15. Review the class-count chart: sparse values need more real examples. Missing validation classes are reported as unavailable.
+
+## Training, saving, and restarting
+
+Colab uses `/content/domino-work` for temporary training input. Drive stores the originals, manifests, labeling progress, checkpoints, histories, evaluation results, and exports.
+
+Detector actions: `prepare`, `train`, `resume`, `evaluate`, `export`.
+
+Classifier actions: `label`, `train`, `resume`, `evaluate`, `export`.
+
+- `train` requires a new `RUN_NAME` and refuses to overwrite a previous experiment.
+- `resume` requires the same run name/data contract. The detector uses `weights/last.pt`; the classifier uses the checkpoint named by `progress.json`.
+- The classifier alternates two last-checkpoint files so interruption during saving leaves the previous completed epoch available. Optimizer state and epoch number resume; early-stopping and LR-patience counters restart.
+- `evaluate` loads the run's best saved model without retraining.
+- `export` loads the best model, evaluates it, exports mobile variants, and compares their validation performance.
+
+Dependency installation is explicit and primary libraries are pinned. Environment snapshots are saved per model run. The notebooks target Python 3.12 and a Colab NVIDIA GPU for training; default preparation/labeling do not require GPU computation.
+
+## What gets measured
+
+Detector checks include official mAP50 and mAP50–95, training curves, missed/extra tile counts at a configurable confidence, and labeled/detected overlays. Diagnostic matching uses one-to-one OBB IoU 0.5.
+
+Classifier checks include training curves, confusion counts, per-value sample counts/accuracy, and examples of wrong predictions. Half-classification evaluation uses annotated crops; full-photo evaluation includes detector crop errors as well.
+
+The complete pipeline reports:
+
+- Exact total-score accuracy and mean absolute score error.
+- Whether every tile and its unordered pair of values was correctly identified.
+- Missed/extra tiles and photos flagged for review by pip confidence.
+- Evaluated and excluded photo counts. Photos with rejected/unlabeled annotated tiles lack a known full score and are explicitly excluded, with reasons saved.
+
+Exact total scores can conceal offsetting mistakes, so use the all-tiles-correct metric too. A pip confidence threshold cannot establish that every domino was detected.
+
+`BLANK_SCORE` matches the app's setting (0, 25, or 50 points per blank half; default 50). The classifier always predicts actual pip values, including 0. Evaluation saves both raw pip sums and totals with this scoring rule.
+
+## Mobile exports
+
+The detector uses Ultralytics LiteRT export; the classifier uses TensorFlow Lite conversion. Each produces an FP32 baseline and an optional INT8 variant. Calibration only uses training images/crops, including a dedicated detector YAML whose validation path also points to training data.
+
+Exports are compared on validation, with a configurable tolerance. The metadata identifies the preferred acceptable model, measured file size, class order, preprocessing, and evaluation results. If no export meets the tolerance, the notebook stops instead of declaring it ready.
+
+When both preferred exports exist, notebook 2 checks their combined full-photo pipeline. Retain the export bundles and their JSON metadata alongside `labels_classifier.txt`.
+
+The Flutter app currently uses an SSD decoder. Integrating these models still requires OBB output decoding, reversing detector letterbox transforms, matching EXIF/RGB handling, the same tile rectification/splitting, and correct input/output quantization. Classifier normalization is embedded; do not apply it twice. Test the final implementation and latency on the target phone.
+
+## Repository maintenance and validation
+
+The notebooks are generated from `machine_learning/notebook_sources/` and embed `common.py` into each notebook. Edit those sources, then rebuild:
+
+```sh
+python machine_learning/scripts/build_notebooks.py
+python -m unittest discover -s machine_learning/tests -v
+python machine_learning/scripts/check_notebooks.py
+python machine_learning/scripts/check_model_paths.py
 ```
 
-### Why Two Models?
+The build uses `nbformat`. Local execution checks also need `nbclient`, `nbconvert`, `ipykernel`, and the notebooks' image/plot libraries. `check_notebooks.py` executes preparation/labeling against the real dataset in an isolated local project under the ignored `data/notebook_checks/` folder and writes executed copies, figures, and HTML previews. It does not invent pip labels, approve arrangement groups, or train a model.
 
-A single model would need to classify every possible tile combination — 136 classes for a double-15 set. By splitting into detection + classification, the problem becomes much simpler:
+`check_model_paths.py` separately exercises the classifier's train/resume/evaluate/FP32-and-INT8-export cells on a tiny explicitly synthetic dataset in a temporary directory. It also checks construction/inference of the installed YOLO26 OBB architecture without downloading pretrained weights. Synthetic smoke-test accuracy has no bearing on domino recognition quality.
 
-| Approach | Classes | Training Data Needed | Scalability |
-|----------|---------|---------------------|-------------|
-| Single model (whole tile) | 136 for double-15 | Enormous | Poor |
-| Two-stage (detect + classify) | 1 + 16 = 17 total | Manageable | Trivial |
+### Validation performed on September 10, 2026
 
-### End-to-End Flow (In-App)
+- Both generated notebooks passed `nbformat` schema and Python syntax validation.
+- Both preparation/labeling paths executed top-to-bottom against all 36 real photos; 821 tile crops and 1,642 half-images were generated in the isolated check directory. Rendered annotation overlays and crop previews were visually inspected.
+- Nine regression tests passed: dataset validation, rotated geometry, frozen group separation, numeric pip labels, labeling saves/reloads, one-to-one matching, total-score cancellation, blank scoring, and ZIP extraction boundaries.
+- Classifier training, optimizer/epoch resume, evaluation, numeric label export, and FP32/INT8 conversion/inference passed the synthetic smoke test with TensorFlow 2.19.1/Keras 3.9.2. The YOLO26 OBB architecture and result API passed with PyTorch 2.9.0/Ultralytics 8.4.144. Detector export dependencies resolved with the pinned versions.
+- Real detector/classifier training, pretrained-detector LiteRT conversion, Google Drive mounting/widget rendering inside Colab, and target-phone integration have not been run here. In Colab, complete the grouping review, run detector `train`, label the halves, run classifier `train`, then use each notebook's `export` action to validate the actual trained models. The local labeling widget's save/reload callbacks were tested.
 
-```mermaid
-flowchart LR
-    A["User takes photo"] --> B["YOLO26 Model"]
-    B --> C["Detected domino crops"]
-    C --> D["Split each crop in half"]
-    D --> E["Pip Classifier<br/>(0-15)"]
-    E --> F["Paired values<br/>e.g. (5, 3)"]
-    F --> G["Score calculation"]
-```
+To run the notebooks locally, set `DOMINO_ML_ROOT` to a persistent project folder with `data/raw/dominoes-v1`; optionally set `DOMINO_WORK_DIR` for generated local input. `DOMINO_SKIP_INSTALL=1` uses an already prepared environment. These overrides are not needed in Colab.
 
----
+## Sources
 
-## 2. Phase 1: Photograph Dominoes
-
-Start with approximately **25 photos**, each containing around **20 dominoes** from your double-15 set. This gives ~500 domino instances to label.
-
-### What to Capture
-
-| Variation | Examples |
-|-----------|----------|
-| Arrangements | Spread on table, lined up, in train formations, in hand |
-| Lighting | Bright daylight, dim indoor, overhead, side-lit, shadows |
-| Backgrounds | Wood table, felt, granite, carpet |
-| Distances | Close-up (3–5 tiles), medium (10–15 tiles), wide (full set) |
-| Angles | Straight down, slight tilt, perspective |
-
-### Tips
-
-- Use your phone camera — the same device that will run the model
-- Vary conditions across photos so the model generalizes well
-- Don't worry about pip values — include a mix naturally
-- Include some photos where tiles overlap or touch
-
----
-
-## 3. Phase 2: Label with Label Studio
-
-Label Studio is used **only for domino detection** (Stage 1). The pip classifier uses folder-based labeling later.
-
-### Setup
-
-```bash
-pip install label-studio
-label-studio start
-# Opens at http://localhost:8080
-```
-
-### Create a Project
-
-1. Click **Create Project**
-2. Name it `Domino Detection`
-3. Go to **Labeling Setup** > **Object Detection with Bounding Boxes**
-4. Set up a single label: `domino`
-
-### Labeling Interface Config
-
-Use this XML config in **Settings > Labeling Interface > Code**:
-
-```xml
-<View>
-  <Image name="image" value="$image"/>
-  <RectangleLabels name="label" toName="image">
-    <Label value="domino" background="green"/>
-  </RectangleLabels>
-</View>
-```
-
-### Import and Label
-
-1. Go to your project and click **Import**
-2. Upload all your domino photos
-3. For each image, draw a tight bounding box around every domino tile
-
-```mermaid
-flowchart TD
-    A["Open an image"] --> B["Draw a bounding box<br/>around each domino tile"]
-    B --> C{"More dominoes<br/>in this image?"}
-    C -->|Yes| B
-    C -->|No| D["Submit & open<br/>next image"]
-    D --> E{"More images?"}
-    E -->|Yes| A
-    E -->|No| F["Export annotations"]
-```
-
-### Labeling Tips
-
-- Draw boxes tightly around each domino tile (include both halves and the dividing line)
-- Every box is just labeled `domino` — don't worry about what's on the tile
-- If tiles overlap, still draw separate boxes for each
-- Label tiles even if they're partially cut off at the image edge
-
-### Export
-
-1. Click **Export** in your project
-2. Select **YOLO** format
-3. Download the zip
-
-This produces:
-
-```
-export/
-  images/
-    img_001.jpg
-    img_002.jpg
-  labels/
-    img_001.txt    # YOLO format: class x_center y_center width height
-    img_002.txt
-  classes.txt      # Contains: domino
-```
-
-Each label file has one line per domino (all values normalized 0–1):
-
-```
-0 0.45 0.32 0.12 0.08
-0 0.71 0.55 0.11 0.09
-```
-
----
-
-## 4. Phase 3: Train Domino Detection (YOLO26)
-
-Training runs in a **Google Colab** notebook with GPU access.
-
-### Organize the Dataset
-
-After exporting from Label Studio, organize into the YOLO training structure:
-
-```
-domino_dataset/
-  train/
-    images/
-    labels/
-  val/
-    images/
-    labels/
-  data.yaml
-```
-
-Split roughly **80% train / 20% val**.
-
-### data.yaml
-
-```yaml
-path: ./domino_dataset
-train: train/images
-val: val/images
-
-nc: 1
-names: ['domino']
-```
-
-### Colab Training
-
-```python
-# Install Ultralytics
-!pip install ultralytics
-
-from ultralytics import YOLO
-
-# Load YOLO26-nano pretrained model
-model = YOLO('yolo26n.pt')
-
-# Train on your domino dataset
-results = model.train(
-    data='domino_dataset/data.yaml',
-    epochs=100,
-    imgsz=640,
-    batch=16,
-    name='domino_detector'
-)
-```
-
-### Training Output
-
-```
-runs/detect/domino_detector/
-  weights/
-    best.pt            # Best model checkpoint
-    last.pt            # Last epoch checkpoint
-  results.png          # Training metrics plots
-  confusion_matrix.png
-```
-
-### Validate
-
-```python
-model = YOLO('runs/detect/domino_detector/weights/best.pt')
-metrics = model.val()
-```
-
----
-
-## 5. Phase 4: Build Pip Classification Dataset
-
-Once the YOLO26 model reliably detects dominoes, use it to generate training data for the pip classifier. Take **more photos** to increase variety, then run detection and crop.
-
-### Auto-Crop and Split
-
-```python
-from ultralytics import YOLO
-from PIL import Image
-import os
-
-model = YOLO('runs/detect/domino_detector/weights/best.pt')
-output_dir = 'classifier_data/unsorted'
-os.makedirs(output_dir, exist_ok=True)
-
-# Run detection on all photos
-results = model.predict(source='all_photos/', save_crop=True)
-
-# Split each crop in half
-for crop_path in os.listdir('runs/detect/predict/crops/domino/'):
-    img = Image.open(f'runs/detect/predict/crops/domino/{crop_path}')
-    w, h = img.size
-    name = crop_path.replace('.jpg', '')
-
-    if h > w:
-        # Vertical domino — split top/bottom
-        top = img.crop((0, 0, w, h // 2))
-        bottom = img.crop((0, h // 2, w, h))
-        top.save(f'{output_dir}/{name}_a.jpg')
-        bottom.save(f'{output_dir}/{name}_b.jpg')
-    else:
-        # Horizontal domino — split left/right
-        left = img.crop((0, 0, w // 2, h))
-        right = img.crop((w // 2, 0, w, h))
-        left.save(f'{output_dir}/{name}_a.jpg')
-        right.save(f'{output_dir}/{name}_b.jpg')
-```
-
-### Label Pip Counts
-
-Manually sort the halves from `unsorted/` into folders by pip count:
-
-```
-classifier_data/
-  train/
-    0/
-      half_001.jpg
-      half_002.jpg
-    1/
-      half_001.jpg
-    ...
-    15/
-      half_001.jpg
-  val/
-    0/
-    1/
-    ...
-    15/
-```
-
-This is tedious but only needs to be done once per batch. Split roughly 80/20 between train and val.
-
----
-
-## 6. Phase 5: Train Pip Classifier
-
-The model architecture for pip classification is TBD — we'll determine the best approach once we have the dataset built and can evaluate options. Training will run in **Google Colab**.
-
-### Baseline Example (Simple CNN)
-
-```python
-import tensorflow as tf
-
-IMG_SIZE = (100, 100)
-BATCH_SIZE = 32
-
-train_ds = tf.keras.utils.image_dataset_from_directory(
-    'classifier_data/train',
-    image_size=IMG_SIZE,
-    batch_size=BATCH_SIZE
-)
-
-val_ds = tf.keras.utils.image_dataset_from_directory(
-    'classifier_data/val',
-    image_size=IMG_SIZE,
-    batch_size=BATCH_SIZE
-)
-
-normalization = tf.keras.layers.Rescaling(1./255)
-train_ds = train_ds.map(lambda x, y: (normalization(x), y))
-val_ds = val_ds.map(lambda x, y: (normalization(x), y))
-
-model = tf.keras.Sequential([
-    tf.keras.layers.Conv2D(32, 3, activation='relu', input_shape=(100, 100, 3)),
-    tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Conv2D(64, 3, activation='relu'),
-    tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Conv2D(128, 3, activation='relu'),
-    tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dropout(0.3),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(16, activation='softmax')
-])
-
-model.compile(
-    optimizer='adam',
-    loss='sparse_categorical_crossentropy',
-    metrics=['accuracy']
-)
-
-model.fit(train_ds, validation_data=val_ds, epochs=50)
-model.save('pip_classifier.h5')
-```
-
----
-
-## 7. Exporting for Mobile
-
-### YOLO26 to TFLite
-
-```bash
-yolo export model=runs/detect/domino_detector/weights/best.pt \
-  format=tflite \
-  int8=True \
-  imgsz=640
-```
-
-### YOLO26 to CoreML (iOS)
-
-```bash
-yolo export model=runs/detect/domino_detector/weights/best.pt \
-  format=coreml \
-  nms=True
-```
-
-### Pip Classifier to TFLite
-
-```python
-import tensorflow as tf
-
-model = tf.keras.models.load_model('pip_classifier.h5')
-
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
-converter.optimizations = [tf.lite.Optimize.DEFAULT]
-tflite_model = converter.convert()
-
-with open('pip_classifier.tflite', 'wb') as f:
-    f.write(tflite_model)
-```
-
-### Final App Assets
-
-```
-assets/
-  models/
-    domino_detector.tflite     # YOLO26 — finds domino tiles (~3-4MB)
-    pip_classifier.tflite      # Classifies pip count per half (~1MB)
-    labels_detector.txt        # "domino"
-    labels_classifier.txt      # "0\n1\n2\n...15"
-```
-
----
-
-## 8. Retraining Workflow
-
-When the model struggles with certain tiles or conditions:
-
-```mermaid
-flowchart TD
-    A["Identify failure cases"] --> B["Take new photos<br/>of problem scenarios"]
-    B --> C["Import into Label Studio"]
-    C --> D["Label bounding boxes"]
-    D --> E["Export YOLO format"]
-    E --> F["Merge with existing dataset"]
-    F --> G["Retrain YOLO26<br/>(fine-tune from last weights)"]
-    G --> H["Run new YOLO<br/>on photos"]
-    H --> I["Auto-crop &<br/>split halves"]
-    I --> J["Sort into pip<br/>folders (0-15)"]
-    J --> K["Retrain pip classifier"]
-    K --> L["Export both models<br/>to TFLite"]
-    L --> M["Update models in<br/>Flutter app"]
-```
-
-### Fine-Tune YOLO26
-
-```python
-model = YOLO('runs/detect/domino_detector/weights/best.pt')
-model.train(
-    data='domino_dataset_v2/data.yaml',
-    epochs=50,
-    imgsz=640
-)
-```
-
-### Merging Datasets
-
-```bash
-# Add new labeled data to existing dataset
-cp new_export/images/* domino_dataset/train/images/
-cp new_export/labels/* domino_dataset/train/labels/
-
-# Move ~20% of new data to val
-```
+- [Google Colab runtime and storage FAQ](https://research.google.com/colaboratory/faq.html)
+- [Ultralytics OBB training, results, and validation](https://docs.ultralytics.com/tasks/obb/)
+- [Ultralytics LiteRT export and calibration](https://docs.ultralytics.com/integrations/litert/)
+- [Keras image loading and class order](https://keras.io/api/data_loading/image/)

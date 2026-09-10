@@ -26,6 +26,7 @@ Currently on `version-2.0.0` — a ground-up rewrite that takes things from *fun
 - [Tech Stack](#tech-stack)
 - [Roadmap](#roadmap)
 - [Getting Started](#getting-started)
+- [Machine Learning](#machine-learning)
 
 ---
 
@@ -554,6 +555,15 @@ gantt
 | Multi-player Support | Not started | No player model yet |
 
 ---
+
+## Machine Learning
+
+Train the two-model domino reader in Google Colab:
+
+1. [Domino detector notebook](machine_learning/notebooks/01_domino_detector.ipynb) — rotated tile detection with YOLO26 OBB.
+2. [Pip classifier notebook](machine_learning/notebooks/02_pip_classifier.ipynb) — crop labeling, classification, and complete photo-score evaluation.
+
+See the [Colab setup and dataset guide](machine_learning/docs/ml-pipeline.md) for Drive storage, photo grouping, checkpoints, and mobile exports.
 
 ## Getting Started
 
