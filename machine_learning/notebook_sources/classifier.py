@@ -105,7 +105,10 @@ plt.show()
 # %%
 def labeling_station(tiles, crops, labels_path):
     import ipywidgets as widgets
-    from IPython.display import display, clear_output
+    from io import BytesIO
+    from IPython.display import display
+    if not tiles:
+        raise ValueError("No tile crops are available. Run Prepare tile halves before labeling.")
     if IN_COLAB:
         from google.colab import output
         output.enable_custom_widget_manager()
@@ -116,7 +119,9 @@ def labeling_station(tiles, crops, labels_path):
     reject = widgets.Button(description="Reject crop")
     previous = widgets.Button(description="Previous")
     pending = widgets.Button(description="Next pending")
-    output = widgets.Output()
+    tile_caption = widgets.Label()
+    tile_image = widgets.Image(format="png", layout=widgets.Layout(max_width="100%", height="auto"))
+    preview = widgets.VBox([tile_caption, tile_image, widgets.Label("A = LEFT HALF · B = RIGHT HALF")])
     message = widgets.HTML()
 
     def show(*_):
@@ -126,12 +131,11 @@ def labeling_station(tiles, crops, labels_path):
         a.value, b.value = row["a"], row["b"]
         counts = Counter(r["status"] for r in current.values())
         message.value = f"<b>{index.value}/{len(tiles)}</b> · {counts['labeled']} labeled · {counts['rejected']} rejected · {counts['pending']} pending"
-        with output:
-            clear_output(wait=True)
-            combined = np.concatenate([read_rgb(crops / tile["a_path"]), read_rgb(crops / tile["b_path"])], axis=1)
-            print(tile["tile_id"], "—", row["status"])
-            display(Image.fromarray(combined).resize((768, 384), Image.Resampling.NEAREST))
-            print("A = LEFT HALF                         B = RIGHT HALF")
+        combined = np.concatenate([read_rgb(crops / tile["a_path"]), read_rgb(crops / tile["b_path"])], axis=1)
+        buffer = BytesIO()
+        Image.fromarray(combined).resize((768, 384), Image.Resampling.NEAREST).save(buffer, format="PNG")
+        tile_caption.value = f"{tile['tile_id']} — {row['status']}"
+        tile_image.value = buffer.getvalue()
 
     def advance_pending(*_):
         current = load_pip_labels(labels_path, tiles)
@@ -162,14 +166,20 @@ def labeling_station(tiles, crops, labels_path):
     previous.on_click(lambda _: setattr(index, "value", max(1, index.value - 1)))
     pending.on_click(advance_pending)
     index.observe(show, names="value")
-    panel = widgets.VBox([message, widgets.HBox([index, previous, pending]), output,
+    panel = widgets.VBox([message, widgets.HBox([index, previous, pending]), preview,
                           widgets.HBox([a, b]), widgets.HBox([save, reject])])
-    display(panel)
+    # Populate before display and update widget values in callbacks. Clearing an Output
+    # widget before its view attaches can clear the surrounding Colab cell instead.
     show()
+    display(panel)
     return panel
 
-if ACTION == "label" and os.environ.get("DOMINO_NO_WIDGETS") != "1":
-    labeling_station(tiles, CROPS, LABELS_PATH)
+if ACTION != "label":
+    print('Picker is paused. Set ACTION = "label", rerun Configuration, then rerun this cell.')
+elif os.environ.get("DOMINO_NO_WIDGETS") == "1":
+    print("Picker is disabled by DOMINO_NO_WIDGETS. Remove that override to label interactively.")
+else:
+    label_picker = labeling_station(tiles, CROPS, LABELS_PATH)
 
 # %% [markdown]
 # ## Check labels and reuse the photo split

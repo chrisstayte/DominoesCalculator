@@ -5,6 +5,7 @@ python -m unittest discover -s machine_learning/tests -v
 from pathlib import Path
 import ast
 import importlib.util
+import io
 import json
 import tempfile
 import unittest
@@ -137,8 +138,23 @@ class PipelineTests(unittest.TestCase):
         tiles = h.make_crops(root, records, crops, fingerprint)
         labels_path = crops / "pip_labels.csv"
         station = self.classifier_function("labeling_station")
-        with patch("IPython.display.display"), patch("IPython.display.clear_output"):
+        def check_display(panel):
+            # The first view must include the image already; no output clearing may
+            # erase that view when Colab attaches the widget asynchronously.
+            preview = panel.children[2]
+            image = Image.open(io.BytesIO(bytes(preview.children[1].value)))
+            self.assertEqual(image.size, (768, 384))
+            expected = np.concatenate([h.read_rgb(crops / tiles[0]["a_path"]),
+                                       h.read_rgb(crops / tiles[0]["b_path"])], axis=1)
+            np.testing.assert_array_equal(np.asarray(image), np.asarray(
+                Image.fromarray(expected).resize((768, 384), Image.Resampling.NEAREST)))
+            self.assertIn(tiles[0]["tile_id"], preview.children[0].value)
+
+        with patch("IPython.display.display", side_effect=check_display) as display, \
+                patch("IPython.display.clear_output", side_effect=AssertionError("Picker must not clear cell output")) as clear:
             panel = station(tiles, crops, labels_path)
+            display.assert_called_once_with(panel)
+            first_image = bytes(panel.children[2].children[1].value)
             panel.children[3].children[0].value = "10"
             panel.children[3].children[1].value = "2"
             panel.children[4].children[0].click()
@@ -147,10 +163,14 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(labels[tiles[0]["tile_id"]]["b"], "2")
             self.assertEqual(labels[tiles[0]["tile_id"]]["status"], "labeled")
             self.assertTrue(labels_path.with_suffix(".previous.csv").exists())
+            self.assertIn(tiles[1]["tile_id"], panel.children[2].children[0].value)
+            self.assertNotEqual(bytes(panel.children[2].children[1].value), first_image)
+            self.assertEqual(display.call_count, 1)
             panel.children[4].children[1].click()
             self.assertEqual(h.load_pip_labels(labels_path, tiles)[tiles[1]["tile_id"]]["status"], "rejected")
             resumed = station(tiles, crops, labels_path)
             self.assertEqual(resumed.children[3].children[0].value, "10")
+            clear.assert_not_called()
 
     def test_equal_total_does_not_hide_wrong_tile_pairs(self):
         raw = self.root / "raw"
