@@ -30,7 +30,9 @@ def install_packages(requirements):
     modules = {"numpy": "numpy", "pandas": "pandas", "matplotlib": "matplotlib",
                "pillow": "PIL", "opencv-python": "cv2", "torch": "torch",
                "torchvision": "torchvision", "tensorflow": "tensorflow", "keras": "keras",
-               "scipy": "scipy", "scikit-learn": "sklearn", "h5py": "h5py"}
+               "scipy": "scipy", "scikit-learn": "sklearn", "h5py": "h5py",
+               "jax": "jax", "jaxlib": "jaxlib", "ml-dtypes": "ml_dtypes",
+               "litert-torch": "litert_torch", "torchao": "torchao"}
     loaded = {name: installed(name) for name, module in modules.items() if module in sys.modules}
     print("Installing packages for Python", sys.version.split()[0], "— progress follows:", flush=True)
     command = [sys.executable, "-u", "-m", "pip", "install",

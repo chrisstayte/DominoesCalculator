@@ -70,6 +70,10 @@ Classifier actions: `label`, `train`, `resume`, `evaluate`, `export`.
 
 Dependency installation is explicit, shows live pip output, and pins primary libraries. Environment snapshots are saved per model run. The notebooks support Colab Python 3.12 and 3.13 with a NVIDIA GPU for training; default preparation/labeling do not require GPU computation. Python 3.12 retains NumPy 1.26.4 / TensorFlow 2.19.1 / Keras 3.9.2. Python 3.13 uses NumPy 2.1.3 / TensorFlow 2.20.0 / Keras 3.10.0 because the older NumPy and TensorFlow pins do not support that Python version. Local macOS runs use Python 3.12.
 
+Detector export pins JAX and jaxlib to 0.6.2 for LiteRT Torch 0.9.0's `jaxlib._jax.mlir` serialization API. The export setup selects CPU for JAX and checks conversion imports before loading data. If an older notebook fails with `No module named 'jaxlib._jax'`, update its export dependencies cell with these pins, run the installation, then restart the session and rerun with `ACTION = "export"`. Saved Drive checkpoints are reused. Changing an already imported JAX package also triggers the installer's restart guard.
+
+TorchAO is pinned to 0.14.1, the release paired with PyTorch 2.9.0 in the [official compatibility table](https://github.com/pytorch/ao/issues/2919). LiteRT Torch 0.9.0 imports `torchao.quantization.pt2e`, which is absent from newer TorchAO releases. If this import fails in an older notebook, include `torchao==0.14.1` in the same export dependency installation, restart once after the package changes, then rerun export. Keep both setup cells on the same NumPy version to avoid repeated upgrades and downgrades.
+
 If setup replaces a package already loaded by Colab, it stops with an explicit restart instruction. Restart the session and rerun setup before importing packages; rerunning the failed import alone leaves old compiled extensions in memory. For an older notebook reporting `numpy.dtype size changed` on Python 3.13, use the updated notebook in a fresh runtime. A notebook copy already open in Colab is not updated by changes in this repository.
 
 ## What gets measured
@@ -110,12 +114,17 @@ python machine_learning/scripts/check_notebooks.py
 python machine_learning/scripts/check_model_paths.py
 ```
 
+For a notebook saved from an active Colab run, apply dependency repairs to the affected cells while preserving its configuration and recorded outputs. A full rebuild creates fresh notebooks with starter settings and no execution history.
+
+With the detector export dependencies installed, `python machine_learning/scripts/check_detector_export.py` checks actual YOLO26 OBB FP32/INT8 conversion and LiteRT inference using random weights and eight synthetic calibration images in a temporary directory. This is an export smoke test, not an accuracy evaluation, and never reads saved trained checkpoints.
+
 The build uses `nbformat`. Local execution checks also need `nbclient`, `nbconvert`, `ipykernel`, and the notebooks' image/plot libraries. `check_notebooks.py` executes preparation/labeling against the real dataset in an isolated local project under the ignored `data/notebook_checks/` folder and writes executed copies, figures, and HTML previews. It does not invent pip labels, approve arrangement groups, or train a model.
 
 `check_model_paths.py` separately exercises the classifier's train/resume/evaluate/FP32-and-INT8-export cells on a tiny explicitly synthetic dataset in a temporary directory. It also checks construction/inference of the installed YOLO26 OBB architecture without downloading pretrained weights. Synthetic smoke-test accuracy has no bearing on domino recognition quality.
 
 ### Validation performed on September 10, 2026
 
+- The export dependency repair passed 14 unit tests, including restart detection for loaded NumPy/JAX/TorchAO and repeated installation without another restart when versions are unchanged. On local macOS/Python 3.12 with PyTorch 2.9.0, JAX/jaxlib 0.6.2, TorchAO 0.14.1, and LiteRT Torch 0.9.0, a small FP32 convolution model matched PyTorch outputs; synthetic YOLO26 OBB FP32 and INT8 exports both produced finite LiteRT inference outputs with matching shapes. The trained model's Colab/Python 3.13 export must still be rerun and validated there.
 - Both generated notebooks passed `nbformat` schema and Python syntax validation.
 - Both preparation/labeling paths executed top-to-bottom against all 36 real photos; 821 tile crops and 1,642 half-images were generated in the isolated check directory. Rendered annotation overlays and crop previews were visually inspected.
 - Nine regression tests passed: dataset validation, rotated geometry, frozen group separation, numeric pip labels, labeling saves/reloads, one-to-one matching, total-score cancellation, blank scoring, and ZIP extraction boundaries.

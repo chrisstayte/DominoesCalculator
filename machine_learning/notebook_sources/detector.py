@@ -58,11 +58,20 @@ assert ACTION in {"prepare", "train", "resume", "evaluate", "export"}
 # This runs only for `export`, before importing PyTorch. If you changed to export after
 # already importing/training in this session, restart the runtime and run from setup with
 # `ACTION = "export"`. This lets the package resolver keep NumPy/PyTorch compatible.
+# LiteRT 0.9.0 uses JAX's private serialization API, so pin JAX and jaxlib together.
+# TorchAO 0.14.1 matches PyTorch 2.9.0 and includes the PT2E APIs used by LiteRT.
+# Conversion uses CPU; the T4 remains available to PyTorch for detector validation.
 
 # %%
 if ACTION == "export":
+    os.environ["JAX_PLATFORMS"] = "cpu"
     install_packages([NUMPY_REQUIREMENT, "torch==2.9.0", "torchvision==0.24.0",
-                      "litert-torch==0.9.0", "ai-edge-litert==2.1.4", "ai-edge-quantizer==0.6.0"])
+                      "litert-torch==0.9.0", "ai-edge-litert==2.1.4", "ai-edge-quantizer==0.6.0",
+                      "jax==0.6.2", "jaxlib==0.6.2", "torchao==0.14.1"])
+    # Fail here if conversion imports are broken, before loading data or evaluating.
+    from jaxlib._jax.mlir import serialize_portable_artifact
+    import litert_torch
+    print("Export dependencies ready.")
 
 # %% shared
 
