@@ -21,19 +21,16 @@
 
 # %% [markdown]
 # ## Setup
-# Run installation before importing packages. If Colab asks for a runtime restart, restart
-# and rerun setup. Package versions are pinned; an environment snapshot is also saved per run.
+# Run installation before importing packages. Setup supports Colab Python 3.12 and 3.13
+# and shows live installation progress. If setup requests a restart, choose **Runtime →
+# Restart session**, then rerun setup before continuing. Package versions are pinned;
+# an environment snapshot is also saved per run.
 # Export conversion may install additional backend dependencies; restart after such changes if requested.
 
-# %%
-import os
-import subprocess
-import sys
-
-if os.environ.get("DOMINO_SKIP_INSTALL") != "1":
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
-                           "ultralytics==8.4.144", "torch==2.9.0", "torchvision==0.24.0", "numpy==1.26.4", "pandas==2.2.3",
-                           "matplotlib==3.10.1", "pillow==11.1.0", "opencv-python==4.11.0.86"])
+# %% setup
+install_packages(["ultralytics==8.4.144", "torch==2.9.0", "torchvision==0.24.0",
+                  NUMPY_REQUIREMENT, "pandas==2.2.3", "matplotlib==3.10.1",
+                  "pillow==11.1.0", "opencv-python==4.11.0.86"])
 
 # %% [markdown]
 # ### Configuration
@@ -63,10 +60,9 @@ assert ACTION in {"prepare", "train", "resume", "evaluate", "export"}
 # `ACTION = "export"`. This lets the package resolver keep NumPy/PyTorch compatible.
 
 # %%
-if ACTION == "export" and os.environ.get("DOMINO_SKIP_INSTALL") != "1":
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "numpy==1.26.4",
-                           "torch==2.9.0", "torchvision==0.24.0", "litert-torch==0.9.0",
-                           "ai-edge-litert==2.1.4", "ai-edge-quantizer==0.6.0"])
+if ACTION == "export":
+    install_packages([NUMPY_REQUIREMENT, "torch==2.9.0", "torchvision==0.24.0",
+                      "litert-torch==0.9.0", "ai-edge-litert==2.1.4", "ai-edge-quantizer==0.6.0"])
 
 # %% shared
 

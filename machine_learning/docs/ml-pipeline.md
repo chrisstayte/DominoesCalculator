@@ -12,7 +12,7 @@ Each notebook contains its helpers. Uploading Python support files or cloning th
 1. Create `MyDrive/DominoesCalculator` in Google Drive.
 2. Upload the prepared local archive `machine_learning/data/colab/dominoes-v1.zip` into that folder. Keep its filename unchanged. The archive contains the 74 original export files (about 153 MiB).
 3. Open the first notebook using **Colab → File → Upload notebook**.
-4. Run installation and configuration. The default `ACTION = "prepare"` checks data without starting training.
+4. Run installation. If it requests **Runtime → Restart session**, restart and rerun installation before continuing to configuration. The default `ACTION = "prepare"` checks data without starting training.
 5. Run the annotation previews and review all arrangement groups. Set `GROUPS_REVIEWED = True` only after this review, then rerun the split cell.
 6. Choose a GPU runtime for training, set `ACTION = "train"`, and rerun configuration followed by the training/check cells. Run installation again after changing/resetting the runtime if packages are missing.
 7. Open the second notebook in a separate session. Its default `ACTION = "label"` creates the candidate crops and opens the labeling station; a CPU runtime is enough for this stage.
@@ -68,7 +68,9 @@ Classifier actions: `label`, `train`, `resume`, `evaluate`, `export`.
 - `evaluate` loads the run's best saved model without retraining.
 - `export` loads the best model, evaluates it, exports mobile variants, and compares their validation performance.
 
-Dependency installation is explicit and primary libraries are pinned. Environment snapshots are saved per model run. The notebooks target Python 3.12 and a Colab NVIDIA GPU for training; default preparation/labeling do not require GPU computation.
+Dependency installation is explicit, shows live pip output, and pins primary libraries. Environment snapshots are saved per model run. The notebooks support Colab Python 3.12 and 3.13 with a NVIDIA GPU for training; default preparation/labeling do not require GPU computation. Python 3.12 retains NumPy 1.26.4 / TensorFlow 2.19.1 / Keras 3.9.2. Python 3.13 uses NumPy 2.1.3 / TensorFlow 2.20.0 / Keras 3.10.0 because the older NumPy and TensorFlow pins do not support that Python version. Local macOS runs use Python 3.12.
+
+If setup replaces a package already loaded by Colab, it stops with an explicit restart instruction. Restart the session and rerun setup before importing packages; rerunning the failed import alone leaves old compiled extensions in memory. For an older notebook reporting `numpy.dtype size changed` on Python 3.13, use the updated notebook in a fresh runtime. A notebook copy already open in Colab is not updated by changes in this repository.
 
 ## What gets measured
 

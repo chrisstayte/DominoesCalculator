@@ -23,6 +23,8 @@ def build(name, filename):
             body = "\n".join(line[2:] if line.startswith("# ") else line[1:] if line.startswith("#") else line for line in body.splitlines())
             cell = nbformat.v4.new_markdown_cell(body.strip())
         else:
+            if "setup" in kind:
+                body = (SOURCE / "installer.py").read_text() + "\n\n" + body
             ast.parse(body)
             cell = nbformat.v4.new_code_cell(body.strip())
         # Stable IDs keep regenerated diffs small.

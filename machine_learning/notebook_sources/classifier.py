@@ -21,18 +21,14 @@
 # %% [markdown]
 # ## Setup
 # Install before imports. Use the same dataset name and frozen split as notebook 1.
-# If Colab requests a runtime restart after installation, restart and rerun setup.
+# Setup selects compatible packages for Colab Python 3.12 or 3.13 and shows live progress.
+# If setup requests a restart, choose **Runtime → Restart session**, then rerun setup.
 
-# %%
-import os
-import subprocess
-import sys
-
-if os.environ.get("DOMINO_SKIP_INSTALL") != "1":
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
-                           "tensorflow==2.19.1", "keras==3.9.2", "numpy==1.26.4", "pandas==2.2.3",
-                           "matplotlib==3.10.1", "pillow==11.1.0", "opencv-python==4.11.0.86",
-                           "scikit-learn==1.6.1", "ipywidgets==8.1.7", "ultralytics==8.4.144", "torch==2.9.0", "torchvision==0.24.0", "ai-edge-litert==2.1.4"])
+# %% setup
+install_packages([TENSORFLOW_REQUIREMENT, KERAS_REQUIREMENT, NUMPY_REQUIREMENT, "pandas==2.2.3",
+                  "matplotlib==3.10.1", "pillow==11.1.0", "opencv-python==4.11.0.86",
+                  "scikit-learn==1.6.1", "ipywidgets==8.1.7", "ultralytics==8.4.144",
+                  "torch==2.9.0", "torchvision==0.24.0", "ai-edge-litert==2.1.4"])
 
 # %%
 DATASET_NAME = "dominoes-v1"
