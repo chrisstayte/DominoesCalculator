@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
 class DotGridPainter extends CustomPainter {
-  DotGridPainter({required this.backgroundColor, required this.dotColor});
+  DotGridPainter({
+    required this.backgroundColor,
+    required this.dotColor,
+    this.centered = false,
+  });
 
   final Color backgroundColor;
   final Color dotColor;
+  final bool centered;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -17,8 +22,10 @@ class DotGridPainter extends CustomPainter {
     const spacing = 16.0;
     const radius = 2.0;
 
-    for (double x = spacing; x < size.width; x += spacing) {
-      for (double y = spacing; y < size.height; y += spacing) {
+    final startX = centered ? (size.width / 2 + 8) % spacing : spacing;
+    final startY = centered ? (size.height / 2 + 8) % spacing : spacing;
+    for (double x = startX; x < size.width; x += spacing) {
+      for (double y = startY; y < size.height; y += spacing) {
         canvas.drawCircle(Offset(x, y), radius, paint);
       }
     }
@@ -26,6 +33,7 @@ class DotGridPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant DotGridPainter oldDelegate) =>
+      centered != oldDelegate.centered ||
       backgroundColor != oldDelegate.backgroundColor ||
       dotColor != oldDelegate.dotColor;
 }

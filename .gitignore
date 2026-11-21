@@ -58,6 +58,8 @@ analysis_benchmark.json
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+/linux/flutter/ephemeral/
+/windows/flutter/ephemeral/
 **/generated_plugin_registrant.dart
 .packages
 .pub-cache/

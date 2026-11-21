@@ -1,0 +1,16 @@
+<div id="domino-release">
+<h3>Follow one scoring fix</h3>
+<div class="nav nav-pills" role="tablist" aria-label="Release stage">
+<button class="nav-link active" type="button" role="tab" id="dr1" aria-selected="true" aria-controls="dp1">Push to dev</button>
+<button class="nav-link" type="button" role="tab" id="dr2" aria-selected="false" aria-controls="dp2">Merge to main</button>
+<button class="nav-link" type="button" role="tab" id="dr3" aria-selected="false" aria-controls="dp3">Validate</button>
+<button class="nav-link" type="button" role="tab" id="dr4" aria-selected="false" aria-controls="dp4">Approve</button>
+<button class="nav-link" type="button" role="tab" id="dr5" aria-selected="false" aria-controls="dp5">Upload</button>
+</div>
+<hr>
+<div id="dp1" role="tabpanel" aria-labelledby="dr1"><i data-lucide="git-branch" aria-hidden="true"></i> Public dev → Linux runner → analysis and test results</div>
+<div id="dp2" role="tabpanel" aria-labelledby="dr2" hidden><i data-lucide="git-merge" aria-hidden="true"></i> Reviewed scoring fix → public main → exact commit A</div>
+<div id="dp3" role="tabpanel" aria-labelledby="dr3" hidden><i data-lucide="package" aria-hidden="true"></i> Pin A → run validate → unsigned iPhone app built from A</div>
+<div id="dp4" role="tabpanel" aria-labelledby="dr4" hidden><i data-lucide="check" aria-hidden="true"></i> Passing build + release decision → record A as approved</div>
+<div id="dp5" role="tabpanel" aria-labelledby="dr5" hidden><i data-lucide="upload" aria-hidden="true"></i> Explicit upload request → rebuild A → sign IPA → Apple processes build</div>
+</div>

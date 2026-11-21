@@ -64,6 +64,8 @@ class _MyAppState extends State<MyApp> {
     final themeMode = localSettingsProvider.localSettings.themeMode;
     final splashEnabled = localSettingsProvider.localSettings.showSplashScreen;
 
+    if (!splashEnabled) _showSplash = false;
+
     return MaterialApp.router(
       routerConfig: _router,
       title: 'Dominoes',

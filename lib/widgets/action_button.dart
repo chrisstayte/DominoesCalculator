@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
@@ -12,8 +13,10 @@ class ActionButton extends StatefulWidget {
     required this.onTap,
     this.onLongPressComplete,
     this.onShakeTick,
+    this.unavailableMessage,
   });
 
+  final String? unavailableMessage;
   final IconData icon;
   final Color color;
   final Color foregroundColor;
@@ -27,6 +30,7 @@ class ActionButton extends StatefulWidget {
 
 class _ActionButtonState extends State<ActionButton>
     with TickerProviderStateMixin {
+  Timer? _feedbackTimer;
   bool _isPressed = false;
   bool _shakeTickHigh = false;
 
@@ -48,26 +52,50 @@ class _ActionButtonState extends State<ActionButton>
           }
         });
 
-    _shakeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 60),
-    )..addListener(() {
-        final v = _shakeController.value;
-        if (v > 0.9 && !_shakeTickHigh) {
-          _shakeTickHigh = true;
-          widget.onShakeTick?.call();
-        } else if (v < 0.1 && _shakeTickHigh) {
-          _shakeTickHigh = false;
-          widget.onShakeTick?.call();
-        }
-      });
+    _shakeController =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 60),
+        )..addListener(() {
+          final v = _shakeController.value;
+          if (v > 0.9 && !_shakeTickHigh) {
+            _shakeTickHigh = true;
+            widget.onShakeTick?.call();
+          } else if (v < 0.1 && _shakeTickHigh) {
+            _shakeTickHigh = false;
+            widget.onShakeTick?.call();
+          }
+        });
   }
 
   @override
   void dispose() {
+    _feedbackTimer?.cancel();
     _fillController.dispose();
     _shakeController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(ActionButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.unavailableMessage != oldWidget.unavailableMessage) {
+      _feedbackTimer?.cancel();
+      _feedbackTimer = null;
+    }
+  }
+
+  void _onTap() {
+    if (widget.unavailableMessage == null) {
+      widget.onTap();
+      return;
+    }
+    _feedbackTimer?.cancel();
+    setState(() {
+      _feedbackTimer = Timer(const Duration(milliseconds: 1500), () {
+        setState(() => _feedbackTimer = null);
+      });
+    });
   }
 
   void _onLongPressStart() {
@@ -95,7 +123,7 @@ class _ActionButtonState extends State<ActionButton>
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
       onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onTap,
+      onTap: _onTap,
       onLongPressStart: hasLongPress ? (_) => _onLongPressStart() : null,
       onLongPressEnd: hasLongPress ? (_) => _onLongPressEnd() : null,
       onLongPressDown: hasLongPress
@@ -156,11 +184,28 @@ class _ActionButtonState extends State<ActionButton>
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Icon(
-                        widget.icon,
-                        color: widget.foregroundColor,
-                        size: 24,
-                      ),
+                      child: _feedbackTimer != null
+                          ? SizedBox(
+                              height: 24,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Semantics(
+                                  liveRegion: true,
+                                  child: Text(
+                                    widget.unavailableMessage!,
+                                    style: TextStyle(
+                                      color: widget.foregroundColor,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Icon(
+                              widget.icon,
+                              color: widget.foregroundColor,
+                              size: 24,
+                            ),
                     ),
                   ),
                 ],
