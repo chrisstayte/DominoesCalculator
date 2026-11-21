@@ -1,3 +1,4 @@
+import 'package:dominoes/widgets/adaptive_workspace.dart';
 import 'package:dominoes/providers/camera_provider.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
@@ -30,83 +31,99 @@ class ScaffoldWithNavBar extends StatelessWidget {
     final nbt = NeoBrutalistTheme.of(context);
     final selected = navigationShell.currentIndex;
 
-    return Scaffold(
-      body: navigationShell,
-
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: nbt.borderColor, width: 3)),
-        ),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: List.generate(_tabs.length, (i) {
-              final isSelected = i == selected;
-              final bottomPadding = MediaQuery.of(context).padding.bottom;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    if (i == selected) {
-                      branchNavigatorKeys[i]
-                          .currentState
-                          ?.popUntil((route) => route.isFirst);
-                    }
-
-                    const cameraIndex = 2;
-                    final camera = context.read<CameraProvider>();
-                    if (selected == cameraIndex && i != cameraIndex) {
-                      camera.pausePreview();
-                    } else if (selected != cameraIndex && i == cameraIndex) {
-                      camera.resumePreview();
-                    }
-
-                    navigationShell.goBranch(
-                      i,
-                      initialLocation: i == selected,
+    final top =
+        hasWorkspace(context) &&
+        MediaQuery.orientationOf(context) == Orientation.landscape;
+    final navigation = Container(
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: nbt.borderColor, width: 3)),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: List.generate(_tabs.length, (i) {
+            final isSelected = i == selected;
+            final bottomPadding = top
+                ? 0.0
+                : MediaQuery.paddingOf(context).bottom;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  if (i == selected) {
+                    branchNavigatorKeys[i].currentState?.popUntil(
+                      (route) => route.isFirst,
                     );
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isSelected ? nbt.selectedColor : nbt.unselectedColor,
-                      border: i > 0
-                          ? Border(
-                              left: BorderSide(color: nbt.borderColor, width: 3),
-                            )
-                          : null,
-                    ),
-                    padding: EdgeInsets.only(top: 8, bottom: 8 + bottomPadding),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SvgPicture.asset(
-                          _tabs[i].svg,
-                          width: 28,
-                          height: 28,
-                          colorFilter: ColorFilter.mode(
-                            isSelected ? nbt.selectedTextColor : nbt.unselectedTextColor,
-                            BlendMode.srcIn,
+                  }
+
+                  const cameraIndex = 2;
+                  final camera = context.read<CameraProvider>();
+                  if (selected == cameraIndex && i != cameraIndex) {
+                    camera.pausePreview();
+                  } else if (selected != cameraIndex && i == cameraIndex) {
+                    camera.resumePreview();
+                  }
+
+                  navigationShell.goBranch(i, initialLocation: i == selected);
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isSelected ? nbt.selectedColor : nbt.unselectedColor,
+                    border: i > 0
+                        ? Border(
+                            left: BorderSide(color: nbt.borderColor, width: 3),
+                          )
+                        : null,
+                  ),
+                  padding: EdgeInsets.only(top: 8, bottom: 8 + bottomPadding),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.asset(
+                        _tabs[i].svg,
+                        width: 28,
+                        height: 28,
+                        colorFilter: ColorFilter.mode(
+                          isSelected
+                              ? nbt.selectedTextColor
+                              : nbt.unselectedTextColor,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      if (showLabels || top) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          _tabs[i].label,
+                          style: TextStyle(
+                            color: isSelected
+                                ? nbt.selectedTextColor
+                                : nbt.unselectedTextColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
                           ),
                         ),
-                        if (showLabels) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            _tabs[i].label,
-                            style: TextStyle(
-                              color: isSelected ? nbt.selectedTextColor : nbt.unselectedTextColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
                       ],
-                    ),
+                    ],
                   ),
                 ),
-              );
-            }),
-          ),
+              ),
+            );
+          }),
         ),
       ),
+    );
+    return Scaffold(
+      body: top
+          ? SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  navigation,
+                  Expanded(child: navigationShell),
+                ],
+              ),
+            )
+          : navigationShell,
+      bottomNavigationBar: top ? null : navigation,
     );
   }
 }
