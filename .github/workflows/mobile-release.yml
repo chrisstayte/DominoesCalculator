@@ -44,7 +44,7 @@ jobs:
       - id: build
         env:
           BUILD_NUMBER_SEED: ${{ vars.MOBILE_BUILD_NUMBER_SEED }}
-          MODE: ${{ github.event_name == 'push' && 'testflight' || inputs.mode || 'validate' }}
+          MODE: ${{ github.event_name == 'push' && 'both' || inputs.mode || 'validate' }}
         run: python3 scripts/release/build-number.py
 
   unsigned:
@@ -132,7 +132,7 @@ jobs:
         run: bash scripts/release/install-signing.sh cleanup
 
   android:
-    if: inputs.mode == 'play-internal' || inputs.mode == 'both'
+    if: github.event_name == 'push' || inputs.mode == 'play-internal' || inputs.mode == 'both'
     needs: [version, reserve]
     environment: play-internal
     runs-on: ubuntu-latest

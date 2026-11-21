@@ -1,6 +1,6 @@
 # Mobile releases
 
-The public app repository owns both development checks and beta distribution. Review the changes on dev, then promote to main. Every push to main, including a merge, automatically uploads to TestFlight after checks and an unsigned iOS build pass. For a fresh TestFlight build or a Google Play internal upload, open Actions → Mobile release → Run workflow, select main and choose testflight, play-internal or both. Both uses the same version and build number on the two stores.
+The public app repository owns both development checks and beta distribution. Review the changes on dev, then promote to main. Every push to main, including a merge, automatically uploads to TestFlight and Google Play internal testing after checks and an unsigned iOS build pass. For a fresh build on either or both stores, open Actions → Mobile release → Run workflow, select main and choose testflight, play-internal or both. Both uses the same version and build number on the two stores.
 
 ## Continue the existing app listings
 
