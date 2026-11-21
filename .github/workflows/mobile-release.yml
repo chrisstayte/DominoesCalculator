@@ -17,7 +17,7 @@ permissions:
 
 concurrency:
   group: dominoes-mobile-release
-  cancel-in-progress: false
+  queue: max
 
 env:
   FLUTTER_VERSION: 3.50.1
@@ -44,7 +44,7 @@ jobs:
       - id: build
         env:
           BUILD_NUMBER_SEED: ${{ vars.MOBILE_BUILD_NUMBER_SEED }}
-          MODE: ${{ inputs.mode || 'validate' }}
+          MODE: ${{ github.event_name == 'push' && 'testflight' || inputs.mode || 'validate' }}
         run: python3 scripts/release/build-number.py
 
   unsigned:
@@ -89,7 +89,7 @@ jobs:
         run: flutter build appbundle --release --build-name "$VERSION" --build-number "$BUILD_NUMBER"
 
   reserve:
-    if: github.event_name == 'workflow_dispatch' && inputs.mode != 'validate'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode != 'validate'))
     needs: [version, unsigned]
     runs-on: ubuntu-latest
     permissions:
@@ -102,7 +102,7 @@ jobs:
         run: gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA"
 
   testflight:
-    if: inputs.mode == 'testflight' || inputs.mode == 'both'
+    if: github.event_name == 'push' || inputs.mode == 'testflight' || inputs.mode == 'both'
     needs: [version, reserve]
     environment: testflight
     runs-on: macos-26
