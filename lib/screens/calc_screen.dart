@@ -1,3 +1,4 @@
+import 'package:dominoes/widgets/adaptive_workspace.dart';
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/enum/number_style.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
@@ -55,6 +56,135 @@ class HomeScreen extends StatelessWidget {
     final vibration = context.read<VibrationService>();
     final total = calculator.total(freePointValue: settings.freePointValue);
 
+    final wide = hasWorkspace(context);
+    final score = CustomPaint(
+      painter: DotGridPainter(
+        backgroundColor: nbt.dotGridBackground,
+        dotColor: nbt.dotGridDotColor,
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Transform(
+                      transform: Matrix4.skewX(-0.15),
+                      child: Container(
+                        color: nbt.headerColor,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        child: Text(
+                          'CURRENT_SCORE',
+                          style: GoogleFonts.bricolageGrotesque(
+                            color: nbt.headerTextColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$total',
+                      style: GoogleFonts.bricolageGrotesque(
+                        fontSize: 128,
+                        fontWeight: FontWeight.w900,
+                        color: nbt.bodyTextColor,
+                        height: 1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ActionButton(
+                    icon: Icons.backspace_outlined,
+                    color: nbt.accentRed,
+                    foregroundColor: Colors.black,
+                    onTap: () {
+                      sfx.playDelete();
+                      vibration.medium();
+                      calculator.removeLast();
+                    },
+                    onLongPressComplete: () {
+                      sfx.playClear();
+                      vibration.heavy();
+                      calculator.clear();
+                    },
+                    onShakeTick: () => vibration.light(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ActionButton(
+                    icon: Icons.save_outlined,
+                    color: nbt.accentGreen,
+                    foregroundColor: Colors.black,
+                    onTap: () {
+                      if (calculator.selectedPips.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('No pips to save'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                        return;
+                      }
+                      sfx.playSuccess();
+                      vibration.medium();
+                      context.read<GameLogProvider>().saveGame(
+                        calculator,
+                        settings.freePointValue,
+                      );
+                      calculator.clear();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    final keypad = Container(
+      decoration: BoxDecoration(
+        color: settings.appAccentColor.color,
+        border: Border(top: BorderSide(color: nbt.borderColor, width: 3)),
+      ),
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        padding: const EdgeInsets.all(1),
+        child: LayoutBuilder(
+          builder: (context, bounds) => GridView.count(
+            childAspectRatio: bounds.hasBoundedHeight
+                ? (bounds.maxWidth - 6) / (bounds.maxHeight - 6)
+                : 1,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            crossAxisCount: 4,
+            mainAxisSpacing: 2,
+            crossAxisSpacing: 2,
+            children: [
+              ..._buildDominoTiles(context, settings.numberStyle, calculator),
+            ],
+          ),
+        ),
+      ),
+    );
     return Scaffold(
       appBar: AppBar(
         title: Transform(
@@ -74,157 +204,87 @@ class HomeScreen extends StatelessWidget {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: SvgPicture.asset(
-              'assets/images/icons/history.svg',
-              width: 24,
-              height: 24,
-              colorFilter: ColorFilter.mode(nbt.iconColor, BlendMode.srcIn),
-            ),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (_) => ChangeNotifierProvider.value(
-                  value: calculator,
-                  child: PipHistoryDialog(
-                    freePointValue: settings.freePointValue,
+          if (!wide)
+            IconButton(
+              icon: SvgPicture.asset(
+                'assets/images/icons/history.svg',
+                width: 24,
+                height: 24,
+                colorFilter: ColorFilter.mode(nbt.iconColor, BlendMode.srcIn),
+              ),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => ChangeNotifierProvider.value(
+                    value: calculator,
+                    child: PipHistoryDialog(
+                      freePointValue: settings.freePointValue,
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
           child: Container(color: nbt.borderColor, height: 3),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: CustomPaint(
-              painter: DotGridPainter(
-                backgroundColor: nbt.dotGridBackground,
-                dotColor: nbt.dotGridDotColor,
-              ),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Transform(
-                            transform: Matrix4.skewX(-0.15),
-                            child: Container(
-                              color: nbt.headerColor,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              child: Text(
-                                'CURRENT_SCORE',
-                                style: GoogleFonts.bricolageGrotesque(
-                                  color: nbt.headerTextColor,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1,
-                                ),
-                              ),
+      body: !wide
+          ? LayoutBuilder(
+              builder: (context, bounds) {
+                final keypadHeight = (bounds.maxWidth + 3).clamp(
+                  0.0,
+                  bounds.maxHeight * .78,
+                );
+                return Column(
+                  children: [
+                    Expanded(child: score),
+                    SizedBox(height: keypadHeight, child: keypad),
+                  ],
+                );
+              },
+            )
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: LayoutBuilder(
+                  builder: (context, bounds) {
+                    final history = PipHistoryDialog(
+                      freePointValue: settings.freePointValue,
+                      embedded: true,
+                    );
+                    if (bounds.maxWidth >= bounds.maxHeight) {
+                      return WorkspaceSplit(
+                        leading: Column(
+                          children: [
+                            SizedBox(
+                              height: bounds.maxHeight * .44,
+                              child: score,
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '$total',
-                            style: GoogleFonts.bricolageGrotesque(
-                              fontSize: 128,
-                              fontWeight: FontWeight.w900,
-                              color: nbt.bodyTextColor,
-                              height: 1,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: ActionButton(
-                            icon: Icons.backspace_outlined,
-                            color: nbt.accentRed,
-                            foregroundColor: Colors.black,
-                            onTap: () {
-                              sfx.playDelete();
-                              vibration.medium();
-                              calculator.removeLast();
-                            },
-                            onLongPressComplete: () {
-                              sfx.playClear();
-                              vibration.heavy();
-                              calculator.clear();
-                            },
-                            onShakeTick: () => vibration.light(),
-                          ),
+                            const SizedBox(height: 16),
+                            Expanded(child: history),
+                          ],
                         ),
-                        const SizedBox(width: 12),
+                        trailing: keypad,
+                      );
+                    }
+                    return Column(
+                      children: [
+                        SizedBox(height: bounds.maxHeight * .30, child: score),
+                        const SizedBox(height: 16),
                         Expanded(
-                          child: ActionButton(
-                            icon: Icons.save_outlined,
-                            color: nbt.accentGreen,
-                            foregroundColor: Colors.black,
-                            onTap: () {
-                              if (calculator.selectedPips.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('No pips to save'),
-                                    duration: Duration(seconds: 1),
-                                  ),
-                                );
-                                return;
-                              }
-                              sfx.playSuccess();
-                              vibration.medium();
-                              context.read<GameLogProvider>().saveGame(
-                                calculator,
-                                settings.freePointValue,
-                              );
-                              calculator.clear();
-                            },
+                          child: WorkspaceSplit(
+                            leading: history,
+                            trailing: keypad,
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                ],
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: settings.appAccentColor.color,
-              border: Border(top: BorderSide(color: nbt.borderColor, width: 3)),
-            ),
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              padding: const EdgeInsets.all(1),
-              child: GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                crossAxisCount: 4,
-                mainAxisSpacing: 2,
-                crossAxisSpacing: 2,
-                children: [
-                  ..._buildDominoTiles(context, settings.numberStyle, calculator),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

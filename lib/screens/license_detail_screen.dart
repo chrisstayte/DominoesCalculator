@@ -8,8 +8,10 @@ class LicenseDetailScreen extends StatelessWidget {
     super.key,
     required this.packageName,
     required this.entries,
+    this.embedded = false,
   });
 
+  final bool embedded;
   final String packageName;
   final List<LicenseEntry> entries;
 
@@ -36,10 +38,13 @@ class LicenseDetailScreen extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: nbt.iconColor),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        automaticallyImplyLeading: !embedded,
+        leading: embedded
+            ? null
+            : IconButton(
+                icon: Icon(Icons.arrow_back, color: nbt.iconColor),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
           child: Container(color: nbt.borderColor, height: 3),
@@ -74,7 +79,7 @@ class LicenseDetailScreen extends StatelessWidget {
                   ...entries[i].paragraphs.map(
                     (p) => Padding(
                       padding: EdgeInsets.only(
-                        left: p.indent * 16.0,
+                        left: p.indent > 0 ? p.indent * 16.0 : 0,
                         bottom: 8,
                       ),
                       child: Text(

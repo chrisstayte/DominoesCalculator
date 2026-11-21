@@ -1,3 +1,5 @@
+import 'package:dominoes/widgets/adaptive_workspace.dart';
+
 import 'dart:async';
 import 'dart:io';
 
@@ -151,15 +153,16 @@ class _CameraScreenState extends State<CameraScreen>
               )
             : null,
         actions: [
-          IconButton(
-            icon: SvgPicture.asset(
-              'assets/images/icons/sliders.svg',
-              width: 24,
-              height: 24,
-              colorFilter: ColorFilter.mode(nbt.iconColor, BlendMode.srcIn),
+          if (!hasWorkspace(context) || camera.state != CameraState.preview)
+            IconButton(
+              icon: SvgPicture.asset(
+                'assets/images/icons/sliders.svg',
+                width: 24,
+                height: 24,
+                colorFilter: ColorFilter.mode(nbt.iconColor, BlendMode.srcIn),
+              ),
+              onPressed: () => _showDetectSettingsDialog(context, nbt),
             ),
-            onPressed: () => _showDetectSettingsDialog(context, nbt),
-          ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
@@ -271,79 +274,83 @@ class _CameraScreenState extends State<CameraScreen>
               horizontal: 24,
               vertical: 48,
             ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: nbt.cardColor,
-                border: Border.all(color: nbt.borderColor, width: 4),
-                boxShadow: [
-                  BoxShadow(
-                    color: nbt.shadowColor,
-                    offset: const Offset(6, 6),
-                    blurRadius: 0,
-                    spreadRadius: 0,
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    color: nbt.headerColor,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'DETECT_SETTINGS',
-                            style: GoogleFonts.bricolageGrotesque(
-                              color: nbt.headerTextColor,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 18,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Icon(
-                            Icons.close,
-                            color: nbt.headerTextColor,
-                            size: 24,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SettingRow(
-                    label: 'CONFIDENCE',
-                    child: SegmentedControl<bool>(
-                      options: const [true, false],
-                      labels: const ['ON', 'OFF'],
-                      selected: provider.localSettings.showConfidence,
-                      onSelected: provider.setShowConfidence,
-                    ),
-                  ),
-                  SettingRow(
-                    label: 'SCAN LINE',
-                    child: SegmentedControl<bool>(
-                      options: const [true, false],
-                      labels: const ['ON', 'OFF'],
-                      selected: provider.localSettings.showScanLine,
-                      onSelected: provider.setShowScanLine,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            child: _detectSettings(nbt, provider),
           ),
         ),
       ),
     );
   }
+
+  Widget _detectSettings(
+    NeoBrutalistTheme nbt,
+    LocalSettingsProvider provider, {
+    bool embedded = false,
+  }) => Container(
+    decoration: BoxDecoration(
+      color: nbt.cardColor,
+      border: Border.all(color: nbt.borderColor, width: 4),
+      boxShadow: [
+        BoxShadow(
+          color: nbt.shadowColor,
+          offset: const Offset(6, 6),
+          blurRadius: 0,
+          spreadRadius: 0,
+        ),
+      ],
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: double.infinity,
+          color: nbt.headerColor,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'DETECT_SETTINGS',
+                  style: GoogleFonts.bricolageGrotesque(
+                    color: nbt.headerTextColor,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+              if (!embedded)
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Icon(
+                    Icons.close,
+                    color: nbt.headerTextColor,
+                    size: 24,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        SettingRow(
+          label: 'CONFIDENCE',
+          child: SegmentedControl<bool>(
+            options: const [true, false],
+            labels: const ['ON', 'OFF'],
+            selected: provider.localSettings.showConfidence,
+            onSelected: provider.setShowConfidence,
+          ),
+        ),
+        SettingRow(
+          label: 'SCAN LINE',
+          child: SegmentedControl<bool>(
+            options: const [true, false],
+            labels: const ['ON', 'OFF'],
+            selected: provider.localSettings.showScanLine,
+            onSelected: provider.setShowScanLine,
+          ),
+        ),
+      ],
+    ),
+  );
 
   IconData _flashIcon(FlashMode mode) => switch (mode) {
     FlashMode.auto => Icons.flash_auto,
@@ -365,113 +372,116 @@ class _CameraScreenState extends State<CameraScreen>
   ) {
     final isReady = camera.state == CameraState.preview;
 
-    return Column(
+    final preview = Column(
       children: [
         Expanded(
-          child: GestureDetector(
-            onTapUp: isReady
-                ? (details) {
-                    final box = context.findRenderObject() as RenderBox;
-                    final localPos = details.localPosition;
-                    final size = box.size;
-                    final normalized = Offset(
-                      (localPos.dx / size.width).clamp(0.0, 1.0),
-                      (localPos.dy / size.height).clamp(0.0, 1.0),
-                    );
-                    setState(() => _focusPoint = localPos);
-                    camera.setFocusPoint(normalized);
-                    _focusController.forward(from: 0);
-                  }
-                : null,
-            behavior: HitTestBehavior.opaque,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Camera feed (behind everything, visible when ready)
-                if (isReady)
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(color: nbt.borderColor, width: 3),
+          child: LayoutBuilder(
+            builder: (context, bounds) => GestureDetector(
+              onTapUp: isReady
+                  ? (details) {
+                      final localPos = details.localPosition;
+                      final size = bounds.biggest;
+                      final normalized = Offset(
+                        (localPos.dx / size.width).clamp(0.0, 1.0),
+                        (localPos.dy / size.height).clamp(0.0, 1.0),
+                      );
+                      setState(() => _focusPoint = localPos);
+                      camera.setFocusPoint(normalized);
+                      _focusController.forward(from: 0);
+                    }
+                  : null,
+              behavior: HitTestBehavior.opaque,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Camera feed (behind everything, visible when ready)
+                  if (isReady)
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: nbt.borderColor, width: 3),
+                        ),
                       ),
-                    ),
-                    child: ClipRect(
-                      child: OverflowBox(
-                        alignment: Alignment.center,
-                        child: FittedBox(
-                          fit: BoxFit.cover,
-                          child: SizedBox(
-                            width: camera.controller!.value.previewSize!.height,
-                            height: camera.controller!.value.previewSize!.width,
-                            child: CameraPreview(camera.controller!),
+                      child: ClipRect(
+                        child: OverflowBox(
+                          alignment: Alignment.center,
+                          child: FittedBox(
+                            fit: BoxFit.cover,
+                            child: SizedBox(
+                              width:
+                                  camera.controller!.value.previewSize!.height,
+                              height:
+                                  camera.controller!.value.previewSize!.width,
+                              child: CameraPreview(camera.controller!),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
 
-                // Loading overlay — fades out when camera is ready
-                FadeTransition(
-                  opacity: Tween<double>(begin: 1.0, end: 0.0).animate(
-                    CurvedAnimation(
-                      parent: _loadingFadeController,
-                      curve: Curves.easeOut,
-                    ),
-                  ),
-                  child: IgnorePointer(
-                    ignoring: isReady,
-                    child: CameraLoadingView(accentColor: accentColor),
-                  ),
-                ),
-
-                // Focus indicator (above camera, below viewfinder)
-                if (isReady && _focusPoint != null)
-                  AnimatedBuilder(
-                    animation: _focusController,
-                    builder: (context, _) =>
-                        _focusController.isAnimating ||
-                            _focusController.value < 1.0
-                        ? CustomPaint(
-                            painter: FocusIndicatorPainter(
-                              point: _focusPoint!,
-                              color: accentColor,
-                              progress: _focusController.value,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-
-                // Viewfinder overlay (appears after loading fades)
-                if (isReady)
+                  // Loading overlay — fades out when camera is ready
                   FadeTransition(
-                    opacity: CurvedAnimation(
-                      parent: _loadingFadeController,
-                      curve: const Interval(0.5, 1.0),
+                    opacity: Tween<double>(begin: 1.0, end: 0.0).animate(
+                      CurvedAnimation(
+                        parent: _loadingFadeController,
+                        curve: Curves.easeOut,
+                      ),
                     ),
-                    child: showScanLine
-                        ? AnimatedBuilder(
-                            animation: _scanController,
-                            builder: (context, _) => CustomPaint(
+                    child: IgnorePointer(
+                      ignoring: isReady,
+                      child: CameraLoadingView(accentColor: accentColor),
+                    ),
+                  ),
+
+                  // Focus indicator (above camera, below viewfinder)
+                  if (isReady && _focusPoint != null)
+                    AnimatedBuilder(
+                      animation: _focusController,
+                      builder: (context, _) =>
+                          _focusController.isAnimating ||
+                              _focusController.value < 1.0
+                          ? CustomPaint(
+                              painter: FocusIndicatorPainter(
+                                point: _focusPoint!,
+                                color: accentColor,
+                                progress: _focusController.value,
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+
+                  // Viewfinder overlay (appears after loading fades)
+                  if (isReady)
+                    FadeTransition(
+                      opacity: CurvedAnimation(
+                        parent: _loadingFadeController,
+                        curve: const Interval(0.5, 1.0),
+                      ),
+                      child: showScanLine
+                          ? AnimatedBuilder(
+                              animation: _scanController,
+                              builder: (context, _) => CustomPaint(
+                                painter: ViewfinderOverlay(
+                                  color: accentColor,
+                                  label: 'TARGET',
+                                  deviceOrientation: _deviceOrientation,
+                                  scanProgress: _scanController.value,
+                                  scanGoingDown:
+                                      _scanController.status ==
+                                      AnimationStatus.forward,
+                                ),
+                              ),
+                            )
+                          : CustomPaint(
                               painter: ViewfinderOverlay(
                                 color: accentColor,
                                 label: 'TARGET',
                                 deviceOrientation: _deviceOrientation,
-                                scanProgress: _scanController.value,
-                                scanGoingDown:
-                                    _scanController.status ==
-                                    AnimationStatus.forward,
                               ),
                             ),
-                          )
-                        : CustomPaint(
-                            painter: ViewfinderOverlay(
-                              color: accentColor,
-                              label: 'TARGET',
-                              deviceOrientation: _deviceOrientation,
-                            ),
-                          ),
-                  ),
-              ],
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -533,6 +543,25 @@ class _CameraScreenState extends State<CameraScreen>
         ),
       ],
     );
+    if (!hasWorkspace(context)) return preview;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: WorkspaceSplit(
+          leadingFlex: 2,
+          trailingFlex: 1,
+          leading: preview,
+          trailing: Align(
+            alignment: Alignment.topCenter,
+            child: _detectSettings(
+              nbt,
+              context.watch<LocalSettingsProvider>(),
+              embedded: true,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildProcessing(CameraProvider camera, NeoBrutalistTheme nbt) {
@@ -545,147 +574,159 @@ class _CameraScreenState extends State<CameraScreen>
     bool showConfidence,
     Color accentColor,
   ) {
-    return Column(
+    final image = Stack(
+      fit: StackFit.expand,
       children: [
-        Expanded(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (camera.capturedImagePath != null)
-                Image.file(File(camera.capturedImagePath!), fit: BoxFit.cover),
-              CustomPaint(
-                painter: DetectionOverlay(
-                  detections: camera.detections,
-                  borderColor: accentColor,
-                  textColor: Colors.black,
-                  badgeColor: accentColor,
-                  showConfidence: showConfidence,
-                ),
-              ),
-            ],
+        if (camera.capturedImagePath != null)
+          Image.file(File(camera.capturedImagePath!), fit: BoxFit.cover),
+        CustomPaint(
+          painter: DetectionOverlay(
+            detections: camera.detections,
+            borderColor: accentColor,
+            textColor: Colors.black,
+            badgeColor: accentColor,
+            showConfidence: showConfidence,
           ),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: nbt.cardColor,
-            border: Border(top: BorderSide(color: nbt.borderColor, width: 3)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (camera.detections.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: nbt.cardColor,
-                      border: Border.all(color: nbt.borderColor, width: 2),
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          color: nbt.headerColor,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          child: Text(
-                            'DETECTED (${camera.detections.length})',
-                            style: GoogleFonts.bricolageGrotesque(
-                              color: nbt.headerTextColor,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ),
-                        ...camera.detections.map(
-                          (d) => Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    d.label.toUpperCase(),
-                                    style: GoogleFonts.bricolageGrotesque(
-                                      color: nbt.bodyTextColor,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                                if (showConfidence)
-                                  Text(
-                                    '${(d.confidence * 100).toStringAsFixed(0)}%',
-                                    style: GoogleFonts.bricolageGrotesque(
-                                      color: nbt.secondaryTextColor,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                      ],
-                    ),
-                  ),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Text(
-                    'NO OBJECTS DETECTED',
-                    style: GoogleFonts.bricolageGrotesque(
-                      color: nbt.secondaryTextColor,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1,
-                    ),
-                  ),
+      ],
+    );
+    final results = Container(
+      decoration: BoxDecoration(
+        color: nbt.cardColor,
+        border: Border(top: BorderSide(color: nbt.borderColor, width: 3)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (camera.detections.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: nbt.cardColor,
+                  border: Border.all(color: nbt.borderColor, width: 2),
                 ),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
+                child: Column(
                   children: [
-                    Expanded(
-                      child: ActionButton(
-                        icon: Icons.refresh,
-                        color: nbt.accentRed,
-                        foregroundColor: Colors.black,
-                        onTap: () {
-                          context.read<SfxService>().playDelete();
-                          context.read<VibrationService>().medium();
-                          camera.retake();
-                        },
+                    Container(
+                      width: double.infinity,
+                      color: nbt.headerColor,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      child: Text(
+                        'DETECTED (${camera.detections.length})',
+                        style: GoogleFonts.bricolageGrotesque(
+                          color: nbt.headerTextColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ActionButton(
-                        icon: Icons.check,
-                        color: nbt.accentGreen,
-                        foregroundColor: Colors.black,
-                        onTap: () {
-                          context.read<SfxService>().playSuccess();
-                          context.read<VibrationService>().medium();
-                          // Placeholder for future calculator integration
-                          camera.retake();
-                        },
+                    ...camera.detections.map(
+                      (d) => Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                d.label.toUpperCase(),
+                                style: GoogleFonts.bricolageGrotesque(
+                                  color: nbt.bodyTextColor,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            if (showConfidence)
+                              Text(
+                                '${(d.confidence * 100).toStringAsFixed(0)}%',
+                                style: GoogleFonts.bricolageGrotesque(
+                                  color: nbt.secondaryTextColor,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 4),
                   ],
                 ),
               ),
-            ],
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                'NO OBJECTS DETECTED',
+                style: GoogleFonts.bricolageGrotesque(
+                  color: nbt.secondaryTextColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ActionButton(
+                    icon: Icons.refresh,
+                    color: nbt.accentRed,
+                    foregroundColor: Colors.black,
+                    onTap: () {
+                      context.read<SfxService>().playDelete();
+                      context.read<VibrationService>().medium();
+                      camera.retake();
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ActionButton(
+                    icon: Icons.check,
+                    color: nbt.accentGreen,
+                    foregroundColor: Colors.black,
+                    onTap: () {
+                      context.read<SfxService>().playSuccess();
+                      context.read<VibrationService>().medium();
+                      // Placeholder for future calculator integration
+                      camera.retake();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    if (hasWorkspace(context))
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: WorkspaceSplit(
+            leadingFlex: 2,
+            trailingFlex: 1,
+            leading: image,
+            trailing: SingleChildScrollView(child: results),
           ),
         ),
+      );
+    return Column(
+      children: [
+        Expanded(child: image),
+        results,
       ],
     );
   }
