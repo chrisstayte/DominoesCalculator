@@ -18,5 +18,9 @@ key="$key_dir/AuthKey_$ASC_KEY_ID.p8"
 trap 'rm -f -- "$key"' EXIT
 printf '%s\n' "$ASC_KEY" > "$key"
 unset ASC_KEY
-xcrun altool --validate-app --type ios --file "${ipas[0]}" --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
-xcrun altool --upload-app --type ios --file "${ipas[0]}" --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+case "${1:-}" in
+  validate) operation=--validate-app ;;
+  upload) operation=--upload-app ;;
+  *) echo "Expected validate or upload." >&2; exit 2 ;;
+esac
+xcrun altool "$operation" --type ios --file "${ipas[0]}" --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
