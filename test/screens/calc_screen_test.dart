@@ -101,7 +101,7 @@ void main() {
     });
 
     testWidgets(
-      'save with no pips shows a SnackBar and does not create a log',
+      'save with no pips shows inline feedback and does not create a log',
       (tester) async {
         useLargeDisplay(tester);
         final settings = await createReadySettingsProvider();
@@ -118,7 +118,10 @@ void main() {
         await tester.tap(find.byIcon(Icons.save_outlined));
         await tester.pump();
 
-        expect(find.text('No pips to save'), findsOneWidget);
+        expect(find.text('Add a pip first'), findsOneWidget);
+        expect(find.byType(SnackBar), findsNothing);
+        await tester.pump(const Duration(milliseconds: 1500));
+        expect(find.byIcon(Icons.save_outlined), findsOneWidget);
         expect(gameLogs.logs, isEmpty);
       },
     );

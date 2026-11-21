@@ -21,11 +21,23 @@
 # %% [markdown]
 # ## Setup
 # Install before imports. Use the same dataset name and frozen split as notebook 1.
-# Setup selects compatible packages for Colab Python 3.12 or 3.13 and shows live progress.
+# Leave ACTION set to label to reuse the Colab image tools and open the first pending tile.
+# For model work, change ACTION here and rerun from Setup to install training dependencies.
 # If setup requests a restart, choose **Runtime → Restart session**, then rerun setup.
 
 # %% setup
-install_packages([TENSORFLOW_REQUIREMENT, KERAS_REQUIREMENT, NUMPY_REQUIREMENT, "pandas==2.2.3",
+ACTION = "label"  # label | train | resume | evaluate | export
+assert ACTION in {"label", "train", "resume", "evaluate", "export"}
+if ACTION == "label":
+    # Keep the runtime's existing image and widget packages for human review.
+    from importlib.util import find_spec
+    packages = {"cv2": "opencv-python-headless", "PIL": "pillow", "numpy": "numpy",
+                "matplotlib": "matplotlib", "pandas": "pandas", "ipywidgets": "ipywidgets"}
+    missing = [package for module, package in packages.items() if find_spec(module) is None]
+    if missing:
+        install_packages(missing)
+else:
+    install_packages([TENSORFLOW_REQUIREMENT, KERAS_REQUIREMENT, NUMPY_REQUIREMENT, "pandas==2.2.3",
                   "matplotlib==3.10.1", "pillow==11.1.0", "opencv-python==4.11.0.86",
                   "scikit-learn==1.6.1", "ipywidgets==8.1.7", "ultralytics==8.4.144",
                   "torch==2.9.0", "torchvision==0.24.0", "ai-edge-litert==2.1.4"])
@@ -34,7 +46,6 @@ install_packages([TENSORFLOW_REQUIREMENT, KERAS_REQUIREMENT, NUMPY_REQUIREMENT, 
 DATASET_NAME = "dominoes-v1"
 RUN_NAME = "pips-v1-01"
 DETECTOR_RUN_NAME = "domino-v1-01"
-ACTION = "label"  # label | train | resume | evaluate | export
 SEED = 42
 IMAGE_SIZE = 128
 BATCH_SIZE = 32
@@ -45,7 +56,6 @@ PIP_CONFIDENCE = 0.80  # Flags predictions needing review; does not silently dro
 BLANK_SCORE = 50  # Match the app's blank-half setting: 0, 25, or 50. Labels always remain 0.
 EXPORT_INT8 = True
 MAX_EXPORT_ACCURACY_DROP = 0.02
-assert ACTION in {"label", "train", "resume", "evaluate", "export"}
 assert IMAGE_SIZE == 128, "Changing crop resolution requires a new crop version and dataset."
 assert BLANK_SCORE in {0, 25, 50}
 
@@ -112,7 +122,10 @@ def labeling_station(tiles, crops, labels_path):
     if IN_COLAB:
         from google.colab import output
         output.enable_custom_widget_manager()
-    index = widgets.BoundedIntText(value=1, min=1, max=len(tiles), description="Tile")
+    saved = load_pip_labels(labels_path, tiles)
+    first_pending = next((i for i, tile in enumerate(tiles, 1)
+                          if saved[tile["tile_id"]]["status"] == "pending"), 1)
+    index = widgets.BoundedIntText(value=first_pending, min=1, max=len(tiles), description="Tile")
     a = widgets.Dropdown(options=[("Choose…", "")] + [(str(i), str(i)) for i in range(16)], description="A · left")
     b = widgets.Dropdown(options=[("Choose…", "")] + [(str(i), str(i)) for i in range(16)], description="B · right")
     save = widgets.Button(description="Save & next", button_style="primary")
@@ -175,7 +188,7 @@ def labeling_station(tiles, crops, labels_path):
     return panel
 
 if ACTION != "label":
-    print('Picker is paused. Set ACTION = "label", rerun Configuration, then rerun this cell.')
+    print('Picker is paused. Set ACTION = "label", rerun Setup, then rerun this cell.')
 elif os.environ.get("DOMINO_NO_WIDGETS") == "1":
     print("Picker is disabled by DOMINO_NO_WIDGETS. Remove that override to label interactively.")
 else:

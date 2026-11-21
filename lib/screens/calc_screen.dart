@@ -140,16 +140,10 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.save_outlined,
                       color: nbt.accentGreen,
                       foregroundColor: Colors.black,
+                      unavailableMessage: calculator.selectedPips.isEmpty
+                          ? 'Add a pip first'
+                          : null,
                       onTap: () {
-                        if (calculator.selectedPips.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('No pips to save'),
-                              duration: Duration(seconds: 1),
-                            ),
-                          );
-                          return;
-                        }
                         sfx.playSuccess();
                         vibration.medium();
                         context.read<GameLogProvider>().saveGame(
