@@ -1,3 +1,4 @@
+import 'package:dominoes/widgets/scaffold_with_nav_bar.dart';
 import 'package:dominoes/widgets/adaptive_workspace.dart';
 import 'package:dominoes/screens/license_detail_screen.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
@@ -84,6 +85,7 @@ class _LicensesScreenState extends State<LicensesScreen> {
     );
     return Scaffold(
       appBar: AppBar(
+        actions: WorkspaceNavigation.actions(context),
         title: Transform(
           transform: Matrix4.skewX(-0.15),
           child: Container(

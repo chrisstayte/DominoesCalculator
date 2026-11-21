@@ -1,3 +1,4 @@
+import 'package:dominoes/widgets/scaffold_with_nav_bar.dart';
 import 'package:dominoes/widgets/adaptive_workspace.dart';
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/enum/number_style.dart';
@@ -57,114 +58,125 @@ class HomeScreen extends StatelessWidget {
     final total = calculator.total(freePointValue: settings.freePointValue);
 
     final wide = hasWorkspace(context);
-    final score = CustomPaint(
+    final insets = wide ? MediaQuery.paddingOf(context) : EdgeInsets.zero;
+    Widget buildScore({bool touchesRight = false}) => CustomPaint(
       painter: DotGridPainter(
         backgroundColor: nbt.dotGridBackground,
         dotColor: nbt.dotGridDotColor,
       ),
-      child: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Transform(
-                      transform: Matrix4.skewX(-0.15),
-                      child: Container(
-                        color: nbt.headerColor,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        child: Text(
-                          'CURRENT_SCORE',
-                          style: GoogleFonts.bricolageGrotesque(
-                            color: nbt.headerTextColor,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: insets.left,
+          right: touchesRight ? insets.right : 0,
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Transform(
+                        transform: Matrix4.skewX(-0.15),
+                        child: Container(
+                          color: nbt.headerColor,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          child: Text(
+                            'CURRENT_SCORE',
+                            style: GoogleFonts.bricolageGrotesque(
+                              color: nbt.headerTextColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$total',
-                      style: GoogleFonts.bricolageGrotesque(
-                        fontSize: 128,
-                        fontWeight: FontWeight.w900,
-                        color: nbt.bodyTextColor,
-                        height: 1,
+                      const SizedBox(height: 4),
+                      Text(
+                        '$total',
+                        style: GoogleFonts.bricolageGrotesque(
+                          fontSize: 128,
+                          fontWeight: FontWeight.w900,
+                          color: nbt.bodyTextColor,
+                          height: 1,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ActionButton(
-                    icon: Icons.backspace_outlined,
-                    color: nbt.accentRed,
-                    foregroundColor: Colors.black,
-                    onTap: () {
-                      sfx.playDelete();
-                      vibration.medium();
-                      calculator.removeLast();
-                    },
-                    onLongPressComplete: () {
-                      sfx.playClear();
-                      vibration.heavy();
-                      calculator.clear();
-                    },
-                    onShakeTick: () => vibration.light(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ActionButton(
+                      icon: Icons.backspace_outlined,
+                      color: nbt.accentRed,
+                      foregroundColor: Colors.black,
+                      onTap: () {
+                        sfx.playDelete();
+                        vibration.medium();
+                        calculator.removeLast();
+                      },
+                      onLongPressComplete: () {
+                        sfx.playClear();
+                        vibration.heavy();
+                        calculator.clear();
+                      },
+                      onShakeTick: () => vibration.light(),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ActionButton(
-                    icon: Icons.save_outlined,
-                    color: nbt.accentGreen,
-                    foregroundColor: Colors.black,
-                    onTap: () {
-                      if (calculator.selectedPips.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('No pips to save'),
-                            duration: Duration(seconds: 1),
-                          ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ActionButton(
+                      icon: Icons.save_outlined,
+                      color: nbt.accentGreen,
+                      foregroundColor: Colors.black,
+                      onTap: () {
+                        if (calculator.selectedPips.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('No pips to save'),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                          return;
+                        }
+                        sfx.playSuccess();
+                        vibration.medium();
+                        context.read<GameLogProvider>().saveGame(
+                          calculator,
+                          settings.freePointValue,
                         );
-                        return;
-                      }
-                      sfx.playSuccess();
-                      vibration.medium();
-                      context.read<GameLogProvider>().saveGame(
-                        calculator,
-                        settings.freePointValue,
-                      );
-                      calculator.clear();
-                    },
+                        calculator.clear();
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
-    final keypad = Container(
+    Widget buildKeypad({bool topDivider = true}) => Container(
       decoration: BoxDecoration(
         color: settings.appAccentColor.color,
-        border: Border(top: BorderSide(color: nbt.borderColor, width: 3)),
+        border: topDivider
+            ? Border(top: BorderSide(color: nbt.borderColor, width: 3))
+            : null,
       ),
-      padding: const EdgeInsets.all(8.0),
+      padding:
+          const EdgeInsets.all(8.0) +
+          EdgeInsets.only(right: insets.right, bottom: insets.bottom),
       child: Container(
         padding: const EdgeInsets.all(1),
         child: LayoutBuilder(
@@ -204,6 +216,7 @@ class HomeScreen extends StatelessWidget {
         ),
         centerTitle: true,
         actions: [
+          ...WorkspaceNavigation.actions(context),
           if (!wide)
             IconButton(
               icon: SvgPicture.asset(
@@ -239,51 +252,66 @@ class HomeScreen extends StatelessWidget {
                 );
                 return Column(
                   children: [
-                    Expanded(child: score),
-                    SizedBox(height: keypadHeight, child: keypad),
+                    Expanded(child: buildScore()),
+                    SizedBox(height: keypadHeight, child: buildKeypad()),
                   ],
                 );
               },
             )
-          : SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: LayoutBuilder(
-                  builder: (context, bounds) {
-                    final history = PipHistoryDialog(
-                      freePointValue: settings.freePointValue,
-                      embedded: true,
-                    );
-                    if (bounds.maxWidth >= bounds.maxHeight) {
-                      return WorkspaceSplit(
-                        leading: Column(
-                          children: [
-                            SizedBox(
-                              height: bounds.maxHeight * .44,
-                              child: score,
-                            ),
-                            const SizedBox(height: 16),
-                            Expanded(child: history),
-                          ],
-                        ),
-                        trailing: keypad,
-                      );
-                    }
-                    return Column(
+          : LayoutBuilder(
+              builder: (context, bounds) {
+                final history = PipHistoryDialog(
+                  freePointValue: settings.freePointValue,
+                  embedded: true,
+                  contentPadding: EdgeInsets.only(
+                    left: insets.left,
+                    bottom: insets.bottom,
+                  ),
+                );
+                if (bounds.maxWidth >= bounds.maxHeight) {
+                  return WorkspaceSplit(
+                    spacing: 0,
+                    leading: Column(
                       children: [
-                        SizedBox(height: bounds.maxHeight * .30, child: score),
-                        const SizedBox(height: 16),
-                        Expanded(
-                          child: WorkspaceSplit(
-                            leading: history,
-                            trailing: keypad,
+                        SizedBox(
+                          height: bounds.maxHeight * .44,
+                          child: DecoratedBox(
+                            position: DecorationPosition.foreground,
+                            decoration: BoxDecoration(
+                              border: Border(
+                                right: BorderSide(
+                                  color: nbt.borderColor,
+                                  width: 3,
+                                ),
+                              ),
+                            ),
+                            child: buildScore(),
                           ),
                         ),
+
+                        Expanded(child: history),
                       ],
-                    );
-                  },
-                ),
-              ),
+                    ),
+                    trailing: buildKeypad(topDivider: false),
+                  );
+                }
+                return Column(
+                  children: [
+                    SizedBox(
+                      height: bounds.maxHeight * .30,
+                      child: buildScore(touchesRight: true),
+                    ),
+
+                    Expanded(
+                      child: WorkspaceSplit(
+                        spacing: 0,
+                        leading: history,
+                        trailing: buildKeypad(),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
     );
   }

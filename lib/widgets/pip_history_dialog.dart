@@ -12,11 +12,13 @@ class PipHistoryDialog extends StatelessWidget {
     super.key,
     required this.freePointValue,
     this.embedded = false,
+    this.contentPadding = EdgeInsets.zero,
   });
 
   final int freePointValue;
 
   final bool embedded;
+  final EdgeInsets contentPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +43,7 @@ class PipHistoryDialog extends StatelessWidget {
           ),
         ],
       ),
+      padding: contentPadding.copyWith(bottom: 0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -95,6 +98,9 @@ class PipHistoryDialog extends StatelessWidget {
                       : MediaQuery.sizeOf(context).height * 0.5,
                 ),
                 child: ListView.builder(
+                  padding: embedded
+                      ? EdgeInsets.only(bottom: contentPadding.bottom)
+                      : null,
                   shrinkWrap: true,
                   itemCount: pips.length,
                   itemBuilder: (context, index) {

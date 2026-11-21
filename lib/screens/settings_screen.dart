@@ -1,3 +1,4 @@
+import 'package:dominoes/widgets/scaffold_with_nav_bar.dart';
 import 'package:dominoes/widgets/adaptive_workspace.dart';
 import 'package:dominoes/enum/app_accent_color.dart';
 import 'package:dominoes/enum/number_style.dart';
@@ -199,6 +200,7 @@ class SettingsScreen extends StatelessWidget {
     );
     return Scaffold(
       appBar: AppBar(
+        actions: WorkspaceNavigation.actions(context),
         title: Transform(
           transform: Matrix4.skewX(-0.15),
           child: Container(

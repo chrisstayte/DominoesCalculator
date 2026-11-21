@@ -1,3 +1,4 @@
+import 'package:dominoes/widgets/scaffold_with_nav_bar.dart';
 import 'package:dominoes/widgets/adaptive_workspace.dart';
 
 import 'dart:async';
@@ -153,6 +154,7 @@ class _CameraScreenState extends State<CameraScreen>
               )
             : null,
         actions: [
+          ...WorkspaceNavigation.actions(context),
           if (!hasWorkspace(context) || camera.state != CameraState.preview)
             IconButton(
               icon: SvgPicture.asset(

@@ -14,6 +14,32 @@ import '../helpers/test_app.dart';
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  testWidgets('iPad switches screens from the title bar', (tester) async {
+    useLargeDisplay(tester);
+    tester.view.physicalSize = const Size(1194, 834);
+    await tester.pumpWidget(
+      buildAppHarness(settingsProvider: await createReadySettingsProvider()),
+    );
+    await tester.pumpAndSettle();
+    final logs = find.descendant(
+      of: find.byType(AppBar),
+      matching: find.byTooltip('Logs'),
+    );
+    expect(
+      tester.getCenter(logs).dx,
+      greaterThan(tester.getCenter(find.text('DOMINO_CALC')).dx),
+    );
+    expect(find.byTooltip('Camera'), findsNothing);
+    await tester.tap(logs);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.text('ABOUT'), findsOneWidget);
+    await tester.tap(find.byTooltip('Calculator'));
+    await tester.pumpAndSettle();
+    expect(find.text('CURRENT_SCORE'), findsOneWidget);
+  });
+
   testWidgets('keeps one tally through rotation and narrow window resizing', (
     tester,
   ) async {

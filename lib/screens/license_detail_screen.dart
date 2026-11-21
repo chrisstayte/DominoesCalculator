@@ -1,3 +1,4 @@
+import 'package:dominoes/widgets/scaffold_with_nav_bar.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class LicenseDetailScreen extends StatelessWidget {
     final nbt = NeoBrutalistTheme.of(context);
     return Scaffold(
       appBar: AppBar(
+        actions: WorkspaceNavigation.actions(context),
         title: Transform(
           transform: Matrix4.skewX(-0.15),
           child: Container(

@@ -10,11 +10,13 @@ class WorkspaceSplit extends StatelessWidget {
     super.key,
     required this.leading,
     required this.trailing,
+    this.spacing = 16,
     this.leadingFlex = 1,
     this.trailingFlex = 2,
   });
   final Widget leading;
   final Widget trailing;
+  final double spacing;
   final int leadingFlex;
   final int trailingFlex;
 
@@ -23,7 +25,7 @@ class WorkspaceSplit extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       Expanded(flex: leadingFlex, child: leading),
-      const SizedBox(width: 16),
+      SizedBox(width: spacing),
       Expanded(flex: trailingFlex, child: trailing),
     ],
   );
