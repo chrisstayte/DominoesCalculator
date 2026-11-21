@@ -1,3 +1,4 @@
+import AVFAudio
 import CoreHaptics
 import Flutter
 import UIKit
@@ -24,5 +25,27 @@ import UIKit
       }
       result(CHHapticEngine.capabilitiesForHardware().supportsHaptics)
     }
+    FlutterEventChannel(
+      name: "dominoes/systemSound",
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    ).setStreamHandler(OutputVolumeStatus())
+  }
+}
+
+private final class OutputVolumeStatus: NSObject, FlutterStreamHandler {
+  private var observation: NSKeyValueObservation?
+
+  func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+    // outputVolume is public and observable. Silent Mode is applied separately by the ambient session.
+    observation = AVAudioSession.sharedInstance().observe(\.outputVolume, options: [.initial, .new]) { session, _ in
+      let status = session.outputVolume == 0 ? "zeroVolume" : "normal"
+      DispatchQueue.main.async { events(status) }
+    }
+    return nil
+  }
+
+  func onCancel(withArguments arguments: Any?) -> FlutterError? {
+    observation = nil
+    return nil
   }
 }

@@ -11,6 +11,7 @@ import 'package:dominoes/widgets/info_row.dart';
 import 'package:dominoes/widgets/section_card.dart';
 import 'package:dominoes/widgets/segmented_control.dart';
 import 'package:dominoes/widgets/setting_row.dart';
+import 'package:dominoes/widgets/system_sound_notice.dart';
 import 'package:dominoes/widgets/tappable_row.dart';
 import 'package:dominoes/widgets/thick_divider.dart';
 import 'package:flutter/material.dart';
@@ -145,6 +146,7 @@ class SettingsScreen extends StatelessWidget {
             onSelected: provider.setSoundEffects,
           ),
         ),
+        if (settings.soundEffects) const SystemSoundNotice(),
         if (vibration.isSupported) ...[
           const ThickDivider(),
           SettingRow(
