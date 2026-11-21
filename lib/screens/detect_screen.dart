@@ -210,6 +210,7 @@ class _CameraScreenState extends State<CameraScreen>
 
     if (!context.mounted) return;
 
+    context.read<SfxService>().playOpen();
     showDialog(
       context: context,
       builder: (_) => Dialog(
@@ -265,6 +266,7 @@ class _CameraScreenState extends State<CameraScreen>
   void _showDetectSettingsDialog(BuildContext context, NeoBrutalistTheme nbt) {
     final provider = context.read<LocalSettingsProvider>();
 
+    context.read<SfxService>().playOpen();
     showDialog(
       context: context,
       builder: (_) => ChangeNotifierProvider.value(
@@ -322,7 +324,10 @@ class _CameraScreenState extends State<CameraScreen>
               ),
               if (!embedded)
                 GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
+                  onTap: () {
+                    context.read<SfxService>().playClose();
+                    Navigator.of(context).pop();
+                  },
                   child: Icon(
                     Icons.close,
                     color: nbt.headerTextColor,
@@ -516,7 +521,10 @@ class _CameraScreenState extends State<CameraScreen>
                   ),
                   const Spacer(),
                   GestureDetector(
-                    onTap: () => camera.cycleFlashMode(),
+                    onTap: () {
+                      context.read<SfxService>().playToggle();
+                      camera.cycleFlashMode();
+                    },
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [

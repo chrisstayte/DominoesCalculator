@@ -1,6 +1,7 @@
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
+import 'package:dominoes/services/sfx_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -66,7 +67,10 @@ class PipHistoryDialog extends StatelessWidget {
                 ),
                 if (!embedded)
                   GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
+                    onTap: () {
+                      context.read<SfxService>().playClose();
+                      Navigator.of(context).pop();
+                    },
                     child: Icon(
                       Icons.close,
                       color: nbt.headerTextColor,
@@ -190,7 +194,10 @@ class PipHistoryDialog extends StatelessWidget {
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => calculator.removeAt(index),
+                            onTap: () {
+                              context.read<SfxService>().playDelete();
+                              calculator.removeAt(index);
+                            },
                             child: Container(
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(

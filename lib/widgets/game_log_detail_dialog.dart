@@ -2,6 +2,7 @@ import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/models/game_log.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
+import 'package:dominoes/services/sfx_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -65,7 +66,10 @@ class GameLogDetailDialog extends StatelessWidget {
                 ),
                 if (!embedded)
                   GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
+                    onTap: () {
+                      context.read<SfxService>().playClose();
+                      Navigator.of(context).pop();
+                    },
                     child: Icon(
                       Icons.close,
                       color: nbt.headerTextColor,
@@ -235,6 +239,7 @@ class GameLogDetailDialog extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
+                    context.read<SfxService>().playDelete();
                     context.read<GameLogProvider>().deleteLog(log.id);
                     if (!embedded) Navigator.of(context).pop();
                   },

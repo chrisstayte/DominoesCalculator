@@ -122,11 +122,13 @@ class HomeScreen extends StatelessWidget {
                       color: nbt.accentRed,
                       foregroundColor: Colors.black,
                       onTap: () {
+                        if (calculator.selectedPips.isEmpty) return;
                         sfx.playDelete();
                         vibration.medium();
                         calculator.removeLast();
                       },
                       onLongPressComplete: () {
+                        if (calculator.selectedPips.isEmpty) return;
                         sfx.playClear();
                         vibration.heavy();
                         calculator.clear();
@@ -220,6 +222,7 @@ class HomeScreen extends StatelessWidget {
                 colorFilter: ColorFilter.mode(nbt.iconColor, BlendMode.srcIn),
               ),
               onPressed: () {
+                sfx.playOpen();
                 showDialog(
                   context: context,
                   builder: (_) => ChangeNotifierProvider.value(

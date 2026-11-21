@@ -1,6 +1,7 @@
 import 'package:dominoes/widgets/scaffold_with_nav_bar.dart';
 import 'package:dominoes/widgets/adaptive_workspace.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
+import 'package:dominoes/services/sfx_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/game_log_detail_dialog.dart';
 import 'package:flutter/material.dart';
@@ -41,9 +42,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
           child: GestureDetector(
             onTap: () {
               if (wide) {
+                if (log.id == selected?.id) return;
+                context.read<SfxService>().playOpen();
                 setState(() => selectedId = log.id);
                 return;
               }
+              context.read<SfxService>().playOpen();
               showDialog(
                 context: context,
                 builder: (_) => ChangeNotifierProvider.value(

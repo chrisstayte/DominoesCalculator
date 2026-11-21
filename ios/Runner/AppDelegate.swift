@@ -1,3 +1,4 @@
+import CoreHaptics
 import Flutter
 import UIKit
 
@@ -12,5 +13,16 @@ import UIKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    let channel = FlutterMethodChannel(
+      name: "dominoes/haptics",
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    )
+    channel.setMethodCallHandler { call, result in
+      guard call.method == "isSupported" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      result(CHHapticEngine.capabilitiesForHardware().supportsHaptics)
+    }
   }
 }

@@ -28,7 +28,27 @@ void main() {
       expect(find.text('APPEARANCE'), findsOneWidget);
       expect(find.text('GAMEPLAY'), findsOneWidget);
       expect(find.text('FEEDBACK'), findsOneWidget);
+      expect(find.text('VIBRATION'), findsOneWidget);
       expect(find.text('ABOUT'), findsOneWidget);
+    });
+
+    testWidgets('sound stays available on hardware without haptics', (
+      tester,
+    ) async {
+      useLargeDisplay(tester);
+      final settings = await createReadySettingsProvider();
+      for (final size in [const Size(1024, 768), const Size(430, 932)]) {
+        tester.view.physicalSize = size;
+        await tester.pumpWidget(
+          buildProviderHarness(
+            settingsProvider: settings,
+            supportsHaptics: false,
+            child: const SettingsScreen(),
+          ),
+        );
+        expect(find.text('SOUND_EFFECTS'), findsOneWidget);
+        expect(find.text('VIBRATION'), findsNothing);
+      }
     });
 
     testWidgets(

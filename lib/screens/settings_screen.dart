@@ -27,6 +27,7 @@ class SettingsScreen extends StatelessWidget {
     final nbt = NeoBrutalistTheme.of(context);
     final settings = context.watch<LocalSettingsProvider>().localSettings;
     final provider = context.read<LocalSettingsProvider>();
+    final vibration = context.read<VibrationService>();
 
     const gap = SizedBox(height: 16, width: 16);
     final appearance = SectionCard(
@@ -50,7 +51,12 @@ class SettingsScreen extends StatelessWidget {
             children: AppAccentColor.values.map((accent) {
               final isSelected = settings.appAccentColor == accent;
               return GestureDetector(
-                onTap: () => provider.setAppAccentColor(accent),
+                onTap: isSelected
+                    ? null
+                    : () {
+                        provider.setAppAccentColor(accent);
+                        context.read<SfxService>().playToggle();
+                      },
                 child: Container(
                   width: 32,
                   height: 32,
@@ -136,25 +142,24 @@ class SettingsScreen extends StatelessWidget {
             options: const [true, false],
             labels: const ['ON', 'OFF'],
             selected: settings.soundEffects,
-            onSelected: (value) {
-              context.read<SfxService>().playToggle();
-              provider.setSoundEffects(value);
-            },
+            onSelected: provider.setSoundEffects,
           ),
         ),
-        const ThickDivider(),
-        SettingRow(
-          label: 'VIBRATION',
-          child: SegmentedControl<bool>(
-            options: const [true, false],
-            labels: const ['ON', 'OFF'],
-            selected: settings.vibration,
-            onSelected: (value) {
-              context.read<VibrationService>().selection();
-              provider.setVibration(value);
-            },
+        if (vibration.isSupported) ...[
+          const ThickDivider(),
+          SettingRow(
+            label: 'VIBRATION',
+            child: SegmentedControl<bool>(
+              options: const [true, false],
+              labels: const ['ON', 'OFF'],
+              selected: settings.vibration,
+              onSelected: (value) {
+                provider.setVibration(value);
+                vibration.selection();
+              },
+            ),
           ),
-        ),
+        ],
       ],
     );
     final about = SectionCard(
@@ -163,8 +168,9 @@ class SettingsScreen extends StatelessWidget {
       children: [
         TappableRow(
           label: 'LICENSES',
-          onTap: () => Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => const LicensesScreen())),
+          onTap: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const LicensesScreen())),
         ),
         const ThickDivider(),
         TappableRow(
