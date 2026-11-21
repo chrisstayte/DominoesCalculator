@@ -29,17 +29,19 @@
 ACTION = "label"  # label | train | resume | evaluate | export
 assert ACTION in {"label", "train", "resume", "evaluate", "export"}
 if ACTION == "label":
-    # Keep the runtime's existing image and widget packages for human review.
+    # Colab provides the labeling controls. Local Jupyter uses ipywidgets.
     from importlib.util import find_spec
     packages = {"cv2": "opencv-python-headless", "PIL": "pillow", "numpy": "numpy",
-                "matplotlib": "matplotlib", "pandas": "pandas", "ipywidgets": "ipywidgets"}
+                "matplotlib": "matplotlib", "pandas": "pandas"}
+    if "google.colab" not in sys.modules or os.environ.get("DOMINO_ML_ROOT"):
+        packages["ipywidgets"] = "ipywidgets"
     missing = [package for module, package in packages.items() if find_spec(module) is None]
     if missing:
         install_packages(missing)
 else:
     install_packages([TENSORFLOW_REQUIREMENT, KERAS_REQUIREMENT, NUMPY_REQUIREMENT, "pandas==2.2.3",
                   "matplotlib==3.10.1", "pillow==11.1.0", "opencv-python==4.11.0.86",
-                  "scikit-learn==1.6.1", "ipywidgets==8.1.7", "ultralytics==8.4.144",
+                  "scikit-learn==1.6.1", "ultralytics==8.4.144",
                   "torch==2.9.0", "torchvision==0.24.0", "ai-edge-litert==2.1.4"])
 
 # %%
@@ -103,31 +105,134 @@ plt.show()
 
 # %% [markdown]
 # ### Labeling station
+# Run the cell below to open the first pending tile. Colab displays the image and controls
+# below the code. After reconnecting, run Setup through this cell to resume from Drive.
 # Pick both pip values, then **Save & next**. Use **Reject crop** for unreadable halves or
 # incorrect geometry. Navigation does not save unfinished edits. You can revisit any tile
 # by number; **Next pending** jumps to unreviewed work. Existing labels are never regenerated.
 # Keep only one labeling session open for this CSV. A previous CSV copy is retained on each save.
 #
-# If widgets do not render, edit `pip_labels.csv` directly: `a` and `b` must be integers
+# For manual CSV editing, open `pip_labels.csv`. The `a` and `b` values for labeled rows must be integers
 # `0`–`15`, and `status` must be `pending`, `labeled`, or `rejected`. Keep tile IDs unchanged.
 # Label all tiles before starting the first training experiment; review coverage below.
 
 # %%
+def colab_labeling_station(review, first, total):
+    import base64
+    from html import escape
+    from uuid import uuid4
+    from google.colab import output
+    from IPython.display import HTML, JSON, display
+
+    def choices(selected):
+        return '<option value="">Choose…</option>' + "".join(
+            f'<option{" selected" if value == selected else ""}>{value}</option>' for value in CLASS_NAMES)
+
+    def render(tile):
+        number = tile["index"]
+        image = base64.b64encode(tile["image"]).decode("ascii")
+        return f'''<fieldset data-tile="{number}" style="border:0;padding:0">
+          <p><strong>{escape(tile["message"])}</strong></p>
+          <label>Tile <input name="tile" type="number" value="{number}" min="1" max="{total}" required></label>
+          <button data-action="go">Go</button> <button data-action="previous">Previous</button>
+          <button data-action="pending">Next pending</button>
+          <figure style="margin:1em 0"><figcaption>{escape(tile["caption"])}</figcaption>
+          <img alt="Left and right domino halves" src="data:image/png;base64,{image}"
+               style="display:block;max-width:100%;height:auto"></figure>
+          <label>A · left <select name="a">{choices(tile["a"])}</select></label>
+          <label>B · right <select name="b">{choices(tile["b"])}</select></label>
+          <button data-action="save">Save &amp; next</button> <button data-action="reject">Reject crop</button>
+        </fieldset>'''
+
+    def update(action, number, a, b):
+        try:
+            return JSON({"html": render(review(action, number, a, b))})
+        except ValueError as error:
+            return JSON({"error": str(error)})
+
+    # Each displayed station keeps its own callback and crop manifest.
+    panel_id = "domino-" + uuid4().hex
+    output.register_callback(panel_id, update)
+    display(HTML(f'<section id="{panel_id}">{render(first)}<p role="alert"></p></section>' + '''
+      <script>
+      (() => {
+        const panel = document.getElementById("PANEL_ID");
+        panel.addEventListener("click", async event => {
+          const action = event.target.dataset.action;
+          if (!action) return;
+          const fields = panel.querySelector("fieldset");
+          const input = fields.querySelector('[name="tile"]');
+          if (fields.disabled || (action === "go" && !input.reportValidity())) return;
+          const number = action === "go" ? input.valueAsNumber : Number(fields.dataset.tile);
+          const values = Array.from(fields.querySelectorAll("select"), select => select.value);
+          const alert = panel.querySelector('[role="alert"]');
+          alert.textContent = "";
+          fields.disabled = true;
+          try {
+            const result = await google.colab.kernel.invokeFunction(panel.id, [action, number, ...values], {});
+            const state = result.data["application/json"];
+            if (state.error) alert.textContent = state.error;
+            else fields.outerHTML = state.html;
+          } catch (error) {
+            alert.textContent = "Could not update the tile. Check the runtime connection and rerun the station. " + error;
+          } finally {
+            fields.disabled = false;
+          }
+        });
+      })();
+      </script>'''.replace("PANEL_ID", panel_id)))
+
+
 def labeling_station(tiles, crops, labels_path):
-    import ipywidgets as widgets
-    from io import BytesIO
-    from IPython.display import display
     if not tiles:
         raise ValueError("No tile crops are available. Run Prepare tile halves before labeling.")
+
+    def review(action, number, a="", b=""):
+        if type(number) is not int or not 1 <= number <= len(tiles):
+            raise ValueError(f"Choose a tile between 1 and {len(tiles)}.")
+        labels = load_pip_labels(labels_path, tiles)
+        if action in {"save", "reject"}:
+            if action == "save" and (a not in CLASS_NAMES or b not in CLASS_NAMES):
+                raise ValueError("Choose a value for both A and B before saving.")
+            row = labels[tiles[number - 1]["tile_id"]]
+            if action == "save":
+                row.update(a=a, b=b, status="labeled")
+            else:
+                row.update(a="", b="", status="rejected")
+            shutil.copy2(labels_path, labels_path.with_suffix(".previous.csv"))
+            write_csv(labels_path, list(labels.values()), ["tile_id", "a", "b", "status"])
+        if action in {"open", "save", "reject", "pending"}:
+            # On open start at tile one. After an action start just past the displayed tile.
+            start = 0 if action == "open" else number
+            order = (*range(start, len(tiles)), *range(start))
+            number = next((i + 1 for i in order if labels[tiles[i]["tile_id"]]["status"] == "pending"), number)
+        elif action == "previous":
+            number = max(1, number - 1)
+        elif action != "go":
+            raise ValueError("Unknown labeling action.")
+
+        tile = tiles[number - 1]
+        row = labels[tile["tile_id"]]
+        counts = Counter(r["status"] for r in labels.values())
+        message = f"{number}/{len(tiles)} · {counts['labeled']} labeled · {counts['rejected']} rejected · {counts['pending']} pending"
+        if not counts["pending"]:
+            message += " · All tiles reviewed."
+        combined = np.concatenate([read_rgb(crops / tile["a_path"]), read_rgb(crops / tile["b_path"])], axis=1)
+        image = io.BytesIO()
+        Image.fromarray(combined).resize((768, 384), Image.Resampling.NEAREST).save(image, format="PNG")
+        return {"index": number, "message": message, "caption": f"{tile['tile_id']} — {row['status']}",
+                "a": row["a"], "b": row["b"], "image": image.getvalue()}
+
+    first = review("open", 1)
     if IN_COLAB:
-        from google.colab import output
-        output.enable_custom_widget_manager()
-    saved = load_pip_labels(labels_path, tiles)
-    first_pending = next((i for i, tile in enumerate(tiles, 1)
-                          if saved[tile["tile_id"]]["status"] == "pending"), 1)
-    index = widgets.BoundedIntText(value=first_pending, min=1, max=len(tiles), description="Tile")
-    a = widgets.Dropdown(options=[("Choose…", "")] + [(str(i), str(i)) for i in range(16)], description="A · left")
-    b = widgets.Dropdown(options=[("Choose…", "")] + [(str(i), str(i)) for i in range(16)], description="B · right")
+        return colab_labeling_station(review, first, len(tiles))
+
+    import ipywidgets as widgets
+    from IPython.display import display
+    index = widgets.BoundedIntText(value=first["index"], min=1, max=len(tiles), description="Tile")
+    options = [("Choose…", "")] + [(value, value) for value in CLASS_NAMES]
+    a = widgets.Dropdown(options=options, description="A · left")
+    b = widgets.Dropdown(options=options, description="B · right")
     save = widgets.Button(description="Save & next", button_style="primary")
     reject = widgets.Button(description="Reject crop")
     previous = widgets.Button(description="Previous")
@@ -135,55 +240,37 @@ def labeling_station(tiles, crops, labels_path):
     tile_caption = widgets.Label()
     tile_image = widgets.Image(format="png", layout=widgets.Layout(max_width="100%", height="auto"))
     preview = widgets.VBox([tile_caption, tile_image, widgets.Label("A = LEFT HALF · B = RIGHT HALF")])
-    message = widgets.HTML()
+    message = widgets.Label()
 
-    def show(*_):
-        current = load_pip_labels(labels_path, tiles)
-        tile = tiles[index.value - 1]
-        row = current[tile["tile_id"]]
-        a.value, b.value = row["a"], row["b"]
-        counts = Counter(r["status"] for r in current.values())
-        message.value = f"<b>{index.value}/{len(tiles)}</b> · {counts['labeled']} labeled · {counts['rejected']} rejected · {counts['pending']} pending"
-        combined = np.concatenate([read_rgb(crops / tile["a_path"]), read_rgb(crops / tile["b_path"])], axis=1)
-        buffer = BytesIO()
-        Image.fromarray(combined).resize((768, 384), Image.Resampling.NEAREST).save(buffer, format="PNG")
-        tile_caption.value = f"{tile['tile_id']} — {row['status']}"
-        tile_image.value = buffer.getvalue()
+    def show(tile):
+        tile_caption.value, tile_image.value = tile["caption"], tile["image"]
+        message.value = tile["message"]
+        a.value, b.value = tile["a"], tile["b"]
 
-    def advance_pending(*_):
-        current = load_pip_labels(labels_path, tiles)
-        order = list(range(index.value, len(tiles))) + list(range(index.value))
-        next_index = next((i for i in order if current[tiles[i]["tile_id"]]["status"] == "pending"), None)
-        if next_index is None:
-            show()
-            message.value += " · <b>All tiles reviewed. Continue below.</b>"
-        elif index.value == next_index + 1:
-            show()
-        else:
-            index.value = next_index + 1
+    def jump(change):
+        show(review("go", change["new"]))
 
-    def persist(status):
-        if status == "labeled" and (a.value == "" or b.value == ""):
-            message.value = "Choose a value for both A and B before saving."
+    def act(action):
+        try:
+            tile = review(action, index.value, a.value, b.value)
+        except ValueError as error:
+            message.value = str(error)
             return
-        current = load_pip_labels(labels_path, tiles)
-        tile_id = tiles[index.value - 1]["tile_id"]
-        current[tile_id] = {"tile_id": tile_id, "a": a.value if status == "labeled" else "",
-                            "b": b.value if status == "labeled" else "", "status": status}
-        shutil.copy2(labels_path, labels_path.with_suffix(".previous.csv"))
-        write_csv(labels_path, list(current.values()), ["tile_id", "a", "b", "status"])
-        advance_pending()
+        index.unobserve(jump, names="value")
+        try:
+            index.value = tile["index"]
+        finally:
+            index.observe(jump, names="value")
+        show(tile)
 
-    save.on_click(lambda _: persist("labeled"))
-    reject.on_click(lambda _: persist("rejected"))
-    previous.on_click(lambda _: setattr(index, "value", max(1, index.value - 1)))
-    pending.on_click(advance_pending)
-    index.observe(show, names="value")
+    save.on_click(lambda _: act("save"))
+    reject.on_click(lambda _: act("reject"))
+    previous.on_click(lambda _: act("previous"))
+    pending.on_click(lambda _: act("pending"))
+    index.observe(jump, names="value")
     panel = widgets.VBox([message, widgets.HBox([index, previous, pending]), preview,
                           widgets.HBox([a, b]), widgets.HBox([save, reject])])
-    # Populate before display and update widget values in callbacks. Clearing an Output
-    # widget before its view attaches can clear the surrounding Colab cell instead.
-    show()
+    show(first)
     display(panel)
     return panel
 

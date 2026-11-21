@@ -7,6 +7,7 @@ import ast
 import importlib.util
 import io
 import json
+import sys
 import tempfile
 import unittest
 import zipfile
@@ -139,16 +140,16 @@ class PipelineTests(unittest.TestCase):
         labels_path = crops / "pip_labels.csv"
         station = self.classifier_function("labeling_station")
         def check_display(panel):
-            # The first view must include the image already; no output clearing may
-            # erase that view when Colab attaches the widget asynchronously.
+            # The first view already includes the selected tile, including after a restart.
+            tile = tiles[panel.children[1].children[0].value - 1]
             preview = panel.children[2]
             image = Image.open(io.BytesIO(bytes(preview.children[1].value)))
             self.assertEqual(image.size, (768, 384))
-            expected = np.concatenate([h.read_rgb(crops / tiles[0]["a_path"]),
-                                       h.read_rgb(crops / tiles[0]["b_path"])], axis=1)
+            expected = np.concatenate([h.read_rgb(crops / tile["a_path"]),
+                                       h.read_rgb(crops / tile["b_path"])], axis=1)
             np.testing.assert_array_equal(np.asarray(image), np.asarray(
                 Image.fromarray(expected).resize((768, 384), Image.Resampling.NEAREST)))
-            self.assertIn(tiles[0]["tile_id"], preview.children[0].value)
+            self.assertIn(tile["tile_id"], preview.children[0].value)
 
         with patch("IPython.display.display", side_effect=check_display) as display, \
                 patch("IPython.display.clear_output", side_effect=AssertionError("Picker must not clear cell output")) as clear:
@@ -169,8 +170,43 @@ class PipelineTests(unittest.TestCase):
             panel.children[4].children[1].click()
             self.assertEqual(h.load_pip_labels(labels_path, tiles)[tiles[1]["tile_id"]]["status"], "rejected")
             resumed = station(tiles, crops, labels_path)
+            self.assertEqual(resumed.children[1].children[0].value, 3)
+            resumed.children[1].children[0].value = 1
             self.assertEqual(resumed.children[3].children[0].value, "10")
             clear.assert_not_called()
+
+    def test_colab_station_uses_html_controls_and_saves_through_its_callback(self):
+        root = self.create_export(count=2)
+        records, fingerprint = h.audit_export(root)
+        crops = self.root / "crops"
+        tiles = h.make_crops(root, records, crops, fingerprint)
+        path = crops / "pip_labels.csv"
+        labels = h.load_pip_labels(path, tiles)
+        labels[tiles[0]["tile_id"]].update(a="3", b="0", status="labeled")
+        h.write_csv(path, labels.values(), ["tile_id", "a", "b", "status"])
+        before = path.read_bytes()
+        callbacks = {}
+        colab = SimpleNamespace(output=SimpleNamespace(register_callback=callbacks.__setitem__))
+        station = self.classifier_function("labeling_station", {
+            "IN_COLAB": True, "colab_labeling_station": self.classifier_function("colab_labeling_station")})
+        with patch.dict(sys.modules, {"google.colab": colab, "ipywidgets": None}), \
+             patch("IPython.display.display") as display:
+            station(tiles, crops, path)
+        panel_id, update = next(iter(callbacks.items()))
+        html = display.call_args.args[0].data
+        self.assertIn(panel_id, html)
+        self.assertIn('data-tile="2"', html)
+        self.assertIn("data:image/png;base64,", html)
+        self.assertIn('data-action="save"', html)
+        self.assertIn("error", update("save", 2, "16", "").data)
+        self.assertIn("error", update("go", 0, "", "").data)
+        self.assertIn('data-tile="1"', update("previous", 2, "", "").data["html"])
+        self.assertEqual(path.read_bytes(), before)
+        self.assertIn("All tiles reviewed", update("save", 2, "0", "15").data["html"])
+        saved = h.load_pip_labels(path, tiles)
+        self.assertEqual(saved[tiles[0]["tile_id"]], labels[tiles[0]["tile_id"]])
+        self.assertEqual((saved[tiles[1]["tile_id"]]["a"], saved[tiles[1]["tile_id"]]["b"]), ("0", "15"))
+        self.assertEqual(path.with_suffix(".previous.csv").read_bytes(), before)
 
     def test_equal_total_does_not_hide_wrong_tile_pairs(self):
         raw = self.root / "raw"
