@@ -18,3 +18,9 @@ Under Settings → Environments, restrict each environment to the selected branc
 - **play-internal** uses ANDROID_KEYSTORE_BASE64 (existing registered upload keystore), ANDROID_STORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD and PLAY_SERVICE_ACCOUNT_JSON (service account authorized for internal testing on the existing Play app).
 
 TestFlight uploads still require Apple processing. Play uploads go to internal testing. Production rollout is a separate store action.
+
+## Promote the tested Android build
+
+After internal testing, open Actions → Promote tested Play release to production → Run workflow. Select main and enter the internal release’s tested version code. This explicitly requests a full production rollout of that release, subject to Google review and managed publishing. It reuses the uploaded bundle and consumes no new build number. Check Publishing overview for any remaining review or publishing actions.
+
+Configure PLAY_SERVICE_ACCOUNT_JSON in the main-only play-production environment with permission to release Domino Counter to production. Keep internal automation scoped to testing. Alternatively, select the tested release in Play Console and promote it to production there.
