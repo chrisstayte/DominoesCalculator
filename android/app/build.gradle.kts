@@ -15,10 +15,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
     defaultConfig {
         applicationId = "com.chrisstayte.dominoes"
         // You can update the following values to match your application needs.
@@ -45,6 +41,12 @@ android {
         release {
             signingConfig = signingConfigs.getByName(if (uploadKeystore == null) "debug" else "upload")
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
