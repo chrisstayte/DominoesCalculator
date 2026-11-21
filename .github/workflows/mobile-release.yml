@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: dominoes-mobile-release
+  group: dominoes-mobile-${{ github.event_name == 'pull_request' && github.ref || 'release' }}
   queue: max
 
 env:
