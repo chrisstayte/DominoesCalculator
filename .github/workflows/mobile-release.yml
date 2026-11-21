@@ -75,7 +75,9 @@ jobs:
       - name: Install pinned Flutter
         run: |
           git init -q "$RUNNER_TEMP/flutter"
-          git -C "$RUNNER_TEMP/flutter" fetch --depth=1 https://github.com/flutter/flutter.git "refs/tags/$FLUTTER_VERSION"
+          tag="refs/tags/$FLUTTER_VERSION"
+          git -C "$RUNNER_TEMP/flutter" remote add origin https://github.com/flutter/flutter.git
+          git -C "$RUNNER_TEMP/flutter" fetch --depth=1 --no-tags origin "$tag:$tag"
           test "$(git -C "$RUNNER_TEMP/flutter" rev-parse 'FETCH_HEAD^{commit}')" = "$FLUTTER_COMMIT"
           git -C "$RUNNER_TEMP/flutter" checkout --quiet --detach "$FLUTTER_COMMIT"
           echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
@@ -141,7 +143,9 @@ jobs:
       - name: Install pinned Flutter
         run: |
           git init -q "$RUNNER_TEMP/flutter"
-          git -C "$RUNNER_TEMP/flutter" fetch --depth=1 https://github.com/flutter/flutter.git "refs/tags/$FLUTTER_VERSION"
+          tag="refs/tags/$FLUTTER_VERSION"
+          git -C "$RUNNER_TEMP/flutter" remote add origin https://github.com/flutter/flutter.git
+          git -C "$RUNNER_TEMP/flutter" fetch --depth=1 --no-tags origin "$tag:$tag"
           test "$(git -C "$RUNNER_TEMP/flutter" rev-parse 'FETCH_HEAD^{commit}')" = "$FLUTTER_COMMIT"
           git -C "$RUNNER_TEMP/flutter" checkout --quiet --detach "$FLUTTER_COMMIT"
           echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
