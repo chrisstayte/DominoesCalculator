@@ -1,168 +1,108 @@
-import 'package:dominoes/global/global.dart';
-import 'package:dominoes/providers/settings_provider.dart';
-import 'package:dominoes/screens/camera_screen.dart';
-import 'package:dominoes/screens/home_screen.dart';
-import 'package:dominoes/screens/settings_screen.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:dominoes/constants.dart';
+import 'package:dominoes/providers/calculator_provider.dart';
+import 'package:dominoes/providers/camera_provider.dart';
+import 'package:dominoes/providers/game_log_provider.dart';
+import 'package:dominoes/providers/local_settings_provider.dart';
+import 'package:dominoes/router.dart';
+import 'package:dominoes/screens/splash_screen.dart';
+import 'package:dominoes/services/sfx_service.dart';
+import 'package:dominoes/services/vibration_service.dart';
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
-void main() {
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider<SettingsProvider>(
-          create: (_) => SettingsProvider(), lazy: false),
-    ],
-    child: const MyApp(),
-  ));
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final localSettingsProvider = LocalSettingsProvider();
+  await localSettingsProvider.isReady;
+
+  final sfxService = SfxService(localSettingsProvider);
+  await sfxService.initialize();
+
+  final vibrationService = VibrationService(localSettingsProvider);
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<LocalSettingsProvider>.value(
+          value: localSettingsProvider,
+        ),
+        ChangeNotifierProvider<CalculatorProvider>(
+          create: (context) => CalculatorProvider(),
+        ),
+        ChangeNotifierProvider<GameLogProvider>(
+          create: (context) => GameLogProvider(),
+          lazy: false,
+        ),
+        ChangeNotifierProvider<CameraProvider>(
+          create: (context) => CameraProvider(),
+        ),
+        Provider<SfxService>.value(value: sfxService),
+        Provider<VibrationService>.value(value: vibrationService),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final _router = createRouter();
+  bool _showSplash = true;
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Domino Counter',
-      themeMode: context.watch<SettingsProvider>().isDarkMode
-          ? ThemeMode.dark
-          : ThemeMode.light,
-      theme: ThemeData.light().copyWith(
-          textTheme: GoogleFonts.quicksandTextTheme(),
-          appBarTheme: AppBarTheme(
-            centerTitle: true,
-            color: const Color(0XFFF3F4F8),
-            elevation: 0,
-            iconTheme: const IconThemeData(
-              color: Colors.black,
-            ),
-            titleTextStyle:
-                GoogleFonts.quicksandTextTheme().headline5?.copyWith(
-                      color: Colors.black,
-                    ),
-            toolbarTextStyle: TextStyle(
-              color: context.watch<SettingsProvider>().appAccentColor,
-            ),
-          ),
-          scaffoldBackgroundColor: const Color(0XFFF3F4F8),
-          textButtonTheme: TextButtonThemeData(
-            style: TextButton.styleFrom(
-              primary: context.watch<SettingsProvider>().appAccentColor,
-              textStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          switchTheme: SwitchThemeData(
-            thumbColor: MaterialStateProperty.all(
-              context.watch<SettingsProvider>().appAccentColor,
-            ),
-            trackColor: MaterialStateProperty.resolveWith(
-              (states) {
-                if (states.contains(MaterialState.selected)) {
-                  return HSLColor.fromColor(
-                    context.watch<SettingsProvider>().appAccentColor,
-                  ).withLightness(.5).toColor();
-                }
-                return CupertinoColors.tertiarySystemFill;
-              },
-            ),
-          ),
-          sliderTheme: SliderThemeData(
-            activeTrackColor: HSLColor.fromColor(
-                    context.watch<SettingsProvider>().appAccentColor)
-                .withLightness(.6)
-                .toColor(),
-            inactiveTrackColor: HSLColor.fromColor(
-                    context.watch<SettingsProvider>().appAccentColor)
-                .withLightness(.7)
-                .toColor(),
-            thumbColor: context.watch<SettingsProvider>().appAccentColor,
-            overlayColor: context
-                .watch<SettingsProvider>()
-                .appAccentColor
-                .withOpacity(.5),
-          ),
-          progressIndicatorTheme: ProgressIndicatorThemeData(
-            color: context.watch<SettingsProvider>().appAccentColor,
-          )),
-      darkTheme: ThemeData.dark().copyWith(
-        textTheme: GoogleFonts.quicksandTextTheme(ThemeData.dark().textTheme),
-        appBarTheme: AppBarTheme(
-          centerTitle: true,
-          color: Global.colors.darkThemeColor,
-          elevation: 0,
-          iconTheme: const IconThemeData(
-            color: Colors.white,
-          ),
-          titleTextStyle: GoogleFonts.quicksandTextTheme().headline5?.copyWith(
-                color: Colors.white,
-              ),
-        ),
-        scaffoldBackgroundColor: Global.colors.darkThemeColor,
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            primary: context.watch<SettingsProvider>().appAccentColor,
-            textStyle: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        switchTheme: SwitchThemeData(
-          thumbColor: MaterialStateProperty.all(
-            context.watch<SettingsProvider>().appAccentColor,
-          ),
-          trackColor: MaterialStateProperty.resolveWith(
-            (states) {
-              if (states.contains(MaterialState.selected)) {
-                return HSLColor.fromColor(
-                  context.watch<SettingsProvider>().appAccentColor,
-                ).withLightness(.5).toColor();
-              }
-              return CupertinoColors.inactiveGray;
-            },
-          ),
-        ),
-        sliderTheme: SliderThemeData(
-          activeTrackColor: HSLColor.fromColor(
-                  context.watch<SettingsProvider>().appAccentColor)
-              .withLightness(.6)
-              .toColor(),
-          inactiveTrackColor: HSLColor.fromColor(
-                  context.watch<SettingsProvider>().appAccentColor)
-              .withLightness(.7)
-              .toColor(),
-          thumbColor: context.watch<SettingsProvider>().appAccentColor,
-          overlayColor:
-              context.watch<SettingsProvider>().appAccentColor.withOpacity(.5),
-        ),
-      ),
-      initialRoute: '/',
-      onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case '/':
-            return PageTransition(
-              child: const HomeScreen(),
-              type: PageTransitionType.rightToLeft,
-            );
+    final localSettingsProvider = Provider.of<LocalSettingsProvider>(context);
+    final themeMode = localSettingsProvider.localSettings.themeMode;
+    final splashEnabled = localSettingsProvider.localSettings.showSplashScreen;
 
-          case '/settings':
-            return PageTransition(
-              child: const SettingsScreen(),
-              type: PageTransitionType.bottomToTop,
-            );
-          case '/camera':
-            return PageTransition(
-              child: const CameraScreen(),
-              type: PageTransitionType.bottomToTop,
-            );
-        }
-        return null;
+    return MaterialApp.router(
+      routerConfig: _router,
+      title: 'Dominoes',
+      themeMode: themeMode,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            child!,
+            if (_showSplash && splashEnabled)
+              SplashScreen(
+                onComplete: () => setState(() => _showSplash = false),
+              ),
+          ],
+        );
       },
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
+        textTheme: GoogleFonts.bricolageGrotesqueTextTheme(),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.white,
+          scrolledUnderElevation: 0,
+        ),
+        extensions: [NeoBrutalistTheme.light()],
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          brightness: Brightness.dark,
+        ),
+        textTheme: GoogleFonts.bricolageGrotesqueTextTheme(
+          ThemeData(brightness: Brightness.dark).textTheme,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.black,
+          scrolledUnderElevation: 0,
+        ),
+        extensions: [NeoBrutalistTheme.dark()],
+      ),
     );
   }
 }

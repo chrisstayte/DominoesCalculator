@@ -1,6 +1,5 @@
-package com.chrisstayte.dominoes
+package com.example.dominoes
 
 import io.flutter.embedding.android.FlutterActivity
 
-class MainActivity: FlutterActivity() {
-}
+class MainActivity : FlutterActivity()
