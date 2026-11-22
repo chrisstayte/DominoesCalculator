@@ -55,3 +55,4 @@ if __name__ == "__main__":
     build("02_pip_classifier", "classifier.py")
     build("03_pip_label_review", "review.py")
     build("04_test_photo", "photo_tester.py")
+    build("06_pretrained_classifier", "classifier_experiment.py")
