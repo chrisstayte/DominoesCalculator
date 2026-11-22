@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dominoes/main.dart';
 import 'package:dominoes/models/local_settings.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
-import 'package:dominoes/providers/camera_provider.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/services/sfx_service.dart';
@@ -14,20 +13,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class NoopCameraProvider extends CameraProvider {
-  @override
-  Future<void> initializeCamera() async {}
-
-  @override
-  void pausePreview() {}
-
-  @override
-  Future<void> requestPermissionAgain() async {}
-
-  @override
-  void resumePreview() {}
-}
 
 void useLargeDisplay(WidgetTester tester) {
   tester.view.devicePixelRatio = 1;
@@ -59,7 +44,6 @@ Widget buildProviderHarness({
   LocalSettingsProvider? settingsProvider,
   CalculatorProvider? calculatorProvider,
   GameLogProvider? gameLogProvider,
-  CameraProvider? cameraProvider,
 }) {
   GoogleFonts.config.allowRuntimeFetching = false;
 
@@ -73,9 +57,6 @@ Widget buildProviderHarness({
       ),
       ChangeNotifierProvider<GameLogProvider>.value(
         value: gameLogProvider ?? GameLogProvider(),
-      ),
-      ChangeNotifierProvider<CameraProvider>.value(
-        value: cameraProvider ?? NoopCameraProvider(),
       ),
       Provider<SfxService>.value(value: SfxService(settings)),
       Provider<VibrationService>.value(

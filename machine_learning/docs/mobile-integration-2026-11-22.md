@@ -56,8 +56,9 @@ adds only selected, confirmed tiles and supports correcting or excluding detecti
 flutter build ios --profile
 ```
 
-The camera is currently removed from the app and the model assets are not
-bundled, pending licensing; see the camera review guide. Keep CocoaPods enabled for the
+The camera is currently removed from the app, pending licensing: its code is
+parked in `dormant/camera/` (outside the build) with restore steps in its README,
+and the camera plugins, permissions and model assets are not shipped. Keep CocoaPods enabled for the
 pinned flutter_litert 1.4.0 plugin: its Swift package is a stub without the native
 inference libraries. The project explicitly selects this supported integration
 in pubspec.yaml.
@@ -82,7 +83,7 @@ No store release is part of this change.
 ```sh
 flutter analyze --no-fatal-infos
 flutter test
-DOMINO_NATIVE_MODEL_TEST=1 flutter test test/services/domino_pipeline_test.dart
+DOMINO_NATIVE_MODEL_TEST=1 flutter test test/services/domino_pipeline_test.dart  # after restoring dormant/camera
 ```
 
 For a local private comparison, set `DOMINO_PRIVATE_TEST_PHOTOS` to an external
