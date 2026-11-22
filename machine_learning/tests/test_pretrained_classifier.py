@@ -21,6 +21,20 @@ class ExperimentSafetyTests(unittest.TestCase):
                 experiment.read_existing_data(root)
             self.assertEqual(list(root.iterdir()), [])
 
+    def test_candidate_contract_matches_photo_tester_and_refuses_replacement(self):
+        metadata = {"split_signature": "fixed", "labels_sha256": "labels",
+                    "crop_version": "long-edge-rgb-128-v1", "class_names": list(map(str, range(16))),
+                    "image_size": 128, "seed": 42, "variant": "mixed", "inputs": {"private": "omitted"}}
+        with tempfile.TemporaryDirectory() as directory:
+            contract = experiment.save_model_contract(directory, metadata)
+            self.assertEqual(contract["class_names"], list(map(str, range(16))))
+            self.assertEqual(contract["image_size"], 128)
+            self.assertNotIn("inputs", contract)
+            self.assertFalse(contract["training_recipe"]["embedded_grayscale"])
+            self.assertEqual(experiment.save_model_contract(directory, metadata), contract)
+            with self.assertRaisesRegex(ValueError, "refusing to overwrite"):
+                experiment.save_model_contract(directory, {**metadata, "split_signature": "different"})
+
     def test_new_runs_refuse_overwrite_and_path_escape(self):
         with tempfile.TemporaryDirectory() as directory:
             run = experiment.create_run(directory, "pips-v3-synthetic-01")

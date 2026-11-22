@@ -5,11 +5,11 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "notebook_sources"))
-from pretrained_classifier import evaluate, train
+from pretrained_classifier import evaluate, finalize_contracts, train
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["train", "compare"])
+    parser.add_argument("action", choices=["train", "compare", "finalize"])
     parser.add_argument("--project", type=Path, required=True)
     parser.add_argument("--run")
     parser.add_argument("--variant", choices=["rgb", "mixed"], default="mixed")
@@ -20,7 +20,11 @@ if __name__ == "__main__":
         if not args.run:
             parser.error("train requires --run with a new name")
         train(args.project, args.run, args.variant)
-    else:
+    elif args.action == "compare":
         if not args.runs:
             parser.error("compare requires --runs")
         evaluate(args.project, args.runs, ROOT, args.comparison)
+    else:
+        if not args.runs:
+            parser.error("finalize requires --runs")
+        finalize_contracts(args.project, args.runs)

@@ -96,6 +96,41 @@ def create_run(project, run_name):
     return path
 
 
+def save_model_contract(run, experiment):
+    """Write the photo tester's metadata contract without replacing an existing one."""
+    fields = ("split_signature", "labels_sha256", "crop_version", "class_names", "image_size", "seed")
+    contract = {key: experiment[key] for key in fields}
+    contract["training_recipe"] = {"version": RECIPE, "variant": experiment["variant"],
+                                   "embedded_grayscale": False,
+                                   "normalization": "Rescaling(1/127.5, offset=-1) embedded",
+                                   "pretrained_weights": "ImageNet MobileNetV2 alpha=0.5"}
+    path = Path(run) / "dataset_contract.json"
+    if path.exists():
+        if json.loads(path.read_text()) != contract:
+            raise ValueError("Existing model contract differs; refusing to overwrite it.")
+    else:
+        with path.open("x") as stream:
+            stream.write(json.dumps(contract, indent=2, allow_nan=False) + "\n")
+    return contract
+
+
+def finalize_contracts(project, run_names):
+    """Add compatible metadata to completed v3 trials, preserving all checkpoints."""
+    project = Path(project)
+    for name in run_names:
+        if not re.fullmatch(r"pips-v3-[a-z0-9-]+", name):
+            raise ValueError("Only separately named v3 candidates can be finalized.")
+        run = project / "models/classifier" / name
+        experiment = json.loads((run / "experiment.json").read_text())
+        receipt = json.loads((run / "completed.json").read_text())
+        if experiment["recipe"] != RECIPE or not receipt["protected_inputs_unchanged"]:
+            raise ValueError("Candidate did not complete the expected protected experiment.")
+        if sha256(run / "best.keras") != receipt["best_sha256"]:
+            raise ValueError("Completed candidate checkpoint changed.")
+        save_model_contract(run, experiment)
+    print("CLASSIFIER_CONTRACTS_READY " + json.dumps({"runs": run_names, "weights_changed": False}), flush=True)
+
+
 def augment(image, value, tf, gray_probability):
     """Full-half transforms only: no pip-cutting crops, erasing, or mixup."""
     x = tf.cast(image, tf.float32) / 255.0
@@ -181,6 +216,7 @@ def train(project, run_name, variant, head_epochs=12, fine_epochs=40):
                 "selection": "Minimum original-validation cross entropy across both phases; challenge photos excluded.",
                 "inputs": before, "source_sha256": sha256(Path(__file__))}
     write_json(run / "experiment.json", contract)
+    save_model_contract(run, contract)
     x_train, y_train = load_images(crops, rows, "train")
     x_val, y_val = load_images(crops, rows, "val")
     dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(len(y_train), seed=42)
