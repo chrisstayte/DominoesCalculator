@@ -66,7 +66,7 @@ flutter analyze --no-fatal-infos
 flutter test
 ```
 
-Tests cover scoring, settings and log persistence, malformed stored data, screen interactions, sound assets, camera state, and iPad window layouts.
+Tests cover scoring, settings and log persistence, malformed stored data, screen interactions, sound assets, and iPad window layouts.
 
 ### Build for local use
 
@@ -112,7 +112,7 @@ The current calculator entries live in memory. Saved game logs and preferences p
 
 Sound effects respect iOS Silent Mode and use Android's system sonification audio settings. When sound effects are enabled, the settings screen displays notices for silent mode, vibrate mode, or muted volume as reported by the platform.
 
-The experimental camera screen also has persisted confidence-label and scan-line preferences, defaulting to off and on respectively. The Settings screen includes the app's MIT open-source notice, a link to this repository, app version information, and third-party licenses, including the [Cuelume sound license](assets/sfx/Cuelume-LICENSE.txt).
+The Settings screen includes the app's MIT open-source notice, a link to this repository, app version information, and third-party licenses, including the [Cuelume sound license](assets/sfx/Cuelume-LICENSE.txt).
 
 ## Architecture
 
@@ -140,7 +140,6 @@ flowchart TD
 | `CalculatorProvider` | Current entries, individual removal, undo, clear, and computed totals |
 | `GameLogProvider` | Load, save, and delete game logs while retaining each game's scoring rule |
 | `LocalSettingsProvider` | Load and persist appearance, gameplay, feedback, and camera preferences |
-| `CameraProvider` | Camera permissions, preview lifecycle, capture, and prototype inference |
 | `SfxService` | Low-latency playback of bundled interaction sounds |
 | `VibrationService` | Hardware support checks and preference-aware haptic feedback |
 
@@ -153,29 +152,30 @@ lib/
 ├── main.dart                 # Startup, providers, themes, splash, licenses
 ├── router.dart               # Stateful tab navigation
 ├── enum/                     # Pip values, display styles, accent colors
-├── models/                   # Settings, game logs, detection results
-├── providers/                # Calculator, logs, settings, camera state
-├── screens/                  # Calculator, logs, settings, camera, licenses
-├── services/                 # Sound, haptics, image processing, LiteRT
+├── models/                   # Settings and game logs
+├── providers/                # Calculator, logs, settings state
+├── screens/                  # Calculator, logs, settings, licenses
+├── services/                 # Sound and haptics
 ├── theme/                    # Light and dark design tokens
 └── widgets/                  # Adaptive workspaces and shared UI
 assets/
 ├── branding/                 # Launcher icon source assets
 ├── images/                   # Pip SVGs, navigation icons, launch icon
-├── models/                   # Domino detector, pip classifier, contracts and notices
+├── models/                   # Dormant camera models (not bundled)
 └── sfx/                      # Interaction sounds and Cuelume license
 design/                      # Icon explorations and iPad references
+dormant/camera/               # Parked camera code, not built (see its README)
 store-assets/v2/              # Store screenshots and campaign artwork
 scripts/release/              # Build numbering, signing, validation, uploads
 test/                        # Model, provider, screen, and layout tests
 .github/workflows/            # Dev checks, mobile release, Play promotion
 ```
 
-Other key dependencies include `flutter_svg`, `google_fonts`, `audioplayers`, `camera`, and `flutter_litert`. See [pubspec.yaml](pubspec.yaml) for the current app version and dependency constraints.
+Other key dependencies include `flutter_svg`, `google_fonts`, and `audioplayers`. See [pubspec.yaml](pubspec.yaml) for the current app version and dependency constraints.
 
 ## Camera and machine learning
 
-The camera is removed from the app until the detector's licensing is resolved. Its code stays in the repository but is not routed, has no tab, and the model files are not bundled. There is no flag or remote setting that turns it back on; restoring it requires a code change and a new release.
+The camera is removed from the app until the detector's licensing is resolved. Its code is parked in [`dormant/camera/`](dormant/camera/README.md), outside the build, and the app ships without any camera plugin, permission or model files. There is no flag or remote setting that turns it back on; restoring it requires a code change and a new release.
 
 The Flutter camera runs the unchanged `domino-v2-01` rotated tile detector and
 `pips-v3-mnv2-mixed-01` MobileNetV2 pip classifier on device. It rectifies each

@@ -19,8 +19,9 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-// flutter_litert compiles its Java sources for JVM 11.
-project(":flutter_litert") {
+// flutter_litert compiles its Java sources for JVM 11. It is only present
+// while the dormant camera is restored, so configure it when it exists.
+findProject(":flutter_litert")?.apply {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
         compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
     }

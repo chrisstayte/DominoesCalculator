@@ -1,8 +1,8 @@
 # Camera scanning and reviewing your tiles
 
-> **Not in the app.** The camera is removed from the app until the detector's licensing is resolved. Its code stays in the repository but is not routed, has no tab, and the model files are not bundled. There is no flag or remote setting that turns it back on; restoring it requires a code change and a new release.
+> **Not in the app.** The camera is removed from the app until the detector's licensing is resolved. Its code is parked in [`dormant/camera/`](../dormant/camera/README.md), outside the build, and the app ships without any camera plugin, permission or model files. There is no flag or remote setting that turns it back on; restoring it requires a code change and a new release.
 
-To work on it, restore the `/camera` route and tab, the `CameraProvider` in `main.dart`, and the `assets/models/` entries in `pubspec.yaml`.
+To work on it, follow the restore steps in [`dormant/camera/README.md`](../dormant/camera/README.md).
 
 Keep Device Hub screen sharing stopped when using the physical iPhone camera.
 The phone can remain paired and receive wireless builds. Screen sharing caused
