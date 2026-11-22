@@ -275,27 +275,33 @@ void _modelWorker(Map<String, Object?> config) async {
       try {
         final watch = Stopwatch()..start();
         if (message['preview'] == true) {
-          final source = ImageUtils.previewImage(
-            PreviewFrame(
-              width: message['width'] as int,
-              height: message['height'] as int,
-              rotation: message['rotation'] as int,
-              format: PreviewPixelFormat.values[message['format'] as int],
-              planes: [
-                for (final dynamic plane in message['planes'] as List)
-                  PreviewPlane(
-                    (plane['bytes'] as TransferableTypedData)
-                        .materialize()
-                        .asUint8List(),
-                    rowStride: plane['rowStride'] as int,
-                    pixelStride: plane['pixelStride'] as int,
-                  ),
-              ],
-            ),
+          final frame = PreviewFrame(
+            width: message['width'] as int,
+            height: message['height'] as int,
+            rotation: message['rotation'] as int,
+            format: PreviewPixelFormat.values[message['format'] as int],
+            planes: [
+              for (final dynamic plane in message['planes'] as List)
+                PreviewPlane(
+                  (plane['bytes'] as TransferableTypedData)
+                      .materialize()
+                      .asUint8List(),
+                  rowStride: plane['rowStride'] as int,
+                  pixelStride: plane['pixelStride'] as int,
+                ),
+            ],
+          );
+          final size = ImageUtils.previewSize(frame);
+          final source = (
+            width: size.width.toInt(),
+            height: size.height.toInt(),
           );
           final letterbox = DominoLetterbox(source.width, source.height);
           final boxes = decodeDominoBoxes(
-            _invoke(detector, ImageUtils.detectorInput(source, letterbox)),
+            _invoke(
+              detector,
+              ImageUtils.previewDetectorInput(frame, letterbox),
+            ),
           );
           reply.send({
             'type': 'result',

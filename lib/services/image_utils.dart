@@ -72,6 +72,95 @@ class ImageUtils {
         : img.copyRotate(image, angle: frame.rotation);
   }
 
+  /// Size of the upright, detector-sized live frame that [previewImage] and
+  /// [previewDetectorInput] produce. Detections are reported in this space.
+  static Size previewSize(PreviewFrame frame) {
+    final scale = math.min(1.0, 640 / math.max(frame.width, frame.height));
+    final width = math.max(1, (frame.width * scale).round());
+    final height = math.max(1, (frame.height * scale).round());
+    return frame.rotation % 180 == 0
+        ? Size(width.toDouble(), height.toDouble())
+        : Size(height.toDouble(), width.toDouble());
+  }
+
+  /// Fast live path: sample camera planes straight into the letterboxed
+  /// detector tensor in one pass. Equivalent to [previewImage] followed by
+  /// [detectorInput] for a <=640px frame, without building an intermediate
+  /// image or doing per-pixel object lookups (the dominant live-frame cost).
+  static Float32List previewDetectorInput(
+    PreviewFrame frame,
+    DominoLetterbox box,
+  ) {
+    if (frame.width <= 0 ||
+        frame.height <= 0 ||
+        frame.rotation % 90 != 0 ||
+        frame.planes.length !=
+            (frame.format == PreviewPixelFormat.bgra8888 ? 1 : 3)) {
+      throw const FormatException('Unsupported camera frame.');
+    }
+    final rotation = ((frame.rotation % 360) + 360) % 360;
+    // Upright frame dimensions before downscaling.
+    final uprightWidth = rotation % 180 == 0 ? frame.width : frame.height;
+    final uprightHeight = rotation % 180 == 0 ? frame.height : frame.width;
+    final plane = box.size * box.size;
+    final result = Float32List(plane * 3)..fillRange(0, plane * 3, 114 / 255);
+    final bgra = frame.format == PreviewPixelFormat.bgra8888;
+    final p0 = frame.planes[0];
+    final b0 = p0.bytes, r0 = p0.rowStride, s0 = p0.pixelStride;
+    final p1 = bgra ? null : frame.planes[1];
+    final p2 = bgra ? null : frame.planes[2];
+    const inv = 1 / 255;
+    for (var y = 0; y < box.resizedHeight; y++) {
+      final uy = ((y + .5) * uprightHeight / box.resizedHeight).floor().clamp(
+        0,
+        uprightHeight - 1,
+      );
+      final row = (y + box.top) * box.size + box.left;
+      for (var x = 0; x < box.resizedWidth; x++) {
+        final ux = ((x + .5) * uprightWidth / box.resizedWidth).floor().clamp(
+          0,
+          uprightWidth - 1,
+        );
+        // Inverse of a clockwise rotation by [rotation] degrees.
+        final int sx, sy;
+        switch (rotation) {
+          case 90:
+            sx = uy;
+            sy = frame.height - 1 - ux;
+          case 180:
+            sx = frame.width - 1 - ux;
+            sy = frame.height - 1 - uy;
+          case 270:
+            sx = frame.width - 1 - uy;
+            sy = ux;
+          default:
+            sx = ux;
+            sy = uy;
+        }
+        final int r, g, b;
+        if (bgra) {
+          final i = sy * r0 + sx * s0;
+          b = b0[i];
+          g = b0[i + 1];
+          r = b0[i + 2];
+        } else {
+          final luminance = b0[sy * r0 + sx * s0].toDouble();
+          final cx = sx ~/ 2, cy = sy ~/ 2;
+          final u = p1!.bytes[cy * p1.rowStride + cx * p1.pixelStride] - 128;
+          final v = p2!.bytes[cy * p2.rowStride + cx * p2.pixelStride] - 128;
+          r = (luminance + 1.402 * v).round().clamp(0, 255);
+          g = (luminance - .344136 * u - .714136 * v).round().clamp(0, 255);
+          b = (luminance + 1.772 * u).round().clamp(0, 255);
+        }
+        final index = row + x;
+        result[index] = r * inv;
+        result[plane + index] = g * inv;
+        result[2 * plane + index] = b * inv;
+      }
+    }
+    return result;
+  }
+
   /// OpenCV half-pixel resize, RGB CHW, padding 114, normalization 0..1.
   static Float32List detectorInput(img.Image image, DominoLetterbox box) {
     final plane = box.size * box.size;

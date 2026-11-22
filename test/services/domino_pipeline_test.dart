@@ -253,4 +253,55 @@ void main() {
     skip: Platform.environment['DOMINO_NATIVE_MODEL_TEST'] != '1',
     timeout: const Timeout(Duration(minutes: 3)),
   );
+
+  test('fused live preprocessing matches decode-then-letterbox', () {
+    for (final format in PreviewPixelFormat.values) {
+      for (final rotation in [0, 90, 180, 270]) {
+        const width = 640, height = 320;
+        Uint8List bytes(int length, int seed) => Uint8List.fromList([
+          for (var i = 0; i < length; i++) (i * 7 + seed * 13 + i ~/ 640) % 256,
+        ]);
+        final frame = PreviewFrame(
+          width: width,
+          height: height,
+          rotation: rotation,
+          format: format,
+          planes: format == PreviewPixelFormat.bgra8888
+              ? [
+                  PreviewPlane(
+                    bytes(width * height * 4, 1),
+                    rowStride: width * 4,
+                    pixelStride: 4,
+                  ),
+                ]
+              : [
+                  PreviewPlane(
+                    bytes(width * height, 2),
+                    rowStride: width,
+                    pixelStride: 1,
+                  ),
+                  PreviewPlane(
+                    bytes(width * height ~/ 2, 3),
+                    rowStride: width,
+                    pixelStride: 2,
+                  ),
+                  PreviewPlane(
+                    bytes(width * height ~/ 2, 4),
+                    rowStride: width,
+                    pixelStride: 2,
+                  ),
+                ],
+        );
+        final image = ImageUtils.previewImage(frame);
+        final size = ImageUtils.previewSize(frame);
+        expect([size.width, size.height], [image.width, image.height]);
+        final box = DominoLetterbox(image.width, image.height);
+        expect(
+          ImageUtils.previewDetectorInput(frame, box),
+          ImageUtils.detectorInput(image, box),
+          reason: '$format at $rotation degrees',
+        );
+      }
+    }
+  });
 }

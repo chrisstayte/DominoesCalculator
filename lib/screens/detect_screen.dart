@@ -429,12 +429,9 @@ class _CameraScreenState extends State<CameraScreen>
                                 children: [
                                   CameraPreview(camera.controller!),
                                   IgnorePointer(
-                                    child: CustomPaint(
-                                      key: const ValueKey('live-domino-boxes'),
-                                      painter: LiveDetectionOverlay(
-                                        detections: camera.liveDetections,
-                                        color: accentColor,
-                                      ),
+                                    child: LiveDetectionBoxes(
+                                      tracks: camera.liveTracks,
+                                      color: accentColor,
                                     ),
                                   ),
                                 ],
@@ -470,16 +467,19 @@ class _CameraScreenState extends State<CameraScreen>
                           vertical: 7,
                         ),
                         color: Colors.black.withValues(alpha: .75),
-                        child: Text(
-                          camera.liveMessage ??
-                              (camera.liveDetections.isEmpty
-                                  ? 'SCANNING FOR DOMINOES'
-                                  : '${camera.liveDetections.length} DOMINOES IN VIEW · TAP SHUTTER'),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
+                        child: ValueListenableBuilder(
+                          valueListenable: camera.liveTracks,
+                          builder: (context, tracks, _) => Text(
+                            camera.liveMessage ??
+                                (tracks.isEmpty
+                                    ? 'SCANNING FOR DOMINOES'
+                                    : '${tracks.length} DOMINOES IN VIEW · TAP SHUTTER'),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ),

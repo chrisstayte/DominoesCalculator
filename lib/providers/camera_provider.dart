@@ -4,8 +4,10 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:dominoes/models/detection_result.dart';
 import 'package:dominoes/models/preview_frame.dart';
+import 'package:dominoes/services/live_detection_tracker.dart';
 import 'package:dominoes/services/object_detector.dart';
 import 'package:dominoes/services/tflite_detector.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -21,6 +23,9 @@ enum CameraState {
 }
 
 class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
+  /// Minimum spacing between live detector requests. Requests are also
+  /// serialized (one in flight), so this mostly caps battery use.
+  static const _minFrameInterval = Duration(milliseconds: 90);
   CameraController? _controller;
   final ObjectDetector _detector;
   CameraState _state = CameraState.uninitialized;
@@ -29,7 +34,8 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
   String? _errorMessage;
   String? _liveMessage;
   FlashMode _flashMode = FlashMode.auto;
-  List<DetectionResult> _liveDetections = const [];
+  final _tracker = LiveDetectionTracker();
+  final _liveTracks = ValueNotifier<List<TrackedDetection>>(const []);
   Future<void>? _initializing;
   Future<void>? _closing;
   Future<void>? _startingStream;
@@ -45,7 +51,13 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
   CameraState get state => _state;
   DetectionReport? get report => _report;
   List<DetectionResult> get detections => _report?.detections ?? const [];
-  List<DetectionResult> get liveDetections => _liveDetections;
+  List<DetectionResult> get liveDetections => [
+    for (final track in _liveTracks.value) track.detection,
+  ];
+
+  /// Stable, smoothed live boxes. Updated without [notifyListeners] so a
+  /// detector result only repaints the overlay, not the whole camera screen.
+  ValueListenable<List<TrackedDetection>> get liveTracks => _liveTracks;
   String? get liveMessage => _liveMessage;
   String? get capturedImagePath => _capturedImagePath;
   String? get errorMessage => _errorMessage;
@@ -173,7 +185,7 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
         _liveTask != null)
       return;
     final now = DateTime.now();
-    if (now.difference(_lastFrame).inMilliseconds < 250) return;
+    if (now.difference(_lastFrame) < _minFrameInterval) return;
     _lastFrame = now;
     final format = image.format.group;
     if (format != ImageFormatGroup.bgra8888 &&
@@ -217,15 +229,17 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
           _state != CameraState.preview ||
           !_wantsPreview)
         return;
-      _liveDetections = result.detections;
-      _liveMessage = null;
-      notifyListeners();
+      _liveTracks.value = _tracker.update(result.detections);
+      if (_liveMessage != null) {
+        _liveMessage = null;
+        notifyListeners();
+      }
     } catch (_) {
       if (_disposed ||
           generation != _liveGeneration ||
           _state != CameraState.preview)
         return;
-      _liveDetections = const [];
+      _clearLive();
       _liveMessage = 'Live boxes unavailable. You can still take a photo.';
       notifyListeners();
     }
@@ -236,7 +250,7 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
     if (_disposed || _state != CameraState.preview || camera == null) return;
     final generation = ++_captureGeneration;
     _liveGeneration++;
-    _liveDetections = const [];
+    _clearLive();
     try {
       _state = CameraState.capturing;
       notifyListeners();
@@ -269,6 +283,11 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
       _state = CameraState.error;
       notifyListeners();
     }
+  }
+
+  void _clearLive() {
+    _tracker.reset();
+    _liveTracks.value = const [];
   }
 
   Future<void> _closeCamera() {
@@ -321,7 +340,7 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
     _captureGeneration++;
     _report = null;
     _errorMessage = null;
-    _liveDetections = const [];
+    _clearLive();
     _capturedImagePath = null;
     _state = _controller == null
         ? CameraState.uninitialized
@@ -334,7 +353,7 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
     _wantsPreview = false;
     _generation++;
     _liveGeneration++;
-    _liveDetections = const [];
+    _clearLive();
     unawaited(_closeCamera());
     if (_state == CameraState.preview || _state == CameraState.capturing) {
       _captureGeneration++;
@@ -384,6 +403,8 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_closeCamera());
     _detector.dispose();
+    _tracker.reset();
+    _liveTracks.dispose();
     super.dispose();
   }
 }
