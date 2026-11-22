@@ -53,11 +53,11 @@ adds only selected, confirmed tiles and supports correcting or excluding detecti
 ## Local iPhone test build
 
 ```sh
-flutter build ios --profile --dart-define=ENABLE_CAMERA_SCANNING=true
+flutter build ios --profile
 ```
 
-The flag exposes the existing hidden camera tab. Store-release defaults remain
-controlled by `lib/global/feature_flags.dart`. Keep CocoaPods enabled for the
+The camera tab is always shown; the former `ENABLE_CAMERA_SCANNING` build flag
+was removed. Keep CocoaPods enabled for the
 pinned flutter_litert 1.4.0 plugin: its Swift package is a stub without the native
 inference libraries. The project explicitly selects this supported integration
 in pubspec.yaml.

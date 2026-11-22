@@ -1,9 +1,9 @@
 # Camera scanning and reviewing your tiles
 
-Enable the experimental camera tab in a local build:
+The camera tab is always shown. For a local device build:
 
 ```sh
-flutter run --profile --dart-define=ENABLE_CAMERA_SCANNING=true
+flutter run --profile
 ```
 
 Keep Device Hub screen sharing stopped when using the physical iPhone camera.

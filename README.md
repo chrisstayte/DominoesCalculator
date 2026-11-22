@@ -147,7 +147,7 @@ flowchart TD
 | `SfxService` | Low-latency playback of bundled interaction sounds |
 | `VibrationService` | Hardware support checks and preference-aware haptic feedback |
 
-The router starts at `/calc`, with branches for `/logs`, `/camera`, and `/settings`. `StatefulShellRoute.indexedStack` retains each branch's navigation state. Camera navigation is hidden unless its build flag is enabled.
+The router starts at `/calc`, with branches for `/logs`, `/camera`, and `/settings`. `StatefulShellRoute.indexedStack` retains each branch's navigation state.
 
 ## Project structure
 
@@ -156,7 +156,6 @@ lib/
 ├── main.dart                 # Startup, providers, themes, splash, licenses
 ├── router.dart               # Stateful tab navigation
 ├── enum/                     # Pip values, display styles, accent colors
-├── global/feature_flags.dart # Experimental camera build flag
 ├── models/                   # Settings, game logs, detection results
 ├── providers/                # Calculator, logs, settings, camera state
 ├── screens/                  # Calculator, logs, settings, camera, licenses
@@ -180,11 +179,7 @@ Other key dependencies include `flutter_svg`, `google_fonts`, `audioplayers`, `c
 
 ## Camera and machine learning
 
-Camera scanning is **experimental and disabled by default** through `ENABLE_CAMERA_SCANNING`. To expose the camera tab during development:
-
-```bash
-flutter run --dart-define=ENABLE_CAMERA_SCANNING=true
-```
+The camera tab is always available.
 
 The Flutter camera runs the unchanged `domino-v2-01` rotated tile detector and
 `pips-v3-mnv2-mixed-01` MobileNetV2 pip classifier on device. It rectifies each

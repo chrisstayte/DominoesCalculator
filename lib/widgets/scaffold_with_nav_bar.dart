@@ -1,4 +1,3 @@
-import 'package:dominoes/global/feature_flags.dart';
 import 'package:dominoes/widgets/adaptive_workspace.dart';
 import 'package:dominoes/providers/camera_provider.dart';
 import 'package:dominoes/services/sfx_service.dart';
@@ -28,15 +27,12 @@ class ScaffoldWithNavBar extends StatelessWidget {
     (svg: 'assets/images/nav/settings.svg', label: 'SET', name: 'Settings'),
   ];
 
-  static const _branches = [0, 1, if (cameraScanningEnabled) 2, 3];
-
   @override
   Widget build(BuildContext context) {
     final nbt = NeoBrutalistTheme.of(context);
     final selected = navigationShell.currentIndex;
 
-    void select(int tab) {
-      final i = _branches[tab];
+    void select(int i) {
       if (i == selected) {
         branchNavigatorKeys[i].currentState?.popUntil((route) => route.isFirst);
       } else {
@@ -57,8 +53,8 @@ class ScaffoldWithNavBar extends StatelessWidget {
     if (hasWorkspace(context)) {
       return Provider<WorkspaceNavigation>.value(
         value: WorkspaceNavigation(
-          tabs: [for (final branch in _branches) _tabs[branch]],
-          selected: _branches.indexOf(selected),
+          tabs: _tabs,
+          selected: selected,
           onSelect: select,
         ),
         child: navigationShell,
@@ -71,9 +67,8 @@ class ScaffoldWithNavBar extends StatelessWidget {
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: List.generate(_branches.length, (i) {
-            final branch = _branches[i];
-            final isSelected = branch == selected;
+          children: List.generate(_tabs.length, (i) {
+            final isSelected = i == selected;
             final bottomPadding = MediaQuery.paddingOf(context).bottom;
             return Expanded(
               child: GestureDetector(
@@ -94,7 +89,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       SvgPicture.asset(
-                        _tabs[branch].svg,
+                        _tabs[i].svg,
                         width: 28,
                         height: 28,
                         colorFilter: ColorFilter.mode(
@@ -107,7 +102,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                       if (showLabels) ...[
                         const SizedBox(height: 4),
                         Text(
-                          _tabs[branch].label,
+                          _tabs[i].label,
                           style: TextStyle(
                             color: isSelected
                                 ? nbt.selectedTextColor
