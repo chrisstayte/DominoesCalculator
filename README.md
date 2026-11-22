@@ -188,7 +188,10 @@ flutter run --dart-define=ENABLE_CAMERA_SCANNING=true
 The Flutter camera runs the unchanged `domino-v2-01` rotated tile detector and
 `pips-v3-mnv2-mixed-01` MobileNetV2 pip classifier on device. It rectifies each
 tile, classifies both halves, displays rotated outlines and review markers, and
-adds the recognized values to the calculator using the current blank rule.
+lets you select your tiles, confirm or correct their values, and add only those
+confirmed selections to the calculator using the current blank rule.
+Live boxes appear before capture; the captured photo supports numbered review,
+selection, pinch zoom and panning. See the [camera review guide](docs/camera-review.md).
 Check every tile before accepting: missed tiles and incorrect values remain
 possible. See [mobile integration and validation](machine_learning/docs/mobile-integration-2026-11-22.md)
 and [model contracts and licensing](assets/models/README.md).

@@ -44,10 +44,11 @@ must preserve the different detector and classifier input ranges.
 
 The unchanged detector still misses the two known white-background challenge
 photos. Crossing tiles and false detections also remain possible. Results show
-rotated outlines, low-confidence / overlap / outside-photo review markers and
-an instruction to check every tile. Unreadable tiles produce a subtotal and
-cannot transfer to the calculator. Blanks stay class 0 and are scored using the
-current 0/25/50 setting. Existing calculator values are preserved when adding.
+rotated outlines and require explicit review of selected tiles. Model confidence
+is available in settings. Unreadable tiles produce a subtotal and
+cannot transfer to the calculator until corrected and confirmed. Blanks stay class 0 and are scored using the
+current 0/25/50 setting. Existing calculator values are preserved when adding. The [camera review flow](../../docs/camera-review.md)
+adds only selected, confirmed tiles and supports correcting or excluding detections.
 
 ## Local iPhone test build
 

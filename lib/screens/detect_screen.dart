@@ -17,6 +17,7 @@ import 'package:dominoes/widgets/capture_button.dart';
 import 'package:dominoes/widgets/segmented_control.dart';
 import 'package:dominoes/widgets/setting_row.dart';
 import 'package:dominoes/widgets/domino_results_view.dart';
+import 'package:dominoes/widgets/live_detection_overlay.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
 import 'package:dominoes/constants.dart';
 import 'package:go_router/go_router.dart';
@@ -165,6 +166,7 @@ class _CameraScreenState extends State<CameraScreen>
                 height: 24,
                 colorFilter: ColorFilter.mode(nbt.iconColor, BlendMode.srcIn),
               ),
+              tooltip: 'Detection settings',
               onPressed: () => _showDetectSettingsDialog(context, nbt),
             ),
         ],
@@ -174,7 +176,9 @@ class _CameraScreenState extends State<CameraScreen>
         ),
       ),
       body: switch (camera.state) {
-        CameraState.uninitialized => Container(color: Colors.black),
+        CameraState.uninitialized => CameraLoadingView(
+          accentColor: settings.appAccentColor.color,
+        ),
         CameraState.preview => _buildCameraView(
           camera,
           nbt,
@@ -325,16 +329,15 @@ class _CameraScreenState extends State<CameraScreen>
                 ),
               ),
               if (!embedded)
-                GestureDetector(
-                  onTap: () {
+                IconButton(
+                  tooltip: 'Close detection settings',
+                  onPressed: () {
                     context.read<SfxService>().playClose();
-                    Navigator.of(context).pop();
+                    // showDialog uses the root navigator; the camera route is
+                    // inside a separate branch navigator and must stay open.
+                    Navigator.of(context, rootNavigator: true).maybePop();
                   },
-                  child: Icon(
-                    Icons.close,
-                    color: nbt.headerTextColor,
-                    size: 24,
-                  ),
+                  icon: Icon(Icons.close, color: nbt.headerTextColor, size: 24),
                 ),
             ],
           ),
@@ -421,7 +424,21 @@ class _CameraScreenState extends State<CameraScreen>
                                   camera.controller!.value.previewSize!.height,
                               height:
                                   camera.controller!.value.previewSize!.width,
-                              child: CameraPreview(camera.controller!),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  CameraPreview(camera.controller!),
+                                  IgnorePointer(
+                                    child: CustomPaint(
+                                      key: const ValueKey('live-domino-boxes'),
+                                      painter: LiveDetectionOverlay(
+                                        detections: camera.liveDetections,
+                                        color: accentColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -439,6 +456,33 @@ class _CameraScreenState extends State<CameraScreen>
                     child: IgnorePointer(
                       ignoring: isReady,
                       child: CameraLoadingView(accentColor: accentColor),
+                    ),
+                  ),
+
+                  Positioned(
+                    left: 16,
+                    bottom: 16,
+                    right: 16,
+                    child: IgnorePointer(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 7,
+                        ),
+                        color: Colors.black.withValues(alpha: .75),
+                        child: Text(
+                          camera.liveMessage ??
+                              (camera.liveDetections.isEmpty
+                                  ? 'SCANNING FOR DOMINOES'
+                                  : '${camera.liveDetections.length} DOMINOES IN VIEW · TAP SHUTTER'),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
 
@@ -472,7 +516,7 @@ class _CameraScreenState extends State<CameraScreen>
                               builder: (context, _) => CustomPaint(
                                 painter: ViewfinderOverlay(
                                   color: accentColor,
-                                  label: 'TARGET',
+                                  label: 'SCANNING',
                                   deviceOrientation: _deviceOrientation,
                                   scanProgress: _scanController.value,
                                   scanGoingDown:
@@ -484,7 +528,7 @@ class _CameraScreenState extends State<CameraScreen>
                           : CustomPaint(
                               painter: ViewfinderOverlay(
                                 color: accentColor,
-                                label: 'TARGET',
+                                label: 'SCANNING',
                                 deviceOrientation: _deviceOrientation,
                               ),
                             ),

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:dominoes/models/detection_result.dart';
+import 'package:dominoes/models/preview_frame.dart';
 import 'package:dominoes/services/domino_geometry.dart';
 import 'package:dominoes/services/image_utils.dart';
 import 'package:dominoes/services/tflite_detector.dart';
@@ -93,6 +94,73 @@ void main() {
     expect(points.first.dy, closeTo(41.23456573486328, 1e-8));
   });
 
+  test('live BGRA respects row padding and rotates into portrait once', () {
+    final bytes = Uint8List.fromList([
+      1,
+      2,
+      3,
+      255,
+      10,
+      20,
+      30,
+      255,
+      99,
+      99,
+      99,
+      99,
+    ]);
+    final image = ImageUtils.previewImage(
+      PreviewFrame(
+        width: 2,
+        height: 1,
+        rotation: 90,
+        format: PreviewPixelFormat.bgra8888,
+        planes: [PreviewPlane(bytes, rowStride: 12, pixelStride: 4)],
+      ),
+    );
+    expect([image.width, image.height], [1, 2]);
+    expect(
+      [image.getPixel(0, 0).r, image.getPixel(0, 0).g, image.getPixel(0, 0).b],
+      [3, 2, 1],
+    );
+    expect(
+      [image.getPixel(0, 1).r, image.getPixel(0, 1).g, image.getPixel(0, 1).b],
+      [30, 20, 10],
+    );
+  });
+
+  test('live YUV planes have independent row and pixel strides', () {
+    final image = ImageUtils.previewImage(
+      PreviewFrame(
+        width: 4,
+        height: 2,
+        rotation: 0,
+        format: PreviewPixelFormat.yuv420,
+        planes: [
+          PreviewPlane(
+            Uint8List.fromList([20, 30, 40, 50, 0, 0, 60, 70, 80, 90, 0, 0]),
+            rowStride: 6,
+            pixelStride: 1,
+          ),
+          PreviewPlane(
+            Uint8List.fromList([128, 0, 128, 0]),
+            rowStride: 4,
+            pixelStride: 2,
+          ),
+          PreviewPlane(
+            Uint8List.fromList([128, 0, 128, 0]),
+            rowStride: 4,
+            pixelStride: 2,
+          ),
+        ],
+      ),
+    );
+    expect(
+      [image.getPixel(3, 1).r, image.getPixel(3, 1).g, image.getPixel(3, 1).b],
+      [90, 90, 90],
+    );
+  });
+
   test('blank scoring preserves actual zero labels and incomplete tiles', () {
     const tile = DetectionResult(
       label: '0 | 4',
@@ -120,6 +188,24 @@ void main() {
       addTearDown(detector.dispose);
       await Future.wait([detector.initialize(), detector.initialize()]);
       expect(detector.isInitialized, isTrue);
+      final live = detector.detectPreview(
+        PreviewFrame(
+          width: 32,
+          height: 16,
+          rotation: 90,
+          format: PreviewPixelFormat.bgra8888,
+          planes: [
+            PreviewPlane(
+              Uint8List(32 * 16 * 4)..fillRange(0, 32 * 16 * 4, 114),
+              rowStride: 128,
+              pixelStride: 4,
+            ),
+          ],
+        ),
+      );
+      await expectLater(detector.detect(Uint8List(0)), throwsStateError);
+      expect((await live).imageSize, const Size(16, 32));
+
       await expectLater(detector.detect(Uint8List(0)), throwsStateError);
       final paths = Platform.environment['DOMINO_PRIVATE_TEST_PHOTOS'];
       final photos = paths == null

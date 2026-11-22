@@ -7,6 +7,7 @@ import 'dart:ui';
 
 import 'package:crypto/crypto.dart';
 import 'package:dominoes/models/detection_result.dart';
+import 'package:dominoes/models/preview_frame.dart';
 import 'package:dominoes/services/domino_geometry.dart';
 import 'package:dominoes/services/image_utils.dart';
 import 'package:dominoes/services/object_detector.dart';
@@ -125,25 +126,42 @@ class TfliteDetector implements ObjectDetector {
     }
   }
 
-  @override
-  Future<DetectionReport> detect(Uint8List imageBytes) async {
+  Future<Map<Object?, Object?>> _request(Map<String, Object?> payload) {
     if (!_initialized || _disposed) throw StateError('Detector is not ready.');
-    if (_pending.isNotEmpty) {
-      throw StateError('A photo is already being processed.');
-    }
+    if (_pending.isNotEmpty)
+      throw StateError('An image is already being processed.');
     final id = _nextId++;
     final completer = Completer<Map<Object?, Object?>>();
     _pending[id] = completer;
-    _worker!.send({
-      'id': id,
+    _worker!.send({'id': id, ...payload});
+    return completer.future;
+  }
+
+  @override
+  Future<DetectionReport> detect(Uint8List imageBytes) async {
+    final result = await _request({
       'image': TransferableTypedData.fromList([imageBytes]),
     });
-    final result = await completer.future;
     final size = Size(
       (result['width'] as int).toDouble(),
       (result['height'] as int).toDouble(),
     );
-    final detections = (result['detections'] as List).map((dynamic item) {
+    final detections = _readDetections(result, size);
+    return DetectionReport(
+      detections: List.unmodifiable(detections),
+      imageSize: size,
+      imageBytes: (result['image'] as TransferableTypedData)
+          .materialize()
+          .asUint8List(),
+      processingTime: Duration(microseconds: result['microseconds'] as int),
+    );
+  }
+
+  List<DetectionResult> _readDetections(
+    Map<Object?, Object?> result,
+    Size size,
+  ) {
+    return (result['detections'] as List).map((dynamic item) {
       final points = (item['corners'] as List)
           .map((dynamic p) => Offset(p[0] / size.width, p[1] / size.height))
           .toList();
@@ -161,16 +179,37 @@ class TfliteDetector implements ObjectDetector {
         corners: List.unmodifiable(points),
         pipA: a,
         pipB: b,
-        reviewReasons: List<String>.unmodifiable(item['review'] as List),
+        reviewReasons: List<String>.unmodifiable(
+          item['review'] as List? ?? const [],
+        ),
       );
     }).toList();
-    return DetectionReport(
-      detections: List.unmodifiable(detections),
+  }
+
+  @override
+  Future<PreviewDetections> detectPreview(PreviewFrame frame) async {
+    final result = await _request({
+      'preview': true,
+      'width': frame.width,
+      'height': frame.height,
+      'rotation': frame.rotation,
+      'format': frame.format.index,
+      'planes': [
+        for (final plane in frame.planes)
+          {
+            'bytes': TransferableTypedData.fromList([plane.bytes]),
+            'rowStride': plane.rowStride,
+            'pixelStride': plane.pixelStride,
+          },
+      ],
+    });
+    final size = Size(
+      (result['width'] as int).toDouble(),
+      (result['height'] as int).toDouble(),
+    );
+    return PreviewDetections(
       imageSize: size,
-      imageBytes: (result['image'] as TransferableTypedData)
-          .materialize()
-          .asUint8List(),
-      processingTime: Duration(microseconds: result['microseconds'] as int),
+      detections: List.unmodifiable(_readDetections(result, size)),
     );
   }
 
@@ -235,6 +274,47 @@ void _modelWorker(Map<String, Object?> config) async {
       if (message == null) break;
       try {
         final watch = Stopwatch()..start();
+        if (message['preview'] == true) {
+          final source = ImageUtils.previewImage(
+            PreviewFrame(
+              width: message['width'] as int,
+              height: message['height'] as int,
+              rotation: message['rotation'] as int,
+              format: PreviewPixelFormat.values[message['format'] as int],
+              planes: [
+                for (final dynamic plane in message['planes'] as List)
+                  PreviewPlane(
+                    (plane['bytes'] as TransferableTypedData)
+                        .materialize()
+                        .asUint8List(),
+                    rowStride: plane['rowStride'] as int,
+                    pixelStride: plane['pixelStride'] as int,
+                  ),
+              ],
+            ),
+          );
+          final letterbox = DominoLetterbox(source.width, source.height);
+          final boxes = decodeDominoBoxes(
+            _invoke(detector, ImageUtils.detectorInput(source, letterbox)),
+          );
+          reply.send({
+            'type': 'result',
+            'id': message['id'],
+            'width': source.width,
+            'height': source.height,
+            'detections': [
+              for (final box in boxes)
+                {
+                  'confidence': box.confidence,
+                  'corners': box.corners
+                      .map(letterbox.toSource)
+                      .map((p) => [p.dx, p.dy])
+                      .toList(),
+                },
+            ],
+          });
+          continue;
+        }
         final source = ImageUtils.decodeUpright(
           (message['image'] as TransferableTypedData)
               .materialize()
