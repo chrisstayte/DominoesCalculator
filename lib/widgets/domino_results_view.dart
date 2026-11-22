@@ -1,6 +1,7 @@
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/models/detection_result.dart';
 import 'package:dominoes/models/domino_review.dart';
+import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/domino_badge_layout.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -196,7 +197,52 @@ class _DominoResultsViewState extends State<DominoResultsView> {
     ),
   );
 
+  /// Matches the app's neo-brutalist controls: square, thick border, hard
+  /// offset shadow that collapses when the button is unavailable.
+  Widget _brutalButton({
+    required Key key,
+    required String label,
+    required Color color,
+    required Color foreground,
+    required VoidCallback? onPressed,
+    required NeoBrutalistTheme nbt,
+  }) {
+    final enabled = onPressed != null;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 120),
+      decoration: BoxDecoration(
+        border: Border.all(color: nbt.borderColor, width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: nbt.shadowColor,
+            offset: enabled ? const Offset(4, 4) : Offset.zero,
+          ),
+        ],
+      ),
+      child: FilledButton(
+        key: key,
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: foreground,
+          disabledBackgroundColor: nbt.unselectedColor,
+          disabledForegroundColor: nbt.secondaryTextColor,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          minimumSize: const Size(0, 52),
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          textStyle: GoogleFonts.bricolageGrotesque(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1,
+          ),
+        ),
+        child: Text(label),
+      ),
+    );
+  }
+
   Widget _bottomBar() {
+    final nbt = NeoBrutalistTheme.of(context);
     final count = _review.selectedCount;
     final empty = _review.tiles.isEmpty;
     final hint = empty
@@ -204,13 +250,15 @@ class _DominoResultsViewState extends State<DominoResultsView> {
         : count == 0
         ? 'Tap each box that is correct.'
         : '$count selected · ${_review.total(widget.blankValue)} points';
-    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.zero);
     return Container(
-      color: Colors.black.withValues(alpha: .72),
+      decoration: BoxDecoration(
+        color: nbt.cardColor,
+        border: Border(top: BorderSide(color: nbt.borderColor, width: 3)),
+      ),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -220,41 +268,36 @@ class _DominoResultsViewState extends State<DominoResultsView> {
                 key: const ValueKey('review-hint'),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.bricolageGrotesque(
-                  color: Colors.white,
+                  color: nbt.bodyTextColor,
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Row(
                 children: [
-                  OutlinedButton(
+                  _brutalButton(
+                    key: const ValueKey('review-retake'),
+                    label: 'RETAKE',
+                    color: nbt.cardColor,
+                    foreground: nbt.bodyTextColor,
                     onPressed: widget.onRetake,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      shape: shape,
-                      side: const BorderSide(color: Colors.white, width: 2),
-                    ),
-                    child: const Text('RETAKE'),
+                    nbt: nbt,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: FilledButton(
+                    child: _brutalButton(
                       key: const ValueKey('review-done'),
+                      label: count == 0 ? 'DONE' : 'DONE · ADD $count',
+                      color: nbt.accentGreen,
+                      foreground: Colors.black,
                       onPressed: _review.canAdd && !_submitted
                           ? () {
                               setState(() => _submitted = true);
                               widget.onAdd(_review.valuesToAdd());
                             }
                           : null,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: _selectedColor,
-                        foregroundColor: Colors.black,
-                        disabledBackgroundColor: Colors.white24,
-                        disabledForegroundColor: Colors.white60,
-                        shape: shape,
-                      ),
-                      child: Text(count == 0 ? 'DONE' : 'DONE · ADD $count'),
+                      nbt: nbt,
                     ),
                   ),
                 ],
