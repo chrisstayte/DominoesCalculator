@@ -19,6 +19,12 @@ Under Settings → Environments, restrict each environment to the selected branc
 
 TestFlight uploads still require Apple processing. Play uploads go to internal testing. Production rollout is a separate store action.
 
+## iOS build tools
+
+iOS validation, signing and upload jobs use GitHub's `xcode-27` runner with Xcode 27.2 selected explicitly through `DEVELOPER_DIR`. The runner is currently a public preview, but the selected Xcode 27.2 build is a final release. See the [runner software inventory](https://github.com/actions/runner-images/blob/main/images/macos/xcode-27-arm64-Readme.md) when updating the pinned Xcode path.
+
+The setup check requires iOS SDK 27 or newer. The app and exported IPA checks also verify `DTSDKName`, so an artifact built with an older SDK cannot pass validation or upload. Apple's App Store Connect notice for version 2.0.0 build 5 requires this SDK generation for uploads starting April 2027. Changing the workflow does not change an existing store build; clearing its SDK warning requires a fresh binary and build number.
+
 ## Promote the tested Android build
 
 After internal testing, open Actions → Promote tested Play release to production → Run workflow. Select main and enter the internal release’s tested version code. This explicitly requests a full production rollout of that release, subject to Google review and managed publishing. It reuses the uploaded bundle and consumes no new build number. Check Publishing overview for any remaining review or publishing actions.

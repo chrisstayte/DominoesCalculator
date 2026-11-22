@@ -3,7 +3,11 @@ set -euo pipefail
 
 xcodebuild -version
 sdk=$(xcrun --sdk iphoneos --show-sdk-version)
-[[ "${sdk%%.*}" -ge 26 ]]
+if [[ "${sdk%%.*}" -lt 27 ]]; then
+  echo "iOS SDK 27 or newer is required; selected SDK is $sdk." >&2
+  exit 1
+fi
+echo "Using iOS SDK $sdk"
 pod --version
 sdk_dir="$RUNNER_TEMP/flutter"
 git init --quiet "$sdk_dir"
