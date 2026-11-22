@@ -14,6 +14,10 @@ class InstallerTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("installer", source)
         self.installer = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.installer)
+        # These tests simulate Colab's Linux package installation, including on macOS.
+        platform = patch.object(self.installer.sys, "platform", "linux")
+        platform.start()
+        self.addCleanup(platform.stop)
 
     def test_loaded_numpy_change_requires_restart_even_on_retry(self):
         versions = {"numpy": "2.2.6"}

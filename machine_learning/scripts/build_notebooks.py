@@ -16,7 +16,10 @@ def build(name, filename):
     sections = re.split(r"^# %%([^\n]*)\n", (SOURCE / filename).read_text(), flags=re.MULTILINE)
     cells = []
     for kind, body in zip(sections[1::2], sections[2::2]):
-        if "review_helpers" in kind:
+        if "training_helpers" in kind:
+            body = (SOURCE / "training_helpers.py").read_text()
+            cell = nbformat.v4.new_code_cell(body.strip(), metadata={"tags": ["helpers"], "jupyter": {"source_hidden": True}})
+        elif "review_helpers" in kind:
             body = (SOURCE / "label_review.py").read_text()
             cell = nbformat.v4.new_code_cell(body.strip(), metadata={"tags": ["helpers"], "jupyter": {"source_hidden": True}})
         elif "shared" in kind:

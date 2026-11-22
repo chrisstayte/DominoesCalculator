@@ -68,6 +68,13 @@ After correcting labels, use a **new classifier run name** and rerun notebook 2'
 
 ## Training, saving, and restarting
 
+The current default training runs are `domino-v2-01` and `pips-v2-01`, with grayscale
+and appearance variation added after reviewing new photo failures. Existing crops and
+labels remain reusable. See the [photo-test findings and targeted training plan](photo-test-review-2026-11-22.md).
+Classifier grayscale conversion is embedded in its model; continue supplying RGB 0–255.
+These changes require new runs. Old runs remain available for evaluation, but must not
+be resumed with a changed training recipe.
+
 Colab uses `/content/domino-work` for temporary training input. Drive stores the originals, manifests, labeling progress, checkpoints, histories, evaluation results, and exports.
 
 Detector actions: `prepare`, `train`, `resume`, `evaluate`, `export`.

@@ -85,6 +85,12 @@ class PhotoTesterTests(unittest.TestCase):
         self.assertEqual(crops, [])
         self.assertTrue(report["needs_review"])
 
+    def test_detection_outside_photo_is_flagged_even_with_confident_values(self):
+        box = [[-5, 0], [127, 0], [127, 63], [-5, 63]]
+        report, _ = self.predict(self.rgb, self.detector([box]), lambda half: np.eye(16)[10])
+        self.assertTrue(report["needs_review"])
+        self.assertIn("Detection extends outside the photo", report["tiles"][0]["review_reasons"])
+
     def test_unreadable_crop_preserves_detection_and_marks_subtotal(self):
         report, crops = self.predict(self.rgb, self.detector([self.box, [[0, 0]] * 4]),
                                      lambda half: np.eye(16)[5])
@@ -173,6 +179,7 @@ class PhotoTesterTests(unittest.TestCase):
                 self.assertEqual(oriented.size, (64, 128))
             self.assertTrue((results[0] / "overlay.png").is_file())
             self.assertTrue((results[0] / "tiles.csv").is_file())
+            self.assertTrue((results[0] / "crops/tile-001.png").is_file())
             self.assertFalse((project / "data").exists())
 
 

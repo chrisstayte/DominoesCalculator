@@ -48,6 +48,9 @@ assert 0 < DETECTION_CONFIDENCE <= 1 and 0 < PIP_CONFIDENCE <= 1
 # Mount the Drive containing `MyDrive/DominoesCalculator/models`. Both checkpoints
 # and their saved dataset contracts must exist. CPU inference avoids competing GPU use
 # between PyTorch and TensorFlow. Changing run names requires rerunning this section.
+# After training notebook 2's new grayscale model, set CLASSIFIER_RUN_NAME="pips-v2-01".
+# It accepts RGB input and performs grayscale conversion internally. The current defaults
+# still load your existing checkpoints so you can compare the same photos before/after.
 
 # %%
 import tensorflow as tf
@@ -88,6 +91,7 @@ def half_predict(half):
 
 print("Detector:", detector_path)
 print("Pip classifier:", classifier_path)
+print("Classifier recipe:", classifier_contract.get("training_recipe", "legacy RGB model; no embedded grayscale"))
 print("Blank-half score:", BLANK_SCORE)
 
 # %% [markdown]
@@ -110,6 +114,9 @@ def predict_photo(rgb, detector, predict_half, detector_image_size=640,
                "detector_confidence": float(detection_scores[index]),
                "a_confidence": None, "b_confidence": None,
                "corners": box.tolist(), "review_reasons": []}
+        if (np.any(box[:, 0] < 0) or np.any(box[:, 0] > rgb.shape[1] - 1)
+                or np.any(box[:, 1] < 0) or np.any(box[:, 1] > rgb.shape[0] - 1)):
+            row["review_reasons"].append("Detection extends outside the photo")
         crop = None
         pair = None
         try:
@@ -182,6 +189,8 @@ def show_photo_result(rgb, report, crops, title):
 # Run this cell again for more photos. You may select several JPEG/PNG files at once.
 # Each result is saved in a new folder under `MyDrive/DominoesCalculator/photo_tests/`:
 # the oriented input photo, annotated overlay, per-tile CSV, and JSON predictions.
+# Numbered tile crops are also saved under `crops/` to inspect exactly what the value
+# reader saw. Confirm that each crop contains one complete tile with a centered divider.
 # These files do not change your training data, labels, checkpoints, or frozen split.
 
 # %%
@@ -210,6 +219,11 @@ for filename, content in uploads.items():
     output_dir = PROJECT / "photo_tests" / uuid4().hex
     output_dir.mkdir(parents=True)
     Image.fromarray(rgb).save(output_dir / "photo.png")
+    crop_dir = output_dir / "crops"
+    crop_dir.mkdir()
+    for row, crop in zip(report["tiles"], crops):
+        if crop is not None:
+            Image.fromarray(crop).save(crop_dir / f"tile-{row['tile']:03d}.png")
     overlay = show_photo_result(rgb, report, crops, Path(filename).name)
     overlay.savefig(output_dir / "overlay.png", dpi=150, bbox_inches="tight")
     plt.close(overlay)

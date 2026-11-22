@@ -46,7 +46,7 @@ else:
 
 # %%
 DATASET_NAME = "dominoes-v1"
-RUN_NAME = "pips-v1-01"
+RUN_NAME = "pips-v2-01"  # New grayscale recipe; reuse existing crops and labels.
 DETECTOR_RUN_NAME = "domino-v1-01"
 SEED = 42
 IMAGE_SIZE = 128
@@ -62,6 +62,8 @@ assert IMAGE_SIZE == 128, "Changing crop resolution requires a new crop version 
 assert BLANK_SCORE in {0, 25, 50}
 
 # %% shared
+
+# %% training_helpers
 
 # %%
 PROJECT, WORK, IN_COLAB = setup_project()
@@ -328,8 +330,11 @@ if ACTION != "label":
 # %% [markdown]
 # ## Train or resume the classifier
 # A compact CNN is the first baseline. Pixel values enter as RGB `0–255`; normalization
-# is inside the model. Training-only augmentation uses 90° rotations, flips, and mild
-# brightness/contrast changes so pips are not removed by random cropping.
+# and grayscale conversion are inside the saved model, including during photo testing
+# and mobile export. The network cannot see separate color channels. Training-only hue,
+# saturation, lighting, resolution, and shrink/pad changes vary appearance without cutting
+# off pips. Grayscale still preserves brightness: it does not guarantee shape-based counting.
+# Inspect the actual augmentation previews and the robustness checks below.
 #
 # Labels come directly from the numeric CSV values. There is no alphabetical folder inference.
 # The saved class list is always `0, 1, 2, …, 15` in that exact order.
@@ -368,42 +373,42 @@ if ACTION != "label":
         dataset = dataset.map(decode, num_parallel_calls=tf.data.AUTOTUNE)
         if training:
             dataset = dataset.shuffle(len(rows), seed=SEED, reshuffle_each_iteration=True)
-            def augment(image, value):
-                image = tf.image.rot90(image, tf.random.uniform([], 0, 4, dtype=tf.int32))
-                image = tf.image.random_flip_left_right(image)
-                image = tf.image.random_flip_up_down(image)
-                image = tf.image.random_brightness(image, max_delta=12.0)
-                image = tf.image.random_contrast(image, 0.9, 1.1)
-                return tf.clip_by_value(image, 0.0, 255.0), value
-            dataset = dataset.map(augment, num_parallel_calls=tf.data.AUTOTUNE)
+            dataset = dataset.map(lambda image, value: augment_classifier_image(image, value, tf),
+                                  num_parallel_calls=tf.data.AUTOTUNE)
         return dataset.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
 
     train_ds, val_ds = image_dataset(train_examples, True), image_dataset(val_examples)
     contract = {"split_signature": split["signature"], "labels_sha256": sha256(LABELS_PATH),
                 "crop_version": CROP_VERSION, "class_names": CLASS_NAMES, "image_size": IMAGE_SIZE, "seed": SEED}
+    training_recipe = {"version": CLASSIFIER_RECIPE, "embedded_grayscale": True}
     if ACTION == "train":
         if RUN.exists():
             raise FileExistsError("Run already exists. Choose resume/evaluate or a new RUN_NAME.")
         RUN.mkdir(parents=True)
-        write_json(RUN / "dataset_contract.json", contract)
+        write_json(RUN / "dataset_contract.json", {**contract, "training_recipe": training_recipe})
         (RUN / "environment.txt").write_text(subprocess.check_output([sys.executable, "-m", "pip", "freeze"], text=True))
-    elif not (RUN / "dataset_contract.json").exists() or json.loads((RUN / "dataset_contract.json").read_text()) != contract:
-        raise ValueError("The saved run does not match the current labels, crops, split, or seed.")
+    else:
+        if not (RUN / "dataset_contract.json").exists():
+            raise FileNotFoundError("No saved run. Choose train or check RUN_NAME.")
+        saved_contract = json.loads((RUN / "dataset_contract.json").read_text())
+        check_run_contract(saved_contract, contract, training_recipe, ACTION)
+        training_recipe = saved_contract.get("training_recipe", {"version": "legacy-rgb", "embedded_grayscale": False})
 
 # %%
-def build_classifier(tf):
-    inputs = tf.keras.Input(shape=(128, 128, 3), name="rgb_pixels")
-    x = tf.keras.layers.Rescaling(1.0 / 255)(inputs)
-    for filters in (32, 64, 96, 128):
-        x = tf.keras.layers.Conv2D(filters, 3, padding="same", activation="relu")(x)
-        x = tf.keras.layers.MaxPooling2D()(x)
-    x = tf.keras.layers.GlobalAveragePooling2D()(x)
-    x = tf.keras.layers.Dropout(0.25)(x)
-    x = tf.keras.layers.Dense(64, activation="relu")(x)
-    outputs = tf.keras.layers.Dense(16, activation="softmax", name="pip_probabilities")(x)
-    model = tf.keras.Model(inputs, outputs, name="pip_classifier")
-    model.compile(optimizer=tf.keras.optimizers.Adam(1e-3), loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-    return model
+if ACTION in {"train", "resume"}:
+    preview_rows = random.Random(SEED).sample(train_examples, min(3, len(train_examples)))
+    fig, axes = plt.subplots(len(preview_rows), 6, figsize=(15, 3 * len(preview_rows)), squeeze=False)
+    for row, axes_row in zip(preview_rows, axes):
+        original = read_rgb(local_crops / row["path"])
+        for index, ax in enumerate(axes_row):
+            image = original if index < 2 else augment_classifier_image(original, row["value"], tf)[0]
+            shown = image if index == 0 else tf.image.rgb_to_grayscale(tf.cast(image, tf.float32)).numpy()[:, :, 0]
+            ax.imshow(shown, cmap="gray", vmin=0, vmax=255)
+            ax.set_title(f"Value {row['value']} · " + ("RGB" if index == 0 else "grayscale" if index == 1 else "augmented"))
+            ax.axis("off")
+    fig.tight_layout()
+    plt.show()
+    print("Inspect every pip in these training-only previews before trusting the new recipe.")
 
 
 if ACTION in {"train", "resume"}:
@@ -517,6 +522,18 @@ if classifier is not None:
         plt.show()
 
 # %% [markdown]
+# ## Check sensitivity to color, lighting, and resolution
+# These are transformed copies of the same validation halves, not independent test data.
+# A large drop reveals a weakness hidden by the original validation score. To diagnose an
+# older model without retraining, use ACTION="evaluate" and its original RUN_NAME.
+# These checks cannot measure missed tiles, crowded scenes, or new domino-set accuracy.
+
+# %%
+if classifier is not None:
+    display(classifier_robustness_report(classifier, val_examples, local_crops, RUN / "checks/robustness_val"))
+    print("Saved training recipe:", training_recipe)
+
+# %% [markdown]
 # ## Export and compare TFLite classifiers
 # Export an FP32 baseline and optionally full INT8 using representative **training crops only**.
 # Both are tested against the Keras model on the same validation rows. Exported files include
@@ -579,6 +596,7 @@ if ACTION == "export" and classifier is not None:
     metadata = {"class_names": CLASS_NAMES, "crop_version": CROP_VERSION, "split_signature": split["signature"],
                 "labels_sha256": sha256(LABELS_PATH), "image_size": [128, 128], "color_order": "RGB",
                 "pixel_range_before_input_quantization": [0, 255], "normalization": "Rescaling(1/255) is embedded in the model",
+                "training_recipe": training_recipe,
                 "pip_confidence": PIP_CONFIDENCE, "preferred_file": preferred["file"] if preferred else None, "validation": export_rows}
     write_json(export_dir / "classifier_metadata.json", metadata)
     (export_dir / "labels_classifier.txt").write_text("\n".join(CLASS_NAMES) + "\n")
