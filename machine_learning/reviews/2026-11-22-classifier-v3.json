@@ -1,0 +1,199 @@
+{
+  "date": "2026-11-22",
+  "experiment_code_commit": "fb897b1ce6598b9e57970a6ec22719d11136a702",
+  "notebook_commit": "84f73b5bc5496ba39f44dfc9b725997eccb6d895",
+  "export_code_commit": "053332134f9a208322574bbd0af06b1154ac40aa",
+  "fixed_detector": "domino-v2-01",
+  "new_manual_labels": 0,
+  "new_source_training_photos": 0,
+  "existing_labeled_tiles": 821,
+  "halves": {
+    "train": 1178,
+    "validation": 248,
+    "final_test_unused": 216
+  },
+  "protected_inputs_unchanged": true,
+  "final_test_evaluated": false,
+  "selected_candidate": "pips-v3-mnv2-mixed-01",
+  "app_assets_changed": false,
+  "scope": "36 selected development pairs across five photos with reviewed crops; all seven scenes inspected. Not independent full-photo accuracy. All models use identical crop geometry within each comparison.",
+  "runs": [
+    {
+      "run": "pips-v1-02",
+      "parameters": 194800,
+      "original_validation_halves": 248,
+      "validation_accuracy": {
+        "original": 0.9919354838709677,
+        "grayscale": 0.3588709677419355,
+        "channel_swap": 0.4717741935483871,
+        "darker": 0.5403225806451613
+      },
+      "fixed_original_crops": {
+        "reviewed_pairs": 36,
+        "correct_pairs": 8,
+        "black": {
+          "reviewed_pairs": 19,
+          "correct_pairs": 0
+        },
+        "colored": {
+          "reviewed_pairs": 17,
+          "correct_pairs": 8
+        }
+      },
+      "frozen_detector_crops": {
+        "reviewed_pairs": 36,
+        "correct_pairs": 8,
+        "reference_pairs": 36
+      }
+    },
+    {
+      "run": "pips-v2-01",
+      "parameters": 194224,
+      "original_validation_halves": 248,
+      "validation_accuracy": {
+        "original": 0.9112903225806451,
+        "grayscale": 0.9112903225806451,
+        "channel_swap": 0.8306451612903226,
+        "darker": 0.7983870967741935
+      },
+      "fixed_original_crops": {
+        "reviewed_pairs": 36,
+        "correct_pairs": 17,
+        "black": {
+          "reviewed_pairs": 19,
+          "correct_pairs": 13
+        },
+        "colored": {
+          "reviewed_pairs": 17,
+          "correct_pairs": 4
+        }
+      },
+      "frozen_detector_crops": {
+        "reviewed_pairs": 36,
+        "correct_pairs": 18,
+        "reference_pairs": 36
+      }
+    },
+    {
+      "run": "pips-v3-mnv2-rgb-01",
+      "parameters": 872256,
+      "original_validation_halves": 248,
+      "validation_accuracy": {
+        "original": 0.9959677419354839,
+        "grayscale": 0.6854838709677419,
+        "channel_swap": 0.6290322580645161,
+        "darker": 0.9959677419354839
+      },
+      "fixed_original_crops": {
+        "reviewed_pairs": 36,
+        "correct_pairs": 15,
+        "black": {
+          "reviewed_pairs": 19,
+          "correct_pairs": 7
+        },
+        "colored": {
+          "reviewed_pairs": 17,
+          "correct_pairs": 8
+        }
+      },
+      "frozen_detector_crops": {
+        "reviewed_pairs": 36,
+        "correct_pairs": 14,
+        "reference_pairs": 36
+      },
+      "completed_epochs": 33,
+      "best_val_loss": 0.009108511731028557,
+      "exports": [
+        {
+          "format": "fp32",
+          "bytes": 3417832,
+          "validation_accuracy": 0.9959677419354839,
+          "changed_validation_predictions": 0
+        },
+        {
+          "format": "fp16",
+          "bytes": 1741460,
+          "validation_accuracy": 0.9959677419354839,
+          "changed_validation_predictions": 0
+        }
+      ]
+    },
+    {
+      "run": "pips-v3-mnv2-mixed-01",
+      "parameters": 872256,
+      "original_validation_halves": 248,
+      "validation_accuracy": {
+        "original": 0.9959677419354839,
+        "grayscale": 0.9919354838709677,
+        "channel_swap": 0.9959677419354839,
+        "darker": 1.0
+      },
+      "fixed_original_crops": {
+        "reviewed_pairs": 36,
+        "correct_pairs": 29,
+        "black": {
+          "reviewed_pairs": 19,
+          "correct_pairs": 18
+        },
+        "colored": {
+          "reviewed_pairs": 17,
+          "correct_pairs": 11
+        }
+      },
+      "frozen_detector_crops": {
+        "reviewed_pairs": 36,
+        "correct_pairs": 29,
+        "reference_pairs": 36
+      },
+      "completed_epochs": 40,
+      "best_val_loss": 0.006736670155078173,
+      "exports": [
+        {
+          "format": "fp32",
+          "bytes": 3417832,
+          "validation_accuracy": 0.9959677419354839,
+          "changed_validation_predictions": 0
+        },
+        {
+          "format": "fp16",
+          "bytes": 1741460,
+          "validation_accuracy": 0.9959677419354839,
+          "changed_validation_predictions": 0
+        }
+      ]
+    }
+  ],
+  "selected_candidate_export_challenge": [
+    {
+      "format": "fp32",
+      "original": {
+        "pairs": 36,
+        "correct": 29,
+        "changed_halves_from_keras": 0
+      },
+      "frozen_detector": {
+        "pairs": 36,
+        "correct": 29,
+        "changed_halves_from_keras": 0
+      }
+    },
+    {
+      "format": "fp16",
+      "original": {
+        "pairs": 36,
+        "correct": 29,
+        "changed_halves_from_keras": 0
+      },
+      "frozen_detector": {
+        "pairs": 36,
+        "correct": 29,
+        "changed_halves_from_keras": 0
+      }
+    }
+  ],
+  "validation": "44 ML unit checks passed; architecture FP32/FP16 smoke check passed; all four Colab challenge totals independently reproduced; both selected exports matched Keras on both sets of 36 challenge pairs. Both candidates passed notebook 4 model loading and its half_predict input/output check in Colab.",
+  "performance_limit": "872256 parameters; FP16 export 1741460 bytes. Shared-host CPU diagnostics do not establish target-phone latency.",
+  "private_artifacts": "Weights, snapshots, raw predictions, overlays, logs and executed notebooks retained in Drive; no private locations or raw contents included here.",
+  "metadata_compatibility_commit": "02ece7476a6abf619d25b0af9dda4205229dc0f9",
+  "photo_tester_load_verified": true
+}

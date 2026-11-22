@@ -7,7 +7,13 @@ Standalone notebooks cover training and label review:
 3. [03_pip_label_review.ipynb](../notebooks/03_pip_label_review.ipynb): review existing labels with large half-images and 0–15 value buttons. Filter flagged/all/unreviewed tiles, save corrections, and resume review progress from Drive. It needs only the saved crops and labels, a CPU runtime, and Pillow (included in Colab).
 4. [04_test_photo.ipynb](../notebooks/04_test_photo.ipynb): load both saved checkpoints and try new JPEG/PNG photos. Displays numbered outlines, straightened crops, each predicted pair, and the total. No training, labels, original dataset archive, or mobile exports are needed.
 
-Each notebook contains its helpers. Uploading Python support files or cloning the repository is unnecessary. The readable sources and build script are retained in this repository for maintenance.
+Notebooks 1–4 contain their helpers. Uploading Python support files or cloning the repository is unnecessary. The readable sources and build script are retained in this repository for maintenance.
+
+For classifier-only transfer-learning trials using the existing labels, open
+[06_pretrained_classifier.ipynb](../notebooks/06_pretrained_classifier.ipynb).
+It downloads experiment code at a pinned public revision, keeps the detector fixed,
+and writes separately named candidate runs to Drive. Keep its executed copy private.
+See the [experiment record and comparison](classifier-experiments-2026-11-22.md).
 
 ## First-time setup
 

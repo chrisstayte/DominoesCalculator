@@ -74,9 +74,95 @@ Implementation references: [Keras transfer learning](https://keras.io/guides/tra
 ## Execution log
 
 - Prepared isolated experiment code and input-preservation checks.
-- All 43 local ML unit checks passed. Dev CI passed for the clean experiment notebook.
+- All 44 local ML unit checks passed, including compatible candidate metadata and
+  refusal to replace an existing contract. Dev CI passed for the clean experiment notebook.
 - MobileNetV2 FP32 and FP16 conversion/inference passed an additional synthetic
   smoke check. This verifies portability of the architecture, not recognition accuracy.
 - Colab could not allocate an additional GPU. Appended the classifier-only launch
   cell to the existing connected T4 notebook; earlier cells and saved runs remain intact.
-- Training and comparison results are pending execution; no improvement is claimed yet.
+- Both Colab trials, the controlled comparison, and both candidates' FP32/FP16
+  export checks completed. A slow Drive file read recovered without modifying any
+  input files. Protected hashes passed after both training runs, comparison, and exports.
+
+## Completed results
+
+The mixed-color/grayscale candidate is the strongest observed classifier in this
+experiment. No additional source photos or manual labels were used. The 821 existing
+labeled tiles supplied 1,178 training halves and 248 validation halves. The 216 final
+test halves stayed unused. Aggregate numbers are in the
+[public result record](../reviews/2026-11-22-classifier-v3.json).
+
+| Classifier | Original validation | Fixed original pairs | Black pips | Colored pips | Fixed detector pairs |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `pips-v1-02` | 99.19% | 8/36 | 0/19 | 8/17 | 8/36 |
+| `pips-v2-01` | 91.13% | 17/36 | 13/19 | 4/17 | 18/36 |
+| `pips-v3-mnv2-rgb-01` | 99.60% | 15/36 | 7/19 | 8/17 | 14/36 |
+| **`pips-v3-mnv2-mixed-01`** | **99.60%** | **29/36** | **18/19** | **11/17** | **29/36** |
+
+The original validation denominator is 248 halves from five source photos; pair
+columns require both values to match, allowing the halves to swap. The two crop
+comparisons use different fixed geometries, so their correct pairs need not be the
+same even when totals match. The unchanged detector supplied 0, 73, 33, 0, 30, 33,
+and 12 boxes across the seven scenes. No detector was trained or replaced.
+
+The RGB trial completed 33 epochs (12 head + 21 fine-tuning); its best original
+validation loss was 0.009109. The mixed trial completed 40 epochs (12 + 28); its
+best loss was 0.006737. These checkpoints were selected before scoring the challenge
+photos. The RGB-only trial's high original validation score did not transfer as well
+to the development scenes; keep that regression as part of the experiment record.
+
+### Robustness checks
+
+All variants below reuse the same 248 validation halves and are correlated checks.
+
+| Classifier | Original | Grayscale | Red/blue swapped | Darker |
+| --- | ---: | ---: | ---: | ---: |
+| `pips-v1-02` | 99.19% | 35.89% | 47.18% | 54.03% |
+| `pips-v2-01` | 91.13% | 91.13% | 83.06% | 79.84% |
+| RGB pretrained | 99.60% | 68.55% | 62.90% | 99.60% |
+| Mixed pretrained | 99.60% | 99.19% | 99.60% | 100.00% |
+
+An independent local check reproduced all four classifiers' Colab totals on both
+sets of fixed challenge crops. This supports the comparison; it does not turn the
+development examples or transformed validation copies into an independent final test.
+
+### Portable candidate
+
+The mixed model has 872,256 parameters. Its verified exports are 3,417,832 bytes
+(FP32) and 1,741,460 bytes (FP16). Both matched Keras predictions on all 248 original
+validation halves and on both sets of 36 development pairs. Each export retained
+29/36 correct development pairs. Inputs remain RGB float32 0–255 with scaling embedded;
+outputs retain numeric class order 0–15.
+
+The exported models remain private under the candidate's `exports/portable-01/`
+directory. Current-host CPU diagnostics were recorded privately. Sequential timings
+varied considerably between candidates with identical architectures, so they are
+not a controlled speed comparison or evidence of target-phone latency. App assets
+and the existing model-selection defaults were not changed.
+
+### Remaining errors and rollback
+
+All seven mixed-model overlays were inspected. Seven selected original-crop pairs
+are still wrong. Difficult angled/crowded layouts and some larger pip counts remain
+weak. With the detector fixed, shifted boxes can introduce different classifier
+mistakes: the clean black-pip layout had 12/12 correct on its original crops but
+9/12 on the saved newer detector crops. The two white-background scenes still have
+zero detections; watermark false detections and crossing boxes also remain.
+
+Keep `pips-v3-mnv2-mixed-01` as the next classifier candidate, not a claim of dependable
+whole-photo scoring. Both v3 trials, their phase-best/best/last checkpoints, and all
+earlier runs remain available. To return to an earlier result, select its existing
+run name in the photo tester. To run another training experiment, use new trial and
+comparison names in [notebook 6](../notebooks/06_pretrained_classifier.ipynb); do not
+overwrite this experiment. Further classifier experiments can reuse the same labels.
+
+For notebook 4, use `DETECTOR_RUN_NAME="domino-v2-01"` and
+`CLASSIFIER_RUN_NAME="pips-v3-mnv2-mixed-01"`, then rerun model loading. New candidates
+include the same dataset-contract fields expected by that loader. Existing models
+retain their original metadata. The completed trials used training code revision
+`fb897b1`; notebook 6 now pins `02ece74`, which adds the compatible metadata write
+without changing the training recipe or previously trained weights.
+
+Both candidates passed notebook 4's actual model-loading cell and its `half_predict`
+RGB input/output check in Colab. The metadata finalizer verified each completed
+checkpoint's saved hash before adding the missing contract; it did not rewrite weights.

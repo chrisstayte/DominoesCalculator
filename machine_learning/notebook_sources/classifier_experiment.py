@@ -30,7 +30,7 @@ import subprocess
 import sys
 import urllib.request
 
-REVISION = "fb897b1ce6598b9e57970a6ec22719d11136a702"
+REVISION = "02ece7476a6abf619d25b0af9dda4205229dc0f9"
 PROJECT = Path("/content/drive/MyDrive/DominoesCalculator")
 CODE = Path("/content/domino-classifier-v3") / REVISION
 TRIALS = [("pips-v3-mnv2-rgb-01", "rgb"), ("pips-v3-mnv2-mixed-01", "mixed")]
