@@ -32,15 +32,18 @@ void main() {
       expect(provider.flashMode, FlashMode.auto);
     });
 
-    test('retake returns to preview state and clears results', () {
-      final provider = CameraProvider();
-      addTearDown(provider.dispose);
+    test(
+      'retake without a controller waits for a new preview and clears results',
+      () {
+        final provider = CameraProvider();
+        addTearDown(provider.dispose);
 
-      provider.retake();
+        provider.retake();
 
-      expect(provider.state, CameraState.preview);
-      expect(provider.capturedImagePath, isNull);
-      expect(provider.detections, isEmpty);
-    });
+        expect(provider.state, CameraState.uninitialized);
+        expect(provider.capturedImagePath, isNull);
+        expect(provider.detections, isEmpty);
+      },
+    );
   });
 }

@@ -40,7 +40,7 @@ install_packages(["ultralytics==8.4.144", "torch==2.9.0", "torchvision==0.24.0",
 
 # %%
 DATASET_NAME = "dominoes-v1"
-RUN_NAME = "domino-v1-01"
+RUN_NAME = "domino-v2-01"
 ACTION = "prepare"  # prepare | train | resume | evaluate | export
 GROUPS_REVIEWED = False  # Set True only after checking the grouping CSV/contact sheets below.
 SEED = 42
@@ -50,6 +50,9 @@ BATCH_SIZE = 8  # Increase if GPU memory allows.
 DETECTION_CONFIDENCE = 0.25  # Tune on validation only, then freeze for the final test.
 FINAL_TEST = False
 EXPORT_INT8 = True
+TRAIN_GRAYSCALE_COPIES = True  # Training only; validation/test photos stay original.
+TRAIN_AUGMENTATION = {"degrees": 180.0, "translate": 0.15, "scale": 0.75,
+                      "perspective": 0.0003, "hsv_h": 0.1, "hsv_s": 0.8, "hsv_v": 0.4}
 MAX_EXPORT_MAP_DROP = 0.02  # Absolute mAP50–95 drop allowed relative to FP32/PyTorch.
 assert ACTION in {"prepare", "train", "resume", "evaluate", "export"}
 
@@ -74,6 +77,8 @@ if ACTION == "export":
     print("Export dependencies ready.")
 
 # %% shared
+
+# %% training_helpers
 
 # %%
 from importlib.metadata import version
@@ -130,7 +135,7 @@ for start in range(0, len(records), 12):
 split = frozen_split(records, fingerprint, GROUPS_PATH, STATE / "split.json", GROUPS_REVIEWED, SEED)
 DATA_YAML = None
 if split:
-    DATA_YAML = prepare_detector(RAW, records, split, WORK)
+    DATA_YAML = prepare_detector_training(RAW, records, split, WORK, TRAIN_GRAYSCALE_COPIES)
     counts = pd.DataFrame(split["photos"]).groupby("split").agg(photos=("image", "count"), groups=("group", "nunique"))
     display(counts.reindex(["train", "val", "test"]))
     ax = counts.reindex(["train", "val", "test"])["photos"].plot.bar(color="#34699a", rot=0)
@@ -150,6 +155,10 @@ if split:
 # and preparation, keep the same `RUN_NAME`, and choose `resume`. For a completed experiment,
 # choose `evaluate` or a new run name. Resume restores the model/optimizer from `last.pt`.
 # Set a realistic epoch budget and inspect validation; no fixed training time or accuracy is promised.
+# The v2 recipe adds grayscale copies of training photos and explicit rotation/scale/light
+# augmentation. Copies retain their original boxes and photo group. Validation/test images
+# are unchanged. This does not supply new tile styles, close-ups, or independent scenes:
+# collect and annotate those for a new dataset version before claiming broad reliability.
 
 # %%
 detector = None
@@ -162,19 +171,23 @@ if ACTION != "prepare":
     if ACTION in {"train", "resume"} and DEVICE == "cpu" and not os.environ.get("DOMINO_ALLOW_CPU"):
         raise RuntimeError("Select a Colab GPU runtime, then rerun setup. CPU training is disabled by default.")
     contract = {"split_signature": split["signature"], "model": "yolo26n-obb.pt", "image_size": IMAGE_SIZE, "seed": SEED}
+    training_recipe = {"version": "rgb-gray-v2", "grayscale_copies": TRAIN_GRAYSCALE_COPIES,
+                       "augmentation": TRAIN_AUGMENTATION}
     if ACTION == "train":
         if RUN.exists():
             raise FileExistsError("Run already exists. Use resume/evaluate or choose a new RUN_NAME.")
         RUN.mkdir(parents=True)
-        write_json(RUN / "dataset_contract.json", contract)
+        write_json(RUN / "dataset_contract.json", {**contract, "training_recipe": training_recipe})
         (RUN / "environment.txt").write_text(subprocess.check_output([sys.executable, "-m", "pip", "freeze"], text=True))
         detector = YOLO("yolo26n-obb.pt")
         detector.train(data=str(DATA_YAML), epochs=EPOCHS, imgsz=IMAGE_SIZE, batch=BATCH_SIZE,
                        seed=SEED, deterministic=True, patience=20, device=DEVICE,
-                       project=str(RUN.parent), name=RUN.name, exist_ok=True, save=True, plots=True)
+                       project=str(RUN.parent), name=RUN.name, exist_ok=True, save=True, plots=True,
+                       **TRAIN_AUGMENTATION)
     else:
-        if not (RUN / "dataset_contract.json").is_file() or json.loads((RUN / "dataset_contract.json").read_text()) != contract:
-            raise ValueError("Run configuration does not match this dataset/model/image size/seed.")
+        if not (RUN / "dataset_contract.json").is_file():
+            raise FileNotFoundError("No saved run. Choose train or check RUN_NAME.")
+        check_run_contract(json.loads((RUN / "dataset_contract.json").read_text()), contract, training_recipe, ACTION)
         if ACTION == "resume":
             checkpoint = RUN / "weights/last.pt"
             if not checkpoint.exists():

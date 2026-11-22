@@ -1,0 +1,6 @@
+{
+  "examples": 248,
+  "accuracy": 0.9112903225806451,
+  "macro_accuracy_present_classes": 0.9110474407808966,
+  "missing_values": []
+}

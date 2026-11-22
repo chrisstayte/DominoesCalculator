@@ -1,6 +1,5 @@
 import 'package:dominoes/constants.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
-import 'package:dominoes/providers/camera_provider.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/router.dart';
@@ -21,6 +20,15 @@ void main() async {
       'assets/sfx/Cuelume-LICENSE.txt',
     );
     yield LicenseEntryWithLineBreaks(['Cuelume'], license);
+  });
+
+  LicenseRegistry.addLicense(() async* {
+    final mit = await rootBundle.loadString(
+      'assets/licenses/DominoCounter-MIT.txt',
+    );
+    yield LicenseEntryWithLineBreaks([
+      'Domino Counter',
+    ], 'Source code: $sourceRepositoryUrl\n\n$mit');
   });
 
   final localSettingsProvider = LocalSettingsProvider();
@@ -46,9 +54,6 @@ void main() async {
         ChangeNotifierProvider<GameLogProvider>(
           create: (context) => GameLogProvider(),
           lazy: false,
-        ),
-        ChangeNotifierProvider<CameraProvider>(
-          create: (context) => CameraProvider(),
         ),
         Provider<SfxService>.value(value: sfxService),
         Provider<VibrationService>.value(value: vibrationService),

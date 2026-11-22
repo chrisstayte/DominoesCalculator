@@ -1,11 +1,22 @@
 # Domino ML pipeline in Google Colab
 
-Two standalone notebooks replace the earlier combined training notebook:
+Standalone notebooks cover training and label review:
 
 1. [01_domino_detector.ipynb](../notebooks/01_domino_detector.ipynb): import and check the OBB dataset, review arrangement groups, freeze train/validation/test splits, train YOLO26-nano OBB, and validate/export the detector.
 2. [02_pip_classifier.ipynb](../notebooks/02_pip_classifier.ipynb): generate straightened halves from the existing annotations, label them inside Colab, train a 16-class CNN, validate/export it, and evaluate full-photo scores.
+3. [03_pip_label_review.ipynb](../notebooks/03_pip_label_review.ipynb): review existing labels with large half-images and 0–15 value buttons. Filter flagged/all/unreviewed tiles, save corrections, and resume review progress from Drive. It needs only the saved crops and labels, a CPU runtime, and Pillow (included in Colab).
+4. [04_test_photo.ipynb](../notebooks/04_test_photo.ipynb): load both saved checkpoints and try new JPEG/PNG photos. Displays numbered outlines, straightened crops, each predicted pair, and the total. No training, labels, original dataset archive, or mobile exports are needed.
 
-Each notebook contains its helpers. Uploading Python support files or cloning the repository is unnecessary. The readable sources and build script are retained in this repository for maintenance.
+Notebooks 1–4 contain their helpers. Uploading Python support files or cloning the repository is unnecessary. The readable sources and build script are retained in this repository for maintenance.
+
+For classifier-only transfer-learning trials using the existing labels, open
+[06_pretrained_classifier.ipynb](../notebooks/06_pretrained_classifier.ipynb).
+It downloads experiment code at a pinned public revision, keeps the detector fixed,
+and writes separately named candidate runs to Drive. Keep its executed copy private.
+See the [experiment record and comparison](classifier-experiments-2026-11-22.md).
+
+For the research plan covering the next model generation, licensing options and
+an opt-in user data loop, see [model improvement plans](model-improvement-plans-2026-11-22.md).
 
 ## First-time setup
 
@@ -54,7 +65,24 @@ The classifier can also read a manually edited CSV. Keep `tile_id` unchanged; va
 
 Training waits for all tiles to be reviewed, labeled examples in each split, and at least one training example for every value 0–15. Review the class-count chart: sparse values need more real examples. Missing validation classes are reported as unavailable.
 
+### Review saved labels
+
+Open notebook 3 and run all cells. It finds the dataset's existing crop directory; if several crop versions exist, set `CROP_DIRECTORY` to the intended folder name. No training packages or original-photo extraction are needed. Choose A (left) and B (right), then **Save & next**. The saved values are selected initially, and saving unchanged values records confirmation without rewriting the labeling CSV. Skip/navigation leave labels untouched. Reject a crop when either half cannot be read.
+
+The panel starts with flagged tiles if `pip_review_flags.json` exists beside `pip_labels.csv`; otherwise it starts with all tiles. Flags are review suggestions, never automatic changes. The JSON must match `metadata.json`'s `dataset_fingerprint` and `crop_version`, and contain a `flags` list with `tile_id`, `side` (`a`/`b`), `current`, and `proposed`. Flags do not depend on the trained model and can include any photo split; correct labels from the images without changing the frozen split.
+
+`pip_label_review.json` records confirmed label states so reopening resumes unreviewed tiles and later label edits invalidate the affected confirmation. Before the first change in a session, the panel saves a uniquely named copy under `label_review_backups/`; each changed save also preserves `pip_labels.previous.csv`. Stale saves from another labeling session are rejected. Keep one session open at a time.
+
+After correcting labels, use a **new classifier run name** and rerun notebook 2's label check and training. Existing runs retain their original label hash and refuse evaluation/export with changed labels. Merely confirming correct labels keeps the existing CSV bytes and model contract intact.
+
 ## Training, saving, and restarting
+
+The current default training runs are `domino-v2-01` and `pips-v2-01`, with grayscale
+and appearance variation added after reviewing new photo failures. Existing crops and
+labels remain reusable. See the [photo-test findings and targeted training plan](photo-test-review-2026-11-22.md).
+Classifier grayscale conversion is embedded in its model; continue supplying RGB 0–255.
+These changes require new runs. Old runs remain available for evaluation, but must not
+be resumed with a changed training recipe.
 
 Colab uses `/content/domino-work` for temporary training input. Drive stores the originals, manifests, labeling progress, checkpoints, histories, evaluation results, and exports.
 
@@ -93,6 +121,16 @@ Exact total scores can conceal offsetting mistakes, so use the all-tiles-correct
 
 `BLANK_SCORE` matches the app's setting (0, 25, or 50 points per blank half; default 50). The classifier always predicts actual pip values, including 0. Evaluation saves both raw pip sums and totals with this scoring rule.
 
+## Try a new photo with your saved models
+
+Open [notebook 4 in Colab](https://colab.research.google.com/github/chrisstayte/DominoesCalculator/blob/dev/machine_learning/notebooks/04_test_photo.ipynb). Its defaults load detector `domino-v1-01/weights/best.pt` and classifier `pips-v1-02/best.keras` from `MyDrive/DominoesCalculator/models/`. Change the run names if you want to compare another saved run. A CPU runtime is sufficient.
+
+Run all cells, mount the same Drive account used for training, and select a JPEG or PNG at **Upload and test**. Rerun that last cell for another photo. You can also set `PHOTO_PATH` to an existing file. HEIC photos need conversion to JPEG/PNG first. This notebook only needs both checkpoints and their `dataset_contract.json` files; it does not prepare the training archive or load/edit labels.
+
+The detector finds and straightens each tile. The classifier reads A/B in the straightened crop; the notebook totals those values using `BLANK_SCORE` (default 50 per blank half). Numbered outlines match the crop previews and per-tile table. Orange outlines indicate unreadable/low-confidence halves or overlapping detections that may be duplicates. Overlaps remain in the predicted total for inspection. An unreadable tile makes the full total unavailable; readable predictions are shown as a subtotal. No detections produce no reliable total.
+
+Every attempt saves an oriented input photo, overlay, per-tile CSV, and JSON under a new `photo_tests/` folder in Drive. Compare predictions to a manual count, including outlines with no warning: confidence cannot establish that every tile was found exactly once. These exploratory photos are not part of the frozen validation/test evaluation. After investigating errors on validation and new photos, export and compare both models before phone integration.
+
 ## Mobile exports
 
 The detector uses Ultralytics LiteRT export; the classifier uses TensorFlow Lite conversion. Each produces an FP32 baseline and an optional INT8 variant. Calibration only uses training images/crops, including a dedicated detector YAML whose validation path also points to training data.
@@ -105,7 +143,7 @@ The Flutter app currently uses an SSD decoder. Integrating these models still re
 
 ## Repository maintenance and validation
 
-The notebooks are generated from `machine_learning/notebook_sources/` and embed `common.py` into each notebook. Edit those sources, then rebuild:
+The notebooks are generated from `machine_learning/notebook_sources/`. Training notebooks embed `common.py`; the review notebook embeds `label_review.py`. Edit those sources, then rebuild:
 
 ```sh
 python machine_learning/scripts/build_notebooks.py

@@ -1,3 +1,4 @@
+import 'package:dominoes/constants.dart';
 import 'package:dominoes/widgets/scaffold_with_nav_bar.dart';
 import 'package:dominoes/widgets/adaptive_workspace.dart';
 import 'package:dominoes/enum/app_accent_color.dart';
@@ -8,6 +9,7 @@ import 'package:dominoes/services/sfx_service.dart';
 import 'package:dominoes/services/vibration_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:dominoes/widgets/info_row.dart';
+import 'package:dominoes/widgets/open_source_notice.dart';
 import 'package:dominoes/widgets/section_card.dart';
 import 'package:dominoes/widgets/segmented_control.dart';
 import 'package:dominoes/widgets/setting_row.dart';
@@ -168,6 +170,8 @@ class SettingsScreen extends StatelessWidget {
       label: 'ABOUT',
       titleColor: Colors.purpleAccent,
       children: [
+        const OpenSourceNotice(),
+        const ThickDivider(),
         TappableRow(
           label: 'LICENSES',
           onTap: () => Navigator.of(
@@ -176,10 +180,10 @@ class SettingsScreen extends StatelessWidget {
         ),
         const ThickDivider(),
         TappableRow(
-          label: 'GITHUB',
+          label: 'SOURCE_CODE_(GITHUB)',
           icon: Icons.language,
           onTap: () => launchUrl(
-            Uri.parse('https://github.com/chrisstayte/DominoesCalculator'),
+            Uri.parse(sourceRepositoryUrl),
             mode: LaunchMode.externalApplication,
           ),
         ),
