@@ -166,7 +166,6 @@ assets/
 └── sfx/                      # Interaction sounds and Cuelume license
 design/                      # Icon explorations and iPad references
 store-assets/v2/              # Store screenshots and campaign artwork
-machine_learning/            # Colab notebooks, readable sources, checks
 scripts/release/              # Build numbering, signing, validation, uploads
 test/                        # Model, provider, screen, and layout tests
 .github/workflows/            # Dev checks, mobile release, Play promotion
@@ -186,23 +185,16 @@ confirmed selections to the calculator using the current blank rule.
 Live boxes appear before capture; the captured photo supports numbered review,
 selection, pinch zoom and panning. See the [camera review guide](docs/camera-review.md).
 Check every tile before accepting: missed tiles and incorrect values remain
-possible. See [mobile integration and validation](machine_learning/docs/mobile-integration-2026-11-22.md)
+possible. See [mobile integration and validation](docs/model-integration.md)
 and [model contracts and licensing](assets/models/README.md).
 
-The domino reader uses standalone Google Colab notebooks:
-
-1. [Domino detector](machine_learning/notebooks/01_domino_detector.ipynb): rotated tile detection with YOLO26 OBB, validation, and mobile export.
-2. [Pip classifier](machine_learning/notebooks/02_pip_classifier.ipynb): in-notebook half-tile labeling, 16-class classification for values 0–15, and full-photo score evaluation.
-3. [Review pip labels](machine_learning/notebooks/03_pip_label_review.ipynb): check flagged or all saved tiles, click corrected pip values, and save review progress and label backups to Drive without running training.
-4. [Try a new photo](machine_learning/notebooks/04_test_photo.ipynb): load your saved detector and classifier, upload photos, and inspect numbered domino outlines, predicted values, and totals without retraining.
-
-Labeling progress and training checkpoints persist in Google Drive. Labeling can resume without installing the model training packages, and the labeling station uses built-in Colab output controls. Training data and general model exports are ignored by Git; only the two explicitly approved mobile assets are included in this integration checkpoint.
+The retained model artifacts and runtime contracts support the camera code in this
+repository. Research notebooks, training tools and experiment records are maintained
+separately. Training data and general model exports remain ignored by Git.
 
 The integrated pipeline performs OBB decoding, rotated NMS, perspective
-rectification and classification in a background worker. See the [Colab setup
-and dataset guide](machine_learning/docs/ml-pipeline.md) for the data contract,
-labeling, training, resume, and export steps. The detector is trained with
-Ultralytics YOLO, whose code and model weights are AGPL-3.0. See
+rectification and classification in a background worker. The detector is trained
+with Ultralytics YOLO, whose code and model weights are AGPL-3.0. See
 [License](#license).
 
 ## Development and releases
