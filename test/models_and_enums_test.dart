@@ -1,9 +1,6 @@
-import 'dart:ui';
-
 import 'package:dominoes/enum/app_accent_color.dart';
 import 'package:dominoes/enum/domino_pips.dart';
 import 'package:dominoes/enum/number_style.dart';
-import 'package:dominoes/models/detection_result.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -44,17 +41,5 @@ void main() {
       );
       expect(AppAccentColor.fromJson('bogus'), AppAccentColor.yellow);
     });
-  });
-
-  test('DetectionResult has a useful diagnostic string', () {
-    const detection = DetectionResult(
-      label: 'double six',
-      confidence: 0.876,
-      boundingBox: Rect.fromLTWH(1, 2, 3, 4),
-    );
-
-    expect(detection.toString(), contains('double six'));
-    expect(detection.toString(), contains('87.6%'));
-    expect(detection.toString(), contains('Rect'));
   });
 }
