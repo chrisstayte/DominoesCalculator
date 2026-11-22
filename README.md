@@ -112,7 +112,7 @@ The current calculator entries live in memory. Saved game logs and preferences p
 
 Sound effects respect iOS Silent Mode and use Android's system sonification audio settings. When sound effects are enabled, the settings screen displays notices for silent mode, vibrate mode, or muted volume as reported by the platform.
 
-The experimental camera screen also has persisted confidence-label and scan-line preferences, defaulting to off and on respectively. The Settings screen includes the app's open-source notice, a link to this repository, app version information, and third-party licenses, including the [Cuelume sound license](assets/sfx/Cuelume-LICENSE.txt) and the Ultralytics AGPL-3.0 license.
+The experimental camera screen also has persisted confidence-label and scan-line preferences, defaulting to off and on respectively. The Settings screen includes the app's MIT open-source notice, a link to this repository, app version information, and third-party licenses, including the [Cuelume sound license](assets/sfx/Cuelume-LICENSE.txt) and the Ultralytics AGPL-3.0 license.
 
 ## Architecture
 
@@ -205,8 +205,8 @@ The integrated pipeline performs OBB decoding, rotated NMS, perspective
 rectification and classification in a background worker. See the [Colab setup
 and dataset guide](machine_learning/docs/ml-pipeline.md) for the data contract,
 labeling, training, resume, and export steps. The detector is trained with
-Ultralytics YOLO, whose code and model weights are AGPL-3.0, so the app is
-licensed under AGPL-3.0 as well. See [License](#license).
+Ultralytics YOLO, whose code and model weights are AGPL-3.0. See
+[License](#license).
 
 ## Development and releases
 
@@ -222,10 +222,8 @@ Follow [RELEASING.md](RELEASING.md) for credential setup, build-number seeding, 
 
 ## License
 
-Copyright (C) 2022-2026 Chris Stayte.
+Copyright (c) 2022-2026 Chris Stayte.
 
-Domino Counter is free software: you can redistribute it and/or modify it under the terms of the [GNU Affero General Public License v3.0](LICENSE) as published by the Free Software Foundation. It is distributed in the hope that it will be useful, but without any warranty; see the license for details.
+Domino Counter's own code is released under the [MIT License](LICENSE).
 
 The bundled domino detector (`assets/models/domino_detector_v2_fp32.tflite`) was trained from the Ultralytics `yolo26n-obb.pt` checkpoint with the `ultralytics` package. Ultralytics code and model weights are licensed under [AGPL-3.0](assets/models/licenses/Ultralytics-AGPL-3.0.txt) ([Ultralytics licensing](https://www.ultralytics.com/license)). Other bundled assets keep their own licenses, including the [Cuelume sound effects](assets/sfx/Cuelume-LICENSE.txt) and Keras MobileNetV2 (Apache-2.0) for the pip classifier.
-
-Versions released before the switch to AGPL-3.0 were published under the Apache License 2.0.

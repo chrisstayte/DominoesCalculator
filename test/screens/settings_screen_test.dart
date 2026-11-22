@@ -34,7 +34,7 @@ void main() {
       expect(find.text('ABOUT'), findsOneWidget);
     });
 
-    testWidgets('shows the AGPL-3.0 notice and Ultralytics credit', (
+    testWidgets('shows the MIT notice and Ultralytics AGPL-3.0 credit', (
       tester,
     ) async {
       useLargeDisplay(tester);
@@ -47,6 +47,7 @@ void main() {
         ),
       );
 
+      expect(find.textContaining('MIT License'), findsOneWidget);
       expect(find.textContaining('AGPL-3.0'), findsOneWidget);
       expect(
         find.textContaining('github.com/chrisstayte/DominoesCalculator'),

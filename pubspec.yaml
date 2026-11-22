@@ -1,5 +1,5 @@
 name: dominoes
-description: 'Domino Counter: a double-15 domino score calculator. Licensed under AGPL-3.0.'
+description: 'Domino Counter: a double-15 domino score calculator. Licensed under MIT.'
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
@@ -56,6 +56,7 @@ flutter:
     - assets/images/icons/
     - assets/models/
     - assets/models/licenses/
+    - assets/licenses/
     - assets/sfx/
 
 flutter_launcher_icons:

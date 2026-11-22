@@ -24,16 +24,17 @@ void main() async {
   });
 
   LicenseRegistry.addLicense(() async* {
+    final mit = await rootBundle.loadString(
+      'assets/licenses/DominoCounter-MIT.txt',
+    );
+    yield LicenseEntryWithLineBreaks([
+      'Domino Counter',
+    ], 'Source code: $sourceRepositoryUrl\n\n$mit');
+  });
+
+  LicenseRegistry.addLicense(() async* {
     final agpl = await rootBundle.loadString(
       'assets/models/licenses/Ultralytics-AGPL-3.0.txt',
-    );
-    yield LicenseEntryWithLineBreaks(
-      ['Domino Counter'],
-      'Copyright (C) 2022-2026 Chris Stayte\n\n'
-      'This program is free software: you can redistribute it and/or modify '
-      'it under the terms of the GNU Affero General Public License as '
-      'published by the Free Software Foundation, version 3.\n\n'
-      'Source code: $sourceRepositoryUrl\n\n$agpl',
     );
     yield LicenseEntryWithLineBreaks(
       ['Ultralytics YOLO (domino detector)'],

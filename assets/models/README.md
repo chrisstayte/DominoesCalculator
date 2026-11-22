@@ -18,8 +18,9 @@ ranges are recorded in `domino_models.json` and checked at initialization.
 Ultralytics supplies its detector code and models under AGPL-3.0 or an Enterprise
 license: <https://www.ultralytics.com/license>. The upstream license is included
 in `licenses/Ultralytics-AGPL-3.0.txt`. The detector was fine-tuned from
-`yolo26n-obb.pt` with `ultralytics==8.4.144`, so Domino Counter as a whole is
-distributed under AGPL-3.0 (see the repository `LICENSE`). The classifier uses Keras MobileNetV2; Keras source is Apache-2.0:
+`yolo26n-obb.pt` with `ultralytics==8.4.144`, and its weights are credited as
+AGPL-3.0. The app's own code is MIT (see the repository `LICENSE`); how the
+bundled AGPL weights fit with that is still an open compliance question. The classifier uses Keras MobileNetV2; Keras source is Apache-2.0:
 <https://github.com/keras-team/keras/blob/master/LICENSE>.
 
 Private photos, annotations, Drive identifiers, credentials and raw training
