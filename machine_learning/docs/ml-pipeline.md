@@ -15,6 +15,9 @@ It downloads experiment code at a pinned public revision, keeps the detector fix
 and writes separately named candidate runs to Drive. Keep its executed copy private.
 See the [experiment record and comparison](classifier-experiments-2026-11-22.md).
 
+For the research plan covering the next model generation, licensing options and
+an opt-in user data loop, see [model improvement plans](model-improvement-plans-2026-11-22.md).
+
 ## First-time setup
 
 1. Create `MyDrive/DominoesCalculator` in Google Drive.
