@@ -132,3 +132,7 @@ app.*.symbols
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
+
+# Approved mobile model artifacts; training data and other exports stay ignored.
+!assets/models/domino_detector_v2_fp32.tflite
+!assets/models/pip_classifier_mnv2_mixed_v3_fp16.tflite

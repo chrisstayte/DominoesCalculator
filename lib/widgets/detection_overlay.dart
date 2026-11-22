@@ -36,7 +36,19 @@ class DetectionOverlay extends CustomPainter {
         detection.boundingBox.bottom * size.height,
       );
 
-      canvas.drawRect(rect, boxPaint);
+      boxPaint.color = detection.needsReview ? Colors.orange : borderColor;
+      if (detection.corners.length == 4) {
+        final path = Path()
+          ..addPolygon(
+            detection.corners
+                .map((p) => Offset(p.dx * size.width, p.dy * size.height))
+                .toList(),
+            true,
+          );
+        canvas.drawPath(path, boxPaint);
+      } else {
+        canvas.drawRect(rect, boxPaint);
+      }
 
       final labelText = showConfidence
           ? '${detection.label} ${(detection.confidence * 100).toStringAsFixed(0)}%'
@@ -57,8 +69,14 @@ class DetectionOverlay extends CustomPainter {
       )..layout();
 
       final badgeRect = Rect.fromLTWH(
-        rect.left,
-        rect.top - textPainter.height - 6,
+        rect.left.clamp(
+          0.0,
+          (size.width - textPainter.width - 10).clamp(0.0, size.width),
+        ),
+        (rect.top - textPainter.height - 6).clamp(
+          0.0,
+          (size.height - textPainter.height - 6).clamp(0.0, size.height),
+        ),
         textPainter.width + 10,
         textPainter.height + 6,
       );
@@ -73,12 +91,15 @@ class DetectionOverlay extends CustomPainter {
           ..strokeWidth = 2,
       );
 
-      textPainter.paint(canvas, Offset(rect.left + 5, rect.top - textPainter.height - 3));
+      textPainter.paint(canvas, Offset(badgeRect.left + 5, badgeRect.top + 3));
     }
   }
 
   @override
   bool shouldRepaint(covariant DetectionOverlay oldDelegate) =>
       detections != oldDelegate.detections ||
-      showConfidence != oldDelegate.showConfidence;
+      showConfidence != oldDelegate.showConfidence ||
+      borderColor != oldDelegate.borderColor ||
+      textColor != oldDelegate.textColor ||
+      badgeColor != oldDelegate.badgeColor;
 }

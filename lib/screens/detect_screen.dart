@@ -2,7 +2,6 @@ import 'package:dominoes/widgets/scaffold_with_nav_bar.dart';
 import 'package:dominoes/widgets/adaptive_workspace.dart';
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:dominoes/providers/camera_provider.dart';
@@ -17,7 +16,10 @@ import 'package:dominoes/widgets/action_button.dart';
 import 'package:dominoes/widgets/capture_button.dart';
 import 'package:dominoes/widgets/segmented_control.dart';
 import 'package:dominoes/widgets/setting_row.dart';
-import 'package:dominoes/widgets/detection_overlay.dart';
+import 'package:dominoes/widgets/domino_results_view.dart';
+import 'package:dominoes/providers/calculator_provider.dart';
+import 'package:dominoes/constants.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dominoes/widgets/camera_loading_view.dart';
 import 'package:dominoes/widgets/focus_indicator_painter.dart';
 import 'package:dominoes/widgets/processing_overlay.dart';
@@ -200,7 +202,7 @@ class _CameraScreenState extends State<CameraScreen>
     NeoBrutalistTheme nbt,
   ) async {
     final labelsData = await rootBundle.loadString(
-      'assets/models/coco_labels.txt',
+      'assets/models/pip_labels.txt',
     );
     final labels = labelsData
         .split('\n')
@@ -584,160 +586,31 @@ class _CameraScreenState extends State<CameraScreen>
     bool showConfidence,
     Color accentColor,
   ) {
-    final image = Stack(
-      fit: StackFit.expand,
-      children: [
-        if (camera.capturedImagePath != null)
-          Image.file(File(camera.capturedImagePath!), fit: BoxFit.cover),
-        CustomPaint(
-          painter: DetectionOverlay(
-            detections: camera.detections,
-            borderColor: accentColor,
-            textColor: Colors.black,
-            badgeColor: accentColor,
-            showConfidence: showConfidence,
-          ),
-        ),
-      ],
-    );
-    final results = Container(
-      decoration: BoxDecoration(
-        color: nbt.cardColor,
-        border: Border(top: BorderSide(color: nbt.borderColor, width: 3)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (camera.detections.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: nbt.cardColor,
-                  border: Border.all(color: nbt.borderColor, width: 2),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      color: nbt.headerColor,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      child: Text(
-                        'DETECTED (${camera.detections.length})',
-                        style: GoogleFonts.bricolageGrotesque(
-                          color: nbt.headerTextColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ),
-                    ...camera.detections.map(
-                      (d) => Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                d.label.toUpperCase(),
-                                style: GoogleFonts.bricolageGrotesque(
-                                  color: nbt.bodyTextColor,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                            if (showConfidence)
-                              Text(
-                                '${(d.confidence * 100).toStringAsFixed(0)}%',
-                                style: GoogleFonts.bricolageGrotesque(
-                                  color: nbt.secondaryTextColor,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                  ],
-                ),
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                'NO OBJECTS DETECTED',
-                style: GoogleFonts.bricolageGrotesque(
-                  color: nbt.secondaryTextColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1,
-                ),
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ActionButton(
-                    icon: Icons.refresh,
-                    color: nbt.accentRed,
-                    foregroundColor: Colors.black,
-                    onTap: () {
-                      context.read<SfxService>().playDelete();
-                      context.read<VibrationService>().medium();
-                      camera.retake();
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ActionButton(
-                    icon: Icons.check,
-                    color: nbt.accentGreen,
-                    foregroundColor: Colors.black,
-                    onTap: () {
-                      context.read<SfxService>().playSuccess();
-                      context.read<VibrationService>().medium();
-                      // Placeholder for future calculator integration
-                      camera.retake();
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-    if (hasWorkspace(context))
-      return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: WorkspaceSplit(
-            leadingFlex: 2,
-            trailingFlex: 1,
-            leading: image,
-            trailing: SingleChildScrollView(child: results),
-          ),
-        ),
-      );
-    return Column(
-      children: [
-        Expanded(child: image),
-        results,
-      ],
+    final report = camera.report;
+    if (report == null) {
+      return const Center(child: Text('Photo results unavailable.'));
+    }
+    return DominoResultsView(
+      report: report,
+      blankValue: context
+          .watch<LocalSettingsProvider>()
+          .localSettings
+          .freePointValue,
+      showConfidence: showConfidence,
+      accentColor: accentColor,
+      onRetake: () {
+        camera.retake();
+        camera.resumePreview();
+      },
+      onAdd: (pips) {
+        if (camera.state != CameraState.results) return;
+        context.read<CalculatorProvider>().addPips(pips);
+        context.read<SfxService>().playSuccess();
+        context.read<VibrationService>().medium();
+        camera.retake();
+        camera.pausePreview();
+        context.goNamed(AppRoutes.calc);
+      },
     );
   }
 

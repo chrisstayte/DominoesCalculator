@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "tile_size": [
+    256,
+    128
+  ],
+  "confidence_threshold": 0.25,
+  "rotated_nms_iou": 0.7,
+  "review_confidence": 0.8,
+  "classes": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "detector": {
+    "asset": "assets/models/domino_detector_v2_fp32.tflite",
+    "run": "domino-v2-01",
+    "sha256": "31f2ecfbdaf4a9387f403c298bbcb8d34890d9118e13b3d0f67bee0aa35d3b2c",
+    "input_shape": [
+      1,
+      3,
+      640,
+      640
+    ],
+    "output_shape": [
+      1,
+      6,
+      8400
+    ],
+    "preprocessing": "RGB float32 CHW 0..1, square letterbox 114"
+  },
+  "classifier": {
+    "asset": "assets/models/pip_classifier_mnv2_mixed_v3_fp16.tflite",
+    "run": "pips-v3-mnv2-mixed-01",
+    "sha256": "a3645f698a4d145b082abd2429a89fd25fd1968a56966ae45718b1258c705754",
+    "input_shape": [
+      1,
+      128,
+      128,
+      3
+    ],
+    "output_shape": [
+      1,
+      16
+    ],
+    "preprocessing": "RGB float32 NHWC 0..255; scaling embedded"
+  }
+}

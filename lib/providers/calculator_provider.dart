@@ -17,6 +17,13 @@ class CalculatorProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addPips(Iterable<DominoPips> pips) {
+    final additions = pips.toList();
+    if (additions.isEmpty) return;
+    _selectedPips.addAll(additions);
+    notifyListeners();
+  }
+
   void removeAt(int index) {
     if (index >= 0 && index < _selectedPips.length) {
       _selectedPips.removeAt(index);

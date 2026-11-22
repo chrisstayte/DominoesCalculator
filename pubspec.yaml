@@ -26,9 +26,10 @@ dependencies:
   flutter_svg: ^2.2.3
   url_launcher: ^6.3.1
   camera: ^0.11.1
-  flutter_litert: ^1.0.0
+  flutter_litert: 1.4.0
   permission_handler: ^11.3.1
-  image: ^4.5.3
+  image: 4.13.1
+  crypto: ^3.0.7
   path_provider: ^2.1.5
   sensors_plus: ^6.1.1
   audioplayers: ^6.1.0
@@ -41,6 +42,10 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
 
 flutter:
+  # flutter_litert 1.4.0 bundles the iOS inference library through CocoaPods.
+  # Its Swift package contains a stub and cannot load the model interpreters.
+  config:
+    enable-swift-package-manager: false
   uses-material-design: true
 
   assets:
@@ -49,6 +54,7 @@ flutter:
     - assets/images/nav/
     - assets/images/icons/
     - assets/models/
+    - assets/models/licenses/
     - assets/sfx/
 
 flutter_launcher_icons:

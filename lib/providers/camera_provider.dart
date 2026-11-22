@@ -20,12 +20,19 @@ enum CameraState {
 
 class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
   CameraController? _controller;
-  final ObjectDetector _detector = TfliteDetector();
+  final ObjectDetector _detector;
   CameraState _state = CameraState.uninitialized;
   List<DetectionResult> _detections = [];
   String? _capturedImagePath;
   String? _errorMessage;
   FlashMode _flashMode = FlashMode.auto;
+  DetectionReport? _report;
+  Future<void>? _initializing;
+  bool _disposed = false;
+  int _generation = 0;
+  int _captureGeneration = 0;
+
+  DetectionReport? get report => _report;
 
   CameraController? get controller => _controller;
   CameraState get state => _state;
@@ -34,66 +41,89 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
   String? get errorMessage => _errorMessage;
   FlashMode get flashMode => _flashMode;
 
-  CameraProvider() {
+  CameraProvider({ObjectDetector? detector})
+    : _detector = detector ?? TfliteDetector() {
     WidgetsBinding.instance.addObserver(this);
   }
 
-  Future<void> initializeCamera() async {
+  Future<void> initializeCamera() {
+    if (_disposed) return Future.value();
+    return _initializing ??= _initializeCamera().whenComplete(
+      () => _initializing = null,
+    );
+  }
+
+  Future<void> _initializeCamera() async {
+    final generation = ++_generation;
+    CameraController? next;
     try {
       final status = await Permission.camera.request();
+      if (_disposed || generation != _generation) return;
       if (!status.isGranted) {
         _state = CameraState.permissionDenied;
         notifyListeners();
         return;
       }
-
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
-        _errorMessage = 'No cameras available on this device.';
-        _state = CameraState.error;
-        notifyListeners();
-        return;
+        throw StateError('No cameras available on this device.');
       }
-
-      _controller = CameraController(
-        cameras.first,
-        ResolutionPreset.medium,
+      final back = cameras.where(
+        (camera) => camera.lensDirection == CameraLensDirection.back,
+      );
+      next = CameraController(
+        back.isEmpty ? cameras.first : back.first,
+        ResolutionPreset.veryHigh,
         enableAudio: false,
       );
-
-      await _controller!.initialize();
-      await _controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
-      await _controller!.setFlashMode(_flashMode);
+      await next.initialize();
+      await next.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      await next.setFlashMode(_flashMode);
       await _detector.initialize();
-
+      if (_disposed || generation != _generation) return;
+      final previous = _controller;
+      _controller = next;
+      next = null;
+      await previous?.dispose();
+      if (_disposed || generation != _generation) return;
+      _errorMessage = null;
       _state = CameraState.preview;
       notifyListeners();
     } catch (e) {
+      if (_disposed || generation != _generation) return;
       _errorMessage = 'Failed to initialize camera: $e';
       _state = CameraState.error;
       notifyListeners();
+    } finally {
+      await next?.dispose();
     }
   }
 
   Future<void> captureAndDetect() async {
     if (_state != CameraState.preview || _controller == null) return;
 
+    final generation = ++_captureGeneration;
     try {
       _state = CameraState.capturing;
       notifyListeners();
 
       final xFile = await _controller!.takePicture();
+      if (_disposed || generation != _captureGeneration) return;
       _capturedImagePath = xFile.path;
 
       _state = CameraState.processing;
       notifyListeners();
 
       final imageBytes = await File(xFile.path).readAsBytes();
-      _detections = await _detector.detect(imageBytes);
+      final report = await _detector.detect(imageBytes);
+      if (_disposed || generation != _captureGeneration) return;
+      _report = report;
+      _detections = report.detections;
 
       _state = CameraState.results;
       notifyListeners();
     } catch (e) {
+      if (_disposed || generation != _captureGeneration) return;
       _errorMessage = 'Detection failed: $e';
       _state = CameraState.error;
       notifyListeners();
@@ -122,17 +152,25 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
       _ => FlashMode.auto,
     };
     await _controller?.setFlashMode(_flashMode);
-    notifyListeners();
+    if (!_disposed) notifyListeners();
   }
 
   void retake() {
+    if (_disposed) return;
+    _captureGeneration++;
+    _report = null;
+    _errorMessage = null;
     _detections = [];
     _capturedImagePath = null;
-    _state = CameraState.preview;
+    _state = _controller == null && _initializing != null
+        ? CameraState.uninitialized
+        : CameraState.preview;
     notifyListeners();
   }
 
   void pausePreview() {
+    if (_disposed) return;
+    _generation++;
     _controller?.dispose();
     _controller = null;
     if (_state == CameraState.preview) {
@@ -142,7 +180,10 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void resumePreview() {
-    if (_state == CameraState.uninitialized) {
+    if (_disposed) return;
+    if (_controller == null &&
+        (_state == CameraState.uninitialized ||
+            _state == CameraState.preview)) {
       initializeCamera();
     }
   }
@@ -160,22 +201,18 @@ class CameraProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.inactive) {
-      _controller?.dispose();
-      _controller = null;
-      if (_state == CameraState.preview) {
-        _state = CameraState.uninitialized;
-        notifyListeners();
-      }
+    if (state == AppLifecycleState.inactive && _controller != null) {
+      pausePreview();
     } else if (state == AppLifecycleState.resumed) {
-      if (_state == CameraState.preview || _state == CameraState.uninitialized) {
-        initializeCamera();
-      }
+      resumePreview();
     }
   }
 
   @override
   void dispose() {
+    _disposed = true;
+    _generation++;
+    _captureGeneration++;
     WidgetsBinding.instance.removeObserver(this);
     _controller?.dispose();
     _detector.dispose();

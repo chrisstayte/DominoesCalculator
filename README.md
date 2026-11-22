@@ -165,7 +165,7 @@ lib/
 assets/
 ├── branding/                 # Launcher icon source assets
 ├── images/                   # Pip SVGs, navigation icons, launch icon
-├── models/                   # Bundled prototype SSD model and COCO labels
+├── models/                   # Domino detector, pip classifier, contracts and notices
 └── sfx/                      # Interaction sounds and Cuelume license
 design/                      # Icon explorations and iPad references
 store-assets/v2/              # Store screenshots and campaign artwork
@@ -179,13 +179,19 @@ Other key dependencies include `flutter_svg`, `google_fonts`, `audioplayers`, `c
 
 ## Camera and machine learning
 
-Camera scanning is **experimental and disabled by default** through `ENABLE_CAMERA_SCANNING`. To expose the prototype camera tab during development:
+Camera scanning is **experimental and disabled by default** through `ENABLE_CAMERA_SCANNING`. To expose the camera tab during development:
 
 ```bash
 flutter run --dart-define=ENABLE_CAMERA_SCANNING=true
 ```
 
-The current Flutter implementation uses the bundled `assets/models/ssd_mobilenet_v1.tflite` object detector with COCO labels. The new domino-specific pipeline still needs to be integrated; enabling the prototype tab does not enable automatic domino scoring.
+The Flutter camera runs the unchanged `domino-v2-01` rotated tile detector and
+`pips-v3-mnv2-mixed-01` MobileNetV2 pip classifier on device. It rectifies each
+tile, classifies both halves, displays rotated outlines and review markers, and
+adds the recognized values to the calculator using the current blank rule.
+Check every tile before accepting: missed tiles and incorrect values remain
+possible. See [mobile integration and validation](machine_learning/docs/mobile-integration-2026-11-22.md)
+and [model contracts and licensing](assets/models/README.md).
 
 The domino reader uses standalone Google Colab notebooks:
 
@@ -194,9 +200,13 @@ The domino reader uses standalone Google Colab notebooks:
 3. [Review pip labels](machine_learning/notebooks/03_pip_label_review.ipynb): check flagged or all saved tiles, click corrected pip values, and save review progress and label backups to Drive without running training.
 4. [Try a new photo](machine_learning/notebooks/04_test_photo.ipynb): load your saved detector and classifier, upload photos, and inspect numbered domino outlines, predicted values, and totals without retraining.
 
-Labeling progress and training checkpoints persist in Google Drive. Labeling can resume without installing the model training packages, and the labeling station uses built-in Colab output controls. Training data and newly exported models are ignored by Git.
+Labeling progress and training checkpoints persist in Google Drive. Labeling can resume without installing the model training packages, and the labeling station uses built-in Colab output controls. Training data and general model exports are ignored by Git; only the two explicitly approved mobile assets are included in this integration checkpoint.
 
-Integrating these models into Flutter still requires OBB decoding, tile rectification and splitting, classifier inference, quantization handling, and validation on target devices. See the [Colab setup and dataset guide](machine_learning/docs/ml-pipeline.md) for the data contract, labeling, training, resume, and export steps.
+The integrated pipeline performs OBB decoding, rotated NMS, perspective
+rectification and classification in a background worker. See the [Colab setup
+and dataset guide](machine_learning/docs/ml-pipeline.md) for the data contract,
+labeling, training, resume, and export steps. Publication of the combined app
+is pending the owner's licensing choice; its existing license is unchanged.
 
 ## Development and releases
 

@@ -23,6 +23,13 @@ void main() async {
     yield LicenseEntryWithLineBreaks(['Cuelume'], license);
   });
 
+  LicenseRegistry.addLicense(() async* {
+    final license = await rootBundle.loadString(
+      'assets/models/licenses/Ultralytics-AGPL-3.0.txt',
+    );
+    yield LicenseEntryWithLineBreaks(['Ultralytics domino detector'], license);
+  });
+
   final localSettingsProvider = LocalSettingsProvider();
   await localSettingsProvider.isReady;
 

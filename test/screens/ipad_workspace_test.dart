@@ -1,4 +1,5 @@
 import 'package:dominoes/enum/domino_pips.dart';
+import 'package:dominoes/global/feature_flags.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/screens/calc_screen.dart';
@@ -29,7 +30,10 @@ void main() {
       tester.getCenter(logs).dx,
       greaterThan(tester.getCenter(find.text('DOMINO_CALC')).dx),
     );
-    expect(find.byTooltip('Camera'), findsNothing);
+    expect(
+      find.byTooltip('Camera'),
+      cameraScanningEnabled ? findsOneWidget : findsNothing,
+    );
     await tester.tap(logs);
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Settings'));
