@@ -5,6 +5,7 @@ Standalone notebooks cover training and label review:
 1. [01_domino_detector.ipynb](../notebooks/01_domino_detector.ipynb): import and check the OBB dataset, review arrangement groups, freeze train/validation/test splits, train YOLO26-nano OBB, and validate/export the detector.
 2. [02_pip_classifier.ipynb](../notebooks/02_pip_classifier.ipynb): generate straightened halves from the existing annotations, label them inside Colab, train a 16-class CNN, validate/export it, and evaluate full-photo scores.
 3. [03_pip_label_review.ipynb](../notebooks/03_pip_label_review.ipynb): review existing labels with large half-images and 0–15 value buttons. Filter flagged/all/unreviewed tiles, save corrections, and resume review progress from Drive. It needs only the saved crops and labels, a CPU runtime, and Pillow (included in Colab).
+4. [04_test_photo.ipynb](../notebooks/04_test_photo.ipynb): load both saved checkpoints and try new JPEG/PNG photos. Displays numbered outlines, straightened crops, each predicted pair, and the total. No training, labels, original dataset archive, or mobile exports are needed.
 
 Each notebook contains its helpers. Uploading Python support files or cloning the repository is unnecessary. The readable sources and build script are retained in this repository for maintenance.
 
@@ -103,6 +104,16 @@ The complete pipeline reports:
 Exact total scores can conceal offsetting mistakes, so use the all-tiles-correct metric too. A pip confidence threshold cannot establish that every domino was detected.
 
 `BLANK_SCORE` matches the app's setting (0, 25, or 50 points per blank half; default 50). The classifier always predicts actual pip values, including 0. Evaluation saves both raw pip sums and totals with this scoring rule.
+
+## Try a new photo with your saved models
+
+Open [notebook 4 in Colab](https://colab.research.google.com/github/chrisstayte/DominoesCalculator/blob/dev/machine_learning/notebooks/04_test_photo.ipynb). Its defaults load detector `domino-v1-01/weights/best.pt` and classifier `pips-v1-02/best.keras` from `MyDrive/DominoesCalculator/models/`. Change the run names if you want to compare another saved run. A CPU runtime is sufficient.
+
+Run all cells, mount the same Drive account used for training, and select a JPEG or PNG at **Upload and test**. Rerun that last cell for another photo. You can also set `PHOTO_PATH` to an existing file. HEIC photos need conversion to JPEG/PNG first. This notebook only needs both checkpoints and their `dataset_contract.json` files; it does not prepare the training archive or load/edit labels.
+
+The detector finds and straightens each tile. The classifier reads A/B in the straightened crop; the notebook totals those values using `BLANK_SCORE` (default 50 per blank half). Numbered outlines match the crop previews and per-tile table. Orange outlines indicate unreadable/low-confidence halves or overlapping detections that may be duplicates. Overlaps remain in the predicted total for inspection. An unreadable tile makes the full total unavailable; readable predictions are shown as a subtotal. No detections produce no reliable total.
+
+Every attempt saves an oriented input photo, overlay, per-tile CSV, and JSON under a new `photo_tests/` folder in Drive. Compare predictions to a manual count, including outlines with no warning: confidence cannot establish that every tile was found exactly once. These exploratory photos are not part of the frozen validation/test evaluation. After investigating errors on validation and new photos, export and compare both models before phone integration.
 
 ## Mobile exports
 

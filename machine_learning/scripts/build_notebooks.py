@@ -38,7 +38,7 @@ def build(name, filename):
         "language_info": {"name": "python", "version": "3.12"},
         "colab": {"provenance": [], "name": name + ".ipynb"},
     })
-    if filename != "review.py":
+    if filename not in {"review.py", "photo_tester.py"}:
         notebook.metadata["accelerator"] = "GPU"
     nbformat.validate(notebook)
     OUT.mkdir(exist_ok=True)
@@ -51,3 +51,4 @@ if __name__ == "__main__":
     build("01_domino_detector", "detector.py")
     build("02_pip_classifier", "classifier.py")
     build("03_pip_label_review", "review.py")
+    build("04_test_photo", "photo_tester.py")

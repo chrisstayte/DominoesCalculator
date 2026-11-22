@@ -192,6 +192,7 @@ The domino reader uses standalone Google Colab notebooks:
 1. [Domino detector](machine_learning/notebooks/01_domino_detector.ipynb): rotated tile detection with YOLO26 OBB, validation, and mobile export.
 2. [Pip classifier](machine_learning/notebooks/02_pip_classifier.ipynb): in-notebook half-tile labeling, 16-class classification for values 0–15, and full-photo score evaluation.
 3. [Review pip labels](machine_learning/notebooks/03_pip_label_review.ipynb): check flagged or all saved tiles, click corrected pip values, and save review progress and label backups to Drive without running training.
+4. [Try a new photo](machine_learning/notebooks/04_test_photo.ipynb): load your saved detector and classifier, upload photos, and inspect numbered domino outlines, predicted values, and totals without retraining.
 
 Labeling progress and training checkpoints persist in Google Drive. Labeling can resume without installing the model training packages, and the labeling station uses built-in Colab output controls. Training data and newly exported models are ignored by Git.
 
