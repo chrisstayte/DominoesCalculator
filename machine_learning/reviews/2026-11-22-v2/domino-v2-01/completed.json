@@ -1,0 +1,6 @@
+{
+  "stage": "detector",
+  "run": "domino-v2-01",
+  "best_checkpoint": "/content/drive/MyDrive/DominoesCalculator/models/detector/domino-v2-01/weights/best.pt",
+  "notebook_sha256": "fa486bdaa7a48cfc5d8418756b21c90b4367668e21b18c73f51e1a9c14d4949a"
+}

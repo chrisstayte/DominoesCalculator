@@ -1,0 +1,51 @@
+{
+  "stage": "compare",
+  "reviewed_pairs": 36,
+  "baseline_correct_pairs": 8,
+  "new_correct_pairs": 17,
+  "photos": [
+    {
+      "source_run": "0a8fc80cfa01468898da0f56e38088e5",
+      "new_run": "b691bd5c9d1840428c32de3473875bd5",
+      "baseline_detected_tiles": 0,
+      "new_detected_tiles": 0
+    },
+    {
+      "source_run": "1141d4959a5a4feab12f994dae6e1d0c",
+      "new_run": "69a9b1a8c95e4e63b7ce72dc409455f9",
+      "baseline_detected_tiles": 20,
+      "new_detected_tiles": 73
+    },
+    {
+      "source_run": "3f0d466de00f43fd999852092278aaa6",
+      "new_run": "6da1e4e5739348b6b5f915c28a03f656",
+      "baseline_detected_tiles": 29,
+      "new_detected_tiles": 33
+    },
+    {
+      "source_run": "7497ab91f10b4cc0b8f1ae3bef192ae3",
+      "new_run": "d6087a7c774c450293261a6b7cfb9bf1",
+      "baseline_detected_tiles": 0,
+      "new_detected_tiles": 0
+    },
+    {
+      "source_run": "7838d6f350ac4d639acb856954e4aacf",
+      "new_run": "9f4730cc22204124b8034bba95434998",
+      "baseline_detected_tiles": 14,
+      "new_detected_tiles": 30
+    },
+    {
+      "source_run": "b4bc0ef622ea4624bb280079e4175f39",
+      "new_run": "7f94276388eb41a984a94ec2b78051a0",
+      "baseline_detected_tiles": 24,
+      "new_detected_tiles": 33
+    },
+    {
+      "source_run": "f4a8f0346ff94f21a0c090aeb858272f",
+      "new_run": "774c1c8f9cb94ff68262f192905ba431",
+      "baseline_detected_tiles": 12,
+      "new_detected_tiles": 12
+    }
+  ],
+  "limitation": "Selected development pairs on fixed original crops; not independent test accuracy. New full-photo boxes still require visual review."
+}

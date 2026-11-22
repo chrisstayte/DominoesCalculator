@@ -1,0 +1,6 @@
+{
+  "stage": "classifier",
+  "run": "pips-v2-01",
+  "best_checkpoint": "/content/drive/MyDrive/DominoesCalculator/models/classifier/pips-v2-01/best.keras",
+  "notebook_sha256": "df9514e8e2f01d5703f2b374e63402d67f2715531713d1688329522ee2886860"
+}
