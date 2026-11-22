@@ -189,7 +189,30 @@ void main() {
     }
   });
 
-  testWidgets('select and confirm only mine, preserve blanks and append once', (
+  int selectedCount(WidgetTester tester) {
+    final label = tester
+        .widget<Text>(
+          find.descendant(
+            of: find.byKey(const ValueKey('review-done')),
+            matching: find.byType(Text),
+          ),
+        )
+        .data!;
+    return label == 'DONE' ? 0 : int.parse(label.split(' ').last);
+  }
+
+  Offset tileCenter(WidgetTester tester, Rect box) {
+    final photo = tester.getRect(find.byType(Image));
+    return Offset(
+      photo.left + photo.width * box.center.dx,
+      photo.top + photo.height * box.center.dy,
+    );
+  }
+
+  const first = Rect.fromLTWH(.1, .2, .35, .3);
+  const second = Rect.fromLTWH(.55, .5, .35, .3);
+
+  testWidgets('tap correct boxes then DONE adds only those, once', (
     tester,
   ) async {
     final calculator = CalculatorProvider()..addPip(DominoPips.p3);
@@ -201,30 +224,50 @@ void main() {
         calculator.addPips(pips);
       },
     );
-    expect(find.text('YOUR SCORE: 0'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('mine-0')));
-    await tester.pump();
+    expect(find.text('Tap each box that is correct.'), findsOneWidget);
+    expect(find.byType(ListView), findsNothing);
     expect(
-      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      tester
+          .widget<FilledButton>(find.byKey(const ValueKey('review-done')))
+          .onPressed,
       isNull,
     );
-    await tester.tap(find.byKey(const ValueKey('yes-0')));
+    await tester.tapAt(tileCenter(tester, first));
     await tester.pump();
-    expect(find.text('YOUR SCORE: 54'), findsOneWidget);
-    await tester.tap(find.text('ADD 1 TILE'));
+    expect(find.text('1 selected · 54 points'), findsOneWidget);
+    await tester.tap(find.text('DONE · ADD 1'));
     await tester.pump();
     expect(calculator.selectedPips, [
       DominoPips.p3,
       DominoPips.p0,
       DominoPips.p4,
     ]);
-    expect(calculator.total(freePointValue: 50), 57);
     expect(calls, 1);
     expect(
-      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      tester
+          .widget<FilledButton>(find.byKey(const ValueKey('review-done')))
+          .onPressed,
       isNull,
     );
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('tapping a selected box again deselects it', (tester) async {
+    await openReview(tester);
+    await tester.tapAt(tileCenter(tester, second));
+    await tester.pump();
+    expect(find.text('DONE · ADD 1'), findsOneWidget);
+    await tester.tapAt(tileCenter(tester, second));
+    await tester.pump();
+    expect(find.text('DONE'), findsOneWidget);
+  });
+
+  testWidgets('unreadable boxes cannot be selected', (tester) async {
+    await openReview(tester, report: exampleReport(unreadable: true));
+    await tester.tapAt(tileCenter(tester, second));
+    await tester.pump();
+    expect(find.text('DONE'), findsOneWidget);
+    expect(find.textContaining("couldn't be read"), findsOneWidget);
   });
 
   testWidgets('tap a photo box after zoom and keep selection when reset', (
@@ -240,28 +283,20 @@ void main() {
       viewer.transformationController!.value.getMaxScaleOnAxis(),
       closeTo(1.5, .01),
     );
-    final photo = find.byType(Image);
-    // Flutter hit testing must account for the viewer transform and letterboxing.
-    final scene = tester.getRect(photo);
+    final scene = tester.getRect(find.byType(Image));
     await tester.tapAt(
       Offset(scene.left + scene.width * .275, scene.top + scene.height * .35),
     );
     await tester.pumpAndSettle();
-    expect(
-      tester.widget<Checkbox>(find.byKey(const ValueKey('mine-0'))).value,
-      isTrue,
-    );
+    expect(selectedCount(tester), 1);
     await tester.tap(find.byTooltip('Fit photo'));
     await tester.pump();
     expect(viewer.transformationController!.value.getMaxScaleOnAxis(), 1);
-    expect(
-      tester.widget<Checkbox>(find.byKey(const ValueKey('mine-0'))).value,
-      isTrue,
-    );
+    expect(selectedCount(tester), 1);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('a zoomed number badge selects its linked tile outside the box', (
+  testWidgets('a zoomed label badge selects its linked tile outside the box', (
     tester,
   ) async {
     await openReview(tester);
@@ -276,7 +311,7 @@ void main() {
     final photo = tester.getRect(find.byType(Image));
     final baseSize = Size(photo.width / zoom, photo.height / zoom);
     final badge = layoutDominoBadge(
-      label: '#1',
+      label: '0 | 4 · 95%',
       tileBounds: Rect.fromLTWH(
         baseSize.width * .1,
         baseSize.height * .2,
@@ -286,17 +321,15 @@ void main() {
       imageSize: baseSize,
       zoom: zoom,
     );
-    final point = photo.topLeft + badge.bounds.center * zoom;
+    final point =
+        photo.topLeft + badge.bounds.topLeft * zoom + const Offset(4, 4);
     expect(
       tester.getRect(find.byType(InteractiveViewer)).contains(point),
       isTrue,
     );
     await tester.tapAt(point);
     await tester.pumpAndSettle();
-    expect(
-      tester.widget<Checkbox>(find.byKey(const ValueKey('mine-0'))).value,
-      isTrue,
-    );
+    expect(selectedCount(tester), 1);
   });
 
   testWidgets('pinch zoom changes the image scale without selecting a tile', (
@@ -307,114 +340,36 @@ void main() {
       find.byType(InteractiveViewer),
     );
     final center = tester.getCenter(find.byType(InteractiveViewer));
-    final first = await tester.startGesture(
+    final a = await tester.startGesture(
       center + const Offset(-30, 0),
       pointer: 1,
     );
-    final second = await tester.startGesture(
+    final b = await tester.startGesture(
       center + const Offset(30, 0),
       pointer: 2,
     );
     await tester.pump();
-    await first.moveTo(center + const Offset(-90, 0));
-    await second.moveTo(center + const Offset(90, 0));
+    await a.moveTo(center + const Offset(-90, 0));
+    await b.moveTo(center + const Offset(90, 0));
     await tester.pump();
-    await first.up();
-    await second.up();
+    await a.up();
+    await b.up();
     await tester.pumpAndSettle();
     expect(
       viewer.transformationController!.value.getMaxScaleOnAxis(),
       greaterThan(1),
     );
-    expect(
-      tester.widget<Checkbox>(find.byKey(const ValueKey('mine-0'))).value,
-      isFalse,
-    );
+    expect(selectedCount(tester), 0);
   });
 
-  testWidgets(
-    'correcting a pip updates both its score and confirmation state',
-    (tester) async {
-      final report = exampleReport();
-      await openReview(tester, report: report);
-      await tester.tap(find.byKey(const ValueKey('mine-0')));
-      await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('no-0')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('edit-a')));
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.text('15').last,
-        250,
-        scrollable: find.byType(Scrollable).last,
-      );
-      await tester.tap(find.text('15').last);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('SAVE CORRECT VALUES'));
-      await tester.pumpAndSettle();
-      expect(find.text('YOUR SCORE: 19'), findsOneWidget);
-      expect(report.detections.first.pipA, 0);
-      expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
-        isNotNull,
-      );
-    },
-  );
-
-  testWidgets('no opens correction and can exclude a false detection', (
-    tester,
-  ) async {
-    await openReview(tester);
-    await tester.tap(find.byKey(const ValueKey('mine-0')));
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('no-0')));
-    await tester.pumpAndSettle();
-    expect(find.text('CORRECT TILE #1'), findsOneWidget);
-    await tester.tap(find.text('NOT A DOMINO · EXCLUDE'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('EXCLUDED'), findsOneWidget);
-    expect(find.text('ADD 0 TILES'), findsOneWidget);
-    await tester.tap(find.text('UNDO'));
-    await tester.pump();
-    expect(find.textContaining('EXCLUDED'), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('maximum pips remain usable with larger text on a small phone', (
+  testWidgets('review fits phones and tablets and captures its appearance', (
     tester,
   ) async {
     tester.platformDispatcher.textScaleFactorTestValue = 1.6;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    final original = exampleReport();
-    final report = DetectionReport(
-      detections: const [
-        DetectionResult(
-          label: '15 | 15',
-          confidence: .9,
-          boundingBox: Rect.fromLTWH(.1, .2, .35, .3),
-          pipA: 15,
-          pipB: 15,
-        ),
-      ],
-      imageSize: original.imageSize,
-      imageBytes: original.imageBytes,
-      processingTime: Duration.zero,
-    );
-    await openReview(tester, report: report);
-    tester.view.physicalSize = const Size(320, 568);
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('review fits a narrow phone and captures its actual appearance', (
-    tester,
-  ) async {
     final key = GlobalKey();
     await openReview(tester, captureKey: key);
-    await tester.tap(find.byKey(const ValueKey('mine-0')));
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('yes-0')));
-    await tester.pump();
+    await tester.tapAt(tileCenter(tester, first));
     await tester.pumpAndSettle();
     final output = Platform.environment['DOMINO_REVIEW_SCREENSHOT'];
     if (output != null) {

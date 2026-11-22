@@ -25,64 +25,28 @@ void main() {
       boundingBox: Rect.zero,
     ),
   ];
-  test('only selected and explicitly confirmed tiles count', () {
+  test('only tapped tiles count, and blanks use the blank value', () {
     final review = DominoReview(detections);
     addTearDown(review.dispose);
-    expect(review.mineCount, 0);
+    expect(review.selectedCount, 0);
     expect(review.canAdd, isFalse);
-    review.toggleMine(0);
-    expect(review.pendingMine, 1);
-    expect(review.total(50), 0);
-    expect(review.valuesToAdd, throwsStateError);
-    review.accept(0);
-    review.accept(1);
+    expect(review.valuesToAdd(), isEmpty);
+    expect(review.toggle(0), isTrue);
     expect(review.canAdd, isTrue);
     expect(review.total(50), 54);
-    expect(review.valuesToAdd().map((p) => p.value), [0, 4]);
-    expect(review.total(25), 29);
     expect(review.total(0), 4);
+    expect(review.valuesToAdd().map((p) => p.value), [0, 4]);
+    review.toggle(1);
+    expect(review.valuesToAdd().map((p) => p.value), [0, 4, 5, 6]);
+    review.toggle(0);
+    expect(review.selectedCount, 1);
+    expect(review.valuesToAdd().map((p) => p.value), [5, 6]);
   });
-  test(
-    'reject, restore and correct keep stable IDs and protect original results',
-    () {
-      final review = DominoReview(detections);
-      addTearDown(review.dispose);
-      review.toggleMine(1);
-      review.reject(1);
-      expect(review.mineCount, 0);
-      expect(review.tiles, hasLength(3));
-      review.restore(1);
-      review.toggleMine(1);
-      review.correct(1, 15, 0);
-      expect(review.total(50), 65);
-      expect(detections[1].pipA, 5);
-      expect(review.valuesToAdd().map((p) => p.value), [15, 0]);
-      expect(() => review.correct(1, 16, 0), throwsRangeError);
-      expect(review.tiles[1].a, 15);
-    },
-  );
-  test('unreadable selected tile blocks acceptance until corrected', () {
+  test('unreadable tiles cannot be selected', () {
     final review = DominoReview(detections);
     addTearDown(review.dispose);
-    review.toggleMine(2);
-    review.accept(2);
-    expect(review.canAdd, isFalse);
-    review.correct(2, 3, 4);
-    expect(review.canAdd, isTrue);
-    expect(review.total(50), 7);
+    expect(review.toggle(2), isFalse);
+    expect(review.selectedCount, 0);
+    expect(review.tiles[2].label, '?');
   });
-  test(
-    'select all excludes rejected tiles and never confirms values implicitly',
-    () {
-      final review = DominoReview(detections);
-      addTearDown(review.dispose);
-      review.reject(1);
-      review.selectAll(true);
-      expect(review.mineCount, 2);
-      expect(review.pendingMine, 2);
-      expect(review.canAdd, isFalse);
-      review.selectAll(false);
-      expect(review.mineCount, 0);
-    },
-  );
 }
