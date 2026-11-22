@@ -1,6 +1,8 @@
+import 'package:dominoes/services/sfx_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class SegmentedControl<T> extends StatelessWidget {
   const SegmentedControl({
@@ -30,7 +32,12 @@ class SegmentedControl<T> extends StatelessWidget {
           children: List.generate(options.length, (i) {
             final isSelected = options[i] == selected;
             return GestureDetector(
-              onTap: () => onSelected(options[i]),
+              onTap: isSelected
+                  ? null
+                  : () {
+                      onSelected(options[i]);
+                      context.read<SfxService>().playToggle();
+                    },
               child: Container(
                 decoration: BoxDecoration(
                   color: isSelected ? nbt.selectedColor : nbt.unselectedColor,
@@ -40,12 +47,16 @@ class SegmentedControl<T> extends StatelessWidget {
                         )
                       : null,
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 child: Text(
                   labels[i],
                   style: GoogleFonts.bricolageGrotesque(
-                    color: isSelected ? nbt.selectedTextColor : nbt.unselectedTextColor,
+                    color: isSelected
+                        ? nbt.selectedTextColor
+                        : nbt.unselectedTextColor,
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                   ),

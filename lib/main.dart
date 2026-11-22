@@ -8,12 +8,20 @@ import 'package:dominoes/screens/splash_screen.dart';
 import 'package:dominoes/services/sfx_service.dart';
 import 'package:dominoes/services/vibration_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  LicenseRegistry.addLicense(() async* {
+    final license = await rootBundle.loadString(
+      'assets/sfx/Cuelume-LICENSE.txt',
+    );
+    yield LicenseEntryWithLineBreaks(['Cuelume'], license);
+  });
 
   final localSettingsProvider = LocalSettingsProvider();
   await localSettingsProvider.isReady;
@@ -21,7 +29,10 @@ void main() async {
   final sfxService = SfxService(localSettingsProvider);
   await sfxService.initialize();
 
-  final vibrationService = VibrationService(localSettingsProvider);
+  final vibrationService = VibrationService(
+    localSettingsProvider,
+    isSupported: await VibrationService.checkSupport(),
+  );
 
   runApp(
     MultiProvider(

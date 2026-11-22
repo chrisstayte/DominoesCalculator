@@ -1,6 +1,8 @@
+import 'package:dominoes/services/sfx_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class TappableRow extends StatelessWidget {
   const TappableRow({
@@ -18,7 +20,10 @@ class TappableRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final nbt = NeoBrutalistTheme.of(context);
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        context.read<SfxService>().playNavigate();
+        onTap();
+      },
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

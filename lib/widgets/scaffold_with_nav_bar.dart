@@ -1,6 +1,7 @@
 import 'package:dominoes/global/feature_flags.dart';
 import 'package:dominoes/widgets/adaptive_workspace.dart';
 import 'package:dominoes/providers/camera_provider.dart';
+import 'package:dominoes/services/sfx_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -38,6 +39,8 @@ class ScaffoldWithNavBar extends StatelessWidget {
       final i = _branches[tab];
       if (i == selected) {
         branchNavigatorKeys[i].currentState?.popUntil((route) => route.isFirst);
+      } else {
+        context.read<SfxService>().playNavigate();
       }
 
       const cameraIndex = 2;

@@ -55,6 +55,7 @@ Future<LocalSettingsProvider> createReadySettingsProvider({
 
 Widget buildProviderHarness({
   required Widget child,
+  bool supportsHaptics = true,
   LocalSettingsProvider? settingsProvider,
   CalculatorProvider? calculatorProvider,
   GameLogProvider? gameLogProvider,
@@ -77,7 +78,9 @@ Widget buildProviderHarness({
         value: cameraProvider ?? NoopCameraProvider(),
       ),
       Provider<SfxService>.value(value: SfxService(settings)),
-      Provider<VibrationService>.value(value: VibrationService(settings)),
+      Provider<VibrationService>.value(
+        value: VibrationService(settings, isSupported: supportsHaptics),
+      ),
     ],
     child: MaterialApp(
       theme: ThemeData(
@@ -128,7 +131,9 @@ Widget buildAppHarness({
         value: cameraProvider ?? NoopCameraProvider(),
       ),
       Provider<SfxService>.value(value: SfxService(settings)),
-      Provider<VibrationService>.value(value: VibrationService(settings)),
+      Provider<VibrationService>.value(
+        value: VibrationService(settings, isSupported: true),
+      ),
     ],
     child: const MyApp(),
   );
