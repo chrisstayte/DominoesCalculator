@@ -53,6 +53,12 @@ annotations of those scenes. A classifier change cannot recover a missing box.
 Model parameter count and checkpoint size are recorded; neither establishes phone
 latency. Mobile deployment needs separate export and device verification.
 
+After comparison, `scripts/export_classifier_candidate.py` can create FP32 and FP16
+LiteRT files in a new export directory inside a candidate run. It checks all original
+validation halves against Keras, records prediction changes and accuracy loss, and
+measures batch-one CPU inference on the current host. It refuses an existing export
+directory and verifies protected input hashes again. Host timing is not phone timing.
+
 ## Integrity checks
 
 Before training, validate the existing crop metadata, label hash, group separation,
@@ -68,4 +74,9 @@ Implementation references: [Keras transfer learning](https://keras.io/guides/tra
 ## Execution log
 
 - Prepared isolated experiment code and input-preservation checks.
+- All 43 local ML unit checks passed. Dev CI passed for the clean experiment notebook.
+- MobileNetV2 FP32 and FP16 conversion/inference passed an additional synthetic
+  smoke check. This verifies portability of the architecture, not recognition accuracy.
+- Colab could not allocate an additional GPU. Appended the classifier-only launch
+  cell to the existing connected T4 notebook; earlier cells and saved runs remain intact.
 - Training and comparison results are pending execution; no improvement is claimed yet.
