@@ -1,5 +1,4 @@
 import 'package:dominoes/widgets/adaptive_workspace.dart';
-import 'package:dominoes/providers/camera_provider.dart';
 import 'package:dominoes/services/sfx_service.dart';
 import 'package:dominoes/theme/neo_brutalist_theme.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +22,6 @@ class ScaffoldWithNavBar extends StatelessWidget {
   static const _tabs = [
     (svg: 'assets/images/nav/calc.svg', label: 'CALC', name: 'Calculator'),
     (svg: 'assets/images/nav/logs.svg', label: 'LOGS', name: 'Logs'),
-    (svg: 'assets/images/nav/camera.svg', label: 'CAM', name: 'Camera'),
     (svg: 'assets/images/nav/settings.svg', label: 'SET', name: 'Settings'),
   ];
 
@@ -37,14 +35,6 @@ class ScaffoldWithNavBar extends StatelessWidget {
         branchNavigatorKeys[i].currentState?.popUntil((route) => route.isFirst);
       } else {
         context.read<SfxService>().playNavigate();
-      }
-
-      const cameraIndex = 2;
-      final camera = context.read<CameraProvider>();
-      if (selected == cameraIndex && i != cameraIndex) {
-        camera.pausePreview();
-      } else if (selected != cameraIndex && i == cameraIndex) {
-        camera.resumePreview();
       }
 
       navigationShell.goBranch(i, initialLocation: i == selected);

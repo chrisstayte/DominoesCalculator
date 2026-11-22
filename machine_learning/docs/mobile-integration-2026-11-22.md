@@ -56,8 +56,8 @@ adds only selected, confirmed tiles and supports correcting or excluding detecti
 flutter build ios --profile
 ```
 
-The camera tab is always shown; the former `ENABLE_CAMERA_SCANNING` build flag
-was removed. Keep CocoaPods enabled for the
+The camera is currently removed from the app and the model assets are not
+bundled, pending licensing; see the camera review guide. Keep CocoaPods enabled for the
 pinned flutter_litert 1.4.0 plugin: its Swift package is a stub without the native
 inference libraries. The project explicitly selects this supported integration
 in pubspec.yaml.

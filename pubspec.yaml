@@ -54,8 +54,6 @@ flutter:
     - assets/images/launch_icon.png
     - assets/images/nav/
     - assets/images/icons/
-    - assets/models/
-    - assets/models/licenses/
     - assets/licenses/
     - assets/sfx/
 

@@ -1,5 +1,4 @@
 import 'package:dominoes/constants.dart';
-import 'package:dominoes/screens/detect_screen.dart';
 import 'package:dominoes/screens/logs_screen.dart';
 import 'package:dominoes/screens/calc_screen.dart';
 import 'package:dominoes/screens/settings_screen.dart';
@@ -10,7 +9,6 @@ import 'package:go_router/go_router.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _calcNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'calc');
 final _historyNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'history');
-final _detectNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'detect');
 final _settingsNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'settings');
 
 GoRouter createRouter() {
@@ -25,7 +23,6 @@ GoRouter createRouter() {
             branchNavigatorKeys: [
               _calcNavigatorKey,
               _historyNavigatorKey,
-              _detectNavigatorKey,
               _settingsNavigatorKey,
             ],
           );
@@ -48,16 +45,6 @@ GoRouter createRouter() {
                 name: AppRoutes.logs,
                 path: '/${AppRoutes.logs}',
                 builder: (context, state) => const HistoryScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            navigatorKey: _detectNavigatorKey,
-            routes: [
-              GoRoute(
-                name: AppRoutes.camera,
-                path: '/${AppRoutes.camera}',
-                builder: (context, state) => const CameraScreen(),
               ),
             ],
           ),

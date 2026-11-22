@@ -112,7 +112,6 @@ Widget buildAppHarness({
   LocalSettingsProvider? settingsProvider,
   CalculatorProvider? calculatorProvider,
   GameLogProvider? gameLogProvider,
-  CameraProvider? cameraProvider,
 }) {
   GoogleFonts.config.allowRuntimeFetching = false;
 
@@ -126,9 +125,6 @@ Widget buildAppHarness({
       ),
       ChangeNotifierProvider<GameLogProvider>.value(
         value: gameLogProvider ?? GameLogProvider(),
-      ),
-      ChangeNotifierProvider<CameraProvider>.value(
-        value: cameraProvider ?? NoopCameraProvider(),
       ),
       Provider<SfxService>.value(value: SfxService(settings)),
       Provider<VibrationService>.value(

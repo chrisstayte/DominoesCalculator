@@ -1,6 +1,5 @@
 import 'package:dominoes/constants.dart';
 import 'package:dominoes/providers/calculator_provider.dart';
-import 'package:dominoes/providers/camera_provider.dart';
 import 'package:dominoes/providers/game_log_provider.dart';
 import 'package:dominoes/providers/local_settings_provider.dart';
 import 'package:dominoes/router.dart';
@@ -32,18 +31,6 @@ void main() async {
     ], 'Source code: $sourceRepositoryUrl\n\n$mit');
   });
 
-  LicenseRegistry.addLicense(() async* {
-    final agpl = await rootBundle.loadString(
-      'assets/models/licenses/Ultralytics-AGPL-3.0.txt',
-    );
-    yield LicenseEntryWithLineBreaks(
-      ['Ultralytics YOLO (domino detector)'],
-      'The domino detector was trained with Ultralytics YOLO. Ultralytics '
-      'code and model weights are licensed under AGPL-3.0: '
-      'https://www.ultralytics.com/license\n\n$agpl',
-    );
-  });
-
   final localSettingsProvider = LocalSettingsProvider();
   await localSettingsProvider.isReady;
 
@@ -67,9 +54,6 @@ void main() async {
         ChangeNotifierProvider<GameLogProvider>(
           create: (context) => GameLogProvider(),
           lazy: false,
-        ),
-        ChangeNotifierProvider<CameraProvider>(
-          create: (context) => CameraProvider(),
         ),
         Provider<SfxService>.value(value: sfxService),
         Provider<VibrationService>.value(value: vibrationService),

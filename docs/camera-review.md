@@ -1,10 +1,8 @@
 # Camera scanning and reviewing your tiles
 
-The camera tab is always shown. For a local device build:
+> **Not in the app.** The camera is removed from the app until the detector's licensing is resolved. Its code stays in the repository but is not routed, has no tab, and the model files are not bundled. There is no flag or remote setting that turns it back on; restoring it requires a code change and a new release.
 
-```sh
-flutter run --profile
-```
+To work on it, restore the `/camera` route and tab, the `CameraProvider` in `main.dart`, and the `assets/models/` entries in `pubspec.yaml`.
 
 Keep Device Hub screen sharing stopped when using the physical iPhone camera.
 The phone can remain paired and receive wireless builds. Screen sharing caused

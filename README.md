@@ -112,7 +112,7 @@ The current calculator entries live in memory. Saved game logs and preferences p
 
 Sound effects respect iOS Silent Mode and use Android's system sonification audio settings. When sound effects are enabled, the settings screen displays notices for silent mode, vibrate mode, or muted volume as reported by the platform.
 
-The experimental camera screen also has persisted confidence-label and scan-line preferences, defaulting to off and on respectively. The Settings screen includes the app's MIT open-source notice, a link to this repository, app version information, and third-party licenses, including the [Cuelume sound license](assets/sfx/Cuelume-LICENSE.txt) and the Ultralytics AGPL-3.0 license.
+The experimental camera screen also has persisted confidence-label and scan-line preferences, defaulting to off and on respectively. The Settings screen includes the app's MIT open-source notice, a link to this repository, app version information, and third-party licenses, including the [Cuelume sound license](assets/sfx/Cuelume-LICENSE.txt).
 
 ## Architecture
 
@@ -123,19 +123,16 @@ flowchart TD
     App[main.dart / MultiProvider] --> Settings[LocalSettingsProvider]
     App --> Calculator[CalculatorProvider]
     App --> Logs[GameLogProvider]
-    App --> Camera[CameraProvider]
     App --> Feedback[SfxService / VibrationService]
     App --> Router[GoRouter / StatefulShellRoute]
     Router --> CalcScreen[Calculator]
     Router --> LogsScreen[Game logs]
     Router --> SettingsScreen[Settings]
-    Router --> CameraScreen[Experimental camera]
     Settings --> Storage[(SharedPreferences)]
     Logs --> Storage
     CalcScreen --> Calculator
     CalcScreen --> Logs
     LogsScreen --> Logs
-    CameraScreen --> Camera
 ```
 
 | Component | Responsibility |
@@ -147,7 +144,7 @@ flowchart TD
 | `SfxService` | Low-latency playback of bundled interaction sounds |
 | `VibrationService` | Hardware support checks and preference-aware haptic feedback |
 
-The router starts at `/calc`, with branches for `/logs`, `/camera`, and `/settings`. `StatefulShellRoute.indexedStack` retains each branch's navigation state.
+The router starts at `/calc`, with branches for `/logs` and `/settings`. `StatefulShellRoute.indexedStack` retains each branch's navigation state.
 
 ## Project structure
 
@@ -179,7 +176,7 @@ Other key dependencies include `flutter_svg`, `google_fonts`, `audioplayers`, `c
 
 ## Camera and machine learning
 
-The camera tab is always available.
+The camera is removed from the app until the detector's licensing is resolved. Its code stays in the repository but is not routed, has no tab, and the model files are not bundled. There is no flag or remote setting that turns it back on; restoring it requires a code change and a new release.
 
 The Flutter camera runs the unchanged `domino-v2-01` rotated tile detector and
 `pips-v3-mnv2-mixed-01` MobileNetV2 pip classifier on device. It rectifies each

@@ -29,7 +29,7 @@ void main() {
       tester.getCenter(logs).dx,
       greaterThan(tester.getCenter(find.text('DOMINO_CALC')).dx),
     );
-    expect(find.byTooltip('Camera'), findsOneWidget);
+    expect(find.byTooltip('Camera'), findsNothing);
     await tester.tap(logs);
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Settings'));
