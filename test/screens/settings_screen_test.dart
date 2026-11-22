@@ -34,6 +34,28 @@ void main() {
       expect(find.text('ABOUT'), findsOneWidget);
     });
 
+    testWidgets('shows the AGPL-3.0 notice and Ultralytics credit', (
+      tester,
+    ) async {
+      useLargeDisplay(tester);
+      final settings = await createReadySettingsProvider();
+
+      await tester.pumpWidget(
+        buildProviderHarness(
+          settingsProvider: settings,
+          child: const SettingsScreen(),
+        ),
+      );
+
+      expect(find.textContaining('AGPL-3.0'), findsOneWidget);
+      expect(
+        find.textContaining('github.com/chrisstayte/DominoesCalculator'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Ultralytics YOLO'), findsOneWidget);
+      expect(find.text('SOURCE_CODE_(GITHUB)'), findsOneWidget);
+    });
+
     testWidgets('sound stays available on hardware without haptics', (
       tester,
     ) async {

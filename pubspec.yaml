@@ -1,5 +1,5 @@
 name: dominoes
-description: 'A new Flutter project.'
+description: 'Domino Counter: a double-15 domino score calculator. Licensed under AGPL-3.0.'
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 

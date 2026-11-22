@@ -14,3 +14,9 @@ class AppColorsValues {
 class AppColors {
   static const Color primary = Color(AppColorsValues.primaryValue);
 }
+
+/// Public source for the app, offered to users under AGPL-3.0.
+const String sourceRepositoryUrl =
+    'https://github.com/chrisstayte/DominoesCalculator';
+const String sourceRepositoryDisplay =
+    'github.com/chrisstayte/DominoesCalculator';
