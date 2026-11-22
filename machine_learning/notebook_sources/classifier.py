@@ -115,6 +115,8 @@ plt.show()
 # For manual CSV editing, open `pip_labels.csv`. The `a` and `b` values for labeled rows must be integers
 # `0`–`15`, and `status` must be `pending`, `labeled`, or `rejected`. Keep tile IDs unchanged.
 # Label all tiles before starting the first training experiment; review coverage below.
+# To check existing labels with large value buttons and saved review progress, open
+# [notebook 3 · Review pip labels](https://colab.research.google.com/github/chrisstayte/DominoesCalculator/blob/dev/machine_learning/notebooks/03_pip_label_review.ipynb).
 
 # %%
 def colab_labeling_station(review, first, total):
@@ -460,6 +462,8 @@ if ACTION != "label":
 # the confusion matrix, and wrongly classified halves. Missing validation classes have
 # no measured accuracy. Validation crops use annotated boxes; full-photo evaluation below
 # also measures mistakes introduced by detection and cropping.
+# Use [notebook 3 · Review pip labels](https://colab.research.google.com/github/chrisstayte/DominoesCalculator/blob/dev/machine_learning/notebooks/03_pip_label_review.ipynb)
+# to check or correct saved labels. Corrections require a new classifier run name.
 
 # %%
 def classifier_report(rows, probabilities, title, output_dir):

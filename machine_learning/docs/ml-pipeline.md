@@ -1,9 +1,10 @@
 # Domino ML pipeline in Google Colab
 
-Two standalone notebooks replace the earlier combined training notebook:
+Standalone notebooks cover training and label review:
 
 1. [01_domino_detector.ipynb](../notebooks/01_domino_detector.ipynb): import and check the OBB dataset, review arrangement groups, freeze train/validation/test splits, train YOLO26-nano OBB, and validate/export the detector.
 2. [02_pip_classifier.ipynb](../notebooks/02_pip_classifier.ipynb): generate straightened halves from the existing annotations, label them inside Colab, train a 16-class CNN, validate/export it, and evaluate full-photo scores.
+3. [03_pip_label_review.ipynb](../notebooks/03_pip_label_review.ipynb): review existing labels with large half-images and 0–15 value buttons. Filter flagged/all/unreviewed tiles, save corrections, and resume review progress from Drive. It needs only the saved crops and labels, a CPU runtime, and Pillow (included in Colab).
 
 Each notebook contains its helpers. Uploading Python support files or cloning the repository is unnecessary. The readable sources and build script are retained in this repository for maintenance.
 
@@ -53,6 +54,16 @@ The labeling station displays both halves. Select values 0–15 and click **Save
 The classifier can also read a manually edited CSV. Keep `tile_id` unchanged; valid status values are `pending`, `labeled`, and `rejected`. A labeled tile requires both numeric values. The interface never fills in unknown values automatically.
 
 Training waits for all tiles to be reviewed, labeled examples in each split, and at least one training example for every value 0–15. Review the class-count chart: sparse values need more real examples. Missing validation classes are reported as unavailable.
+
+### Review saved labels
+
+Open notebook 3 and run all cells. It finds the dataset's existing crop directory; if several crop versions exist, set `CROP_DIRECTORY` to the intended folder name. No training packages or original-photo extraction are needed. Choose A (left) and B (right), then **Save & next**. The saved values are selected initially, and saving unchanged values records confirmation without rewriting the labeling CSV. Skip/navigation leave labels untouched. Reject a crop when either half cannot be read.
+
+The panel starts with flagged tiles if `pip_review_flags.json` exists beside `pip_labels.csv`; otherwise it starts with all tiles. Flags are review suggestions, never automatic changes. The JSON must match `metadata.json`'s `dataset_fingerprint` and `crop_version`, and contain a `flags` list with `tile_id`, `side` (`a`/`b`), `current`, and `proposed`. Flags do not depend on the trained model and can include any photo split; correct labels from the images without changing the frozen split.
+
+`pip_label_review.json` records confirmed label states so reopening resumes unreviewed tiles and later label edits invalidate the affected confirmation. Before the first change in a session, the panel saves a uniquely named copy under `label_review_backups/`; each changed save also preserves `pip_labels.previous.csv`. Stale saves from another labeling session are rejected. Keep one session open at a time.
+
+After correcting labels, use a **new classifier run name** and rerun notebook 2's label check and training. Existing runs retain their original label hash and refuse evaluation/export with changed labels. Merely confirming correct labels keeps the existing CSV bytes and model contract intact.
 
 ## Training, saving, and restarting
 
@@ -105,7 +116,7 @@ The Flutter app currently uses an SSD decoder. Integrating these models still re
 
 ## Repository maintenance and validation
 
-The notebooks are generated from `machine_learning/notebook_sources/` and embed `common.py` into each notebook. Edit those sources, then rebuild:
+The notebooks are generated from `machine_learning/notebook_sources/`. Training notebooks embed `common.py`; the review notebook embeds `label_review.py`. Edit those sources, then rebuild:
 
 ```sh
 python machine_learning/scripts/build_notebooks.py
