@@ -58,7 +58,7 @@ tests also verify that closing camera settings preserves the nested camera
 route and that zoomed number badges remain the same screen size and selectable.
 The full camera-enabled suite passes 71 tests, including real native models. The existing
 model contracts and weights remain unchanged. See the
-[mobile model integration](../machine_learning/docs/mobile-integration-2026-11-22.md)
+[mobile model integration](model-integration.md)
 for validation scope and model licensing.
 
 The prior integration checkpoint is `a096ac0`. Reverting the camera review commit

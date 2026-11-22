@@ -35,6 +35,6 @@ release.
    preprocessor definition in the `ios/Podfile` post-install hook.
 5. Restore the Ultralytics licence entry in `main.dart` if the detector is
    still Ultralytics, and settle the licence first. See the
-   [model improvement plans](../../machine_learning/docs/model-improvement-plans-2026-11-22.md).
+   [model contracts and licensing](../../assets/models/README.md).
 
 Git history before this move has the camera fully wired in.

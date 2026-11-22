@@ -1,7 +1,12 @@
 # Mobile integration: detector v2 and classifier v3
 
-The Flutter camera now performs tile detection, perspective rectification and
-pip classification on device. Both interpreters, image decoding and crop work
+The camera is currently parked outside the app build. See the
+[restore steps](../dormant/camera/README.md) before using the camera-specific
+build and verification instructions below. The results recorded here describe
+the earlier camera-enabled integration.
+
+The dormant Flutter camera implementation performs tile detection, perspective
+rectification and pip classification on device. Both interpreters, image decoding and crop work
 run on a persistent background isolate. No photo upload is required.
 
 The detector weights were exported without retraining, using Ultralytics
@@ -13,7 +18,7 @@ YOLO("best.pt").export(format="litert", quantize=32, imgsz=640,
                        batch=1, device="cpu")
 ```
 
-The app bundles the FP16 export of `pips-v3-mnv2-mixed-01`. The tensor contracts
+The camera-enabled build used the FP16 export of `pips-v3-mnv2-mixed-01`. The tensor contracts
 and exact SHA-256 hashes are in `assets/models/domino_models.json`. Preprocessing
 must preserve the different detector and classifier input ranges.
 
@@ -47,7 +52,7 @@ photos. Crossing tiles and false detections also remain possible. Results show
 rotated outlines and require explicit review of selected tiles. Model confidence
 is available in settings. Unreadable tiles produce a subtotal and
 cannot transfer to the calculator until corrected and confirmed. Blanks stay class 0 and are scored using the
-current 0/25/50 setting. Existing calculator values are preserved when adding. The [camera review flow](../../docs/camera-review.md)
+current 0/25/50 setting. Existing calculator values are preserved when adding. The [camera review flow](camera-review.md)
 adds only selected, confirmed tiles and supports correcting or excluding detections.
 
 ## Local iPhone test build
@@ -58,10 +63,10 @@ flutter build ios --profile
 
 The camera is currently removed from the app, pending licensing: its code is
 parked in `dormant/camera/` (outside the build) with restore steps in its README,
-and the camera plugins, permissions and model assets are not shipped. Keep CocoaPods enabled for the
-pinned flutter_litert 1.4.0 plugin: its Swift package is a stub without the native
-inference libraries. The project explicitly selects this supported integration
-in pubspec.yaml.
+and the camera plugins, permissions and model assets are not shipped. When
+restoring the camera, keep CocoaPods enabled for the pinned flutter_litert 1.4.0
+plugin: its Swift package is a stub without the native inference libraries.
+The project explicitly selects CocoaPods in pubspec.yaml.
 
 Before a device update, back up its app preferences privately. Install the same
 bundle identifier without uninstalling so preferences and saved games remain.
